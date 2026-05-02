@@ -39,8 +39,8 @@ export function ResultPage() {
           <ScoreCard result={result} />
           <Certificate result={result} />
           <div className="flex flex-wrap gap-3 justify-center mt-2">
-            <Button onClick={() => navigate('/leaderboard')} variant="secondary">🏆 리더보드</Button>
-            <Button onClick={handleRetry} variant="secondary">🔄 다시 도전</Button>
+            <Button onClick={() => navigate('/leaderboard')} variant="outline">🏆 리더보드</Button>
+            <Button onClick={handleRetry} variant="outline">🔄 다시 도전</Button>
             <Button onClick={handleHome}>🏠 처음으로</Button>
           </div>
         </div>

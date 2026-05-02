@@ -34,7 +34,7 @@ export function Certificate({ result }: Props) {
         </div>
         <p className="text-white/30 text-xs">flexmathbusiness1.pages.dev</p>
       </div>
-      <Button onClick={handleDownload} size="sm" variant="secondary">
+      <Button onClick={handleDownload} size="sm" variant="outline">
         📥 인증서 다운로드
       </Button>
     </div>

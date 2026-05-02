@@ -11,6 +11,16 @@ import { useGameStore } from '../stores/useGameStore';
 import { useSound } from '../hooks/useSound';
 import type { Difficulty } from '../types/game';
 
+/* 별빛 배경 */
+const STARS = Array.from({ length: 40 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  dur: 1.5 + Math.random() * 2,
+  delay: Math.random() * 2,
+  size: Math.random() < 0.3 ? 'text-base' : 'text-xs',
+}));
+
 export function LandingPage() {
   const [nickname, setNickname] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -18,7 +28,8 @@ export function LandingPage() {
   const navigate = useNavigate();
   const { play } = useSound();
 
-  const canStart = nickname.trim().length >= 1 && difficulty !== null;
+  const isNicknameValid = nickname.trim().length >= 1;
+  const canStart = isNicknameValid && difficulty !== null;
 
   const handleStart = () => {
     if (!canStart || !difficulty) return;
@@ -29,55 +40,83 @@ export function LandingPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-between px-4 py-8">
-        <div className="absolute top-4 right-4">
+      <div className="relative min-h-screen bg-[#0F172A] flex flex-col items-center justify-center overflow-hidden">
+
+        {/* ── 별빛 배경 ── */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          {STARS.map(s => (
+            <motion.span
+              key={s.id}
+              className={`absolute ${s.size} text-gold/40`}
+              style={{ left: `${s.x}%`, top: `${s.y}%` }}
+              animate={{ opacity: [0.2, 0.9, 0.2], scale: [1, 1.4, 1] }}
+              transition={{ duration: s.dur, repeat: Infinity, delay: s.delay }}
+            >
+              ✦
+            </motion.span>
+          ))}
+          {/* 배경 glow orbs */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/8 rounded-full blur-3xl" />
+        </div>
+
+        {/* ── 음소거 토글 ── */}
+        <div className="absolute top-4 right-4 z-10">
           <MuteToggle />
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-10 w-full max-w-lg">
+        {/* ── 메인 콘텐츠 ── */}
+        <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-2xl px-4 py-12">
+
+          {/* 로고 */}
           <Logo />
 
-          <div className="flex flex-col items-center gap-8 w-full">
-            <NicknameInput value={nickname} onChange={setNickname} />
+          {/* 닉네임 입력 */}
+          <NicknameInput value={nickname} onChange={setNickname} />
 
-            <div>
-              <p className="text-white/50 text-sm text-center mb-4">난이도를 선택하세요</p>
-              <div className="flex gap-4 flex-wrap justify-center">
-                {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-                  <DifficultyCard
-                    key={d}
-                    difficulty={d}
-                    selected={difficulty === d}
-                    onSelect={d => { setDifficulty(d); play('click'); }}
-                  />
-                ))}
-              </div>
+          {/* 난이도 선택 */}
+          <div className="w-full">
+            <p className="text-slate-500 text-sm text-center mb-4 tracking-wide">
+              ✦ 난이도를 선택해줘 ✦
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
+                <DifficultyCard
+                  key={d}
+                  difficulty={d}
+                  selected={difficulty === d}
+                  onSelect={d => { setDifficulty(d); play('click'); }}
+                />
+              ))}
             </div>
-
-            <motion.div
-              animate={canStart ? { scale: [1, 1.03, 1] } : {}}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-            >
-              <Button
-                size="lg"
-                onClick={handleStart}
-                disabled={!canStart}
-                className="text-xl px-12"
-              >
-                🚀 모험 시작!
-              </Button>
-            </motion.div>
           </div>
+
+          {/* 시작 버튼 */}
+          <Button
+            size="lg"
+            onClick={handleStart}
+            disabled={!canStart}
+            pulse={canStart}
+            className="w-full max-w-xs"
+          >
+            🚀 모험 시작!
+          </Button>
+
+          {/* 힌트 텍스트 */}
+          {!isNicknameValid && (
+            <p className="text-slate-600 text-xs">이름을 입력하고 난이도를 선택하면 시작할 수 있어!</p>
+          )}
         </div>
 
-        <div className="flex items-center gap-4 mt-4">
-          <button
-            onClick={() => navigate('/leaderboard')}
-            className="text-white/40 hover:text-white/80 text-sm transition-colors flex items-center gap-1"
-          >
-            🏆 리더보드
-          </button>
-        </div>
+        {/* ── 리더보드 링크 (우하단) ── */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/leaderboard')}
+          className="absolute bottom-6 right-6 text-slate-500 hover:text-gold text-sm transition-colors flex items-center gap-1"
+        >
+          🏆 리더보드
+        </motion.button>
       </div>
     </PageTransition>
   );
