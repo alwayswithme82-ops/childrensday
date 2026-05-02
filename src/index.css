@@ -12,10 +12,10 @@
 
 body {
   margin: 0;
-  background: #09090F;
+  background: #FFFBEF;
   font-family: 'Nunito', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  color: #fff;
+  color: #1C1917;
   overflow-x: hidden;
 }
 

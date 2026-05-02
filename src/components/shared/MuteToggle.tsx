@@ -7,7 +7,8 @@ export function MuteToggle() {
     <motion.button
       whileTap={{ scale: 0.9 }}
       onClick={toggleMute}
-      className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-xl transition-colors"
+      className="w-9 h-9 flex items-center justify-center rounded-full text-lg transition-colors"
+      style={{ background: 'rgba(0,0,0,0.07)', color: 'rgba(0,0,0,0.5)' }}
       aria-label={isMuted ? '음소거 해제' : '음소거'}
     >
       {isMuted ? '🔇' : '🔊'}

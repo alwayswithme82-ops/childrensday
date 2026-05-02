@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Logo } from '../components/landing/Logo';
 import { NicknameInput } from '../components/landing/NicknameInput';
 import { DifficultyCard } from '../components/landing/DifficultyCard';
@@ -11,25 +11,25 @@ import { useGameStore } from '../stores/useGameStore';
 import { useSound } from '../hooks/useSound';
 import type { Difficulty } from '../types/game';
 
-/* 정적 별 데이터 — 매 렌더마다 재생성 방지 */
-const STARS = Array.from({ length: 80 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: Math.random() < 0.2 ? 2 : 1,
-  delay: Math.random() * 4,
-  dur: 2 + Math.random() * 3,
-}));
+/* 배경 장식 도형 */
+const BLOBS = [
+  { cx: '10%',  cy: '15%', r: 180, color: 'rgba(245,184,0,0.18)' },
+  { cx: '90%',  cy: '10%', r: 140, color: 'rgba(251,191,36,0.14)' },
+  { cx: '80%',  cy: '70%', r: 200, color: 'rgba(253,230,138,0.20)' },
+  { cx: '5%',   cy: '75%', r: 120, color: 'rgba(245,184,0,0.10)' },
+  { cx: '50%',  cy: '50%', r: 300, color: 'rgba(255,251,239,0.00)' },
+];
 
-/* 상승 파티클 */
-const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
-  id: i,
-  x: 5 + Math.random() * 90,
-  dur: 4 + Math.random() * 5,
-  delay: Math.random() * 8,
-  glyph: ['✦', '✧', '·', '✦', '·'][i % 5],
-  size: 8 + Math.random() * 8,
-}));
+/* 떠다니는 이모지 */
+const FLOATERS = [
+  { emoji: '⭐', x: '8%',  y: '20%', dur: 4,   delay: 0   },
+  { emoji: '🌟', x: '92%', y: '15%', dur: 5,   delay: 1   },
+  { emoji: '✨', x: '15%', y: '70%', dur: 3.5, delay: 0.5 },
+  { emoji: '⭐', x: '85%', y: '65%', dur: 4.5, delay: 2   },
+  { emoji: '🌟', x: '50%', y: '8%',  dur: 3,   delay: 1.5 },
+  { emoji: '✨', x: '70%', y: '85%', dur: 5,   delay: 0.8 },
+  { emoji: '⭐', x: '30%', y: '88%', dur: 4,   delay: 2.5 },
+];
 
 export function LandingPage() {
   const [nickname, setNickname] = useState('');
@@ -50,88 +50,60 @@ export function LandingPage() {
 
   return (
     <PageTransition>
-      {/* ════ 전체 래퍼 ════ */}
       <div
         className="relative min-h-screen flex flex-col overflow-x-hidden"
-        style={{ background: '#09090F' }}
+        style={{
+          background: 'linear-gradient(160deg, #FFFDF5 0%, #FFFBEF 40%, #FEF9E0 70%, #FEF3C7 100%)',
+        }}
       >
-
-        {/* ── 배경 레이어 ── */}
-        <div className="pointer-events-none fixed inset-0" aria-hidden>
-
-          {/* 중앙 상단 황금 glow */}
-          <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[320px]"
-            style={{
-              background: 'radial-gradient(ellipse at 50% 0%, rgba(245,184,0,0.18) 0%, rgba(245,184,0,0.04) 50%, transparent 80%)',
-            }}
-          />
-
-          {/* 별 필드 */}
-          {STARS.map(s => (
+        {/* ── 배경 Blob ── */}
+        <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
+          {BLOBS.map((b, i) => (
             <motion.div
-              key={s.id}
-              className="absolute rounded-full bg-white"
+              key={i}
+              className="absolute rounded-full blur-3xl"
               style={{
-                left: `${s.x}%`,
-                top: `${s.y}%`,
-                width: s.size,
-                height: s.size,
+                left: b.cx, top: b.cy,
+                width: b.r * 2, height: b.r * 2,
+                background: b.color,
+                transform: 'translate(-50%, -50%)',
               }}
-              animate={{ opacity: [0.1, 0.6, 0.1] }}
-              transition={{ duration: s.dur, repeat: Infinity, delay: s.delay, ease: 'easeInOut' }}
+              animate={{ scale: [1, 1.1, 1], x: [0, 10, 0] }}
+              transition={{ duration: 8 + i * 2, repeat: Infinity, ease: 'easeInOut', delay: i }}
             />
           ))}
+        </div>
 
-          {/* 상승 파티클 */}
-          {PARTICLES.map(p => (
+        {/* ── 떠다니는 이모지 ── */}
+        <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
+          {FLOATERS.map((f, i) => (
             <motion.span
-              key={p.id}
-              className="absolute font-black"
-              style={{
-                left: `${p.x}%`,
-                bottom: 0,
-                fontSize: p.size,
-                color: 'rgba(245,184,0,0.35)',
-              }}
-              animate={{ y: [0, -200], opacity: [0, 0.8, 0] }}
-              transition={{
-                duration: p.dur,
-                repeat: Infinity,
-                delay: p.delay,
-                ease: 'easeOut',
-              }}
+              key={i}
+              className="absolute text-2xl select-none"
+              style={{ left: f.x, top: f.y, opacity: 0.35 }}
+              animate={{ y: [0, -14, 0], rotate: [-5, 5, -5] }}
+              transition={{ duration: f.dur, repeat: Infinity, delay: f.delay, ease: 'easeInOut' }}
             >
-              {p.glyph}
+              {f.emoji}
             </motion.span>
           ))}
-
-          {/* 좌우 subtle accent */}
-          <div
-            className="absolute left-0 top-1/3 w-64 h-64 -translate-x-1/2 rounded-full blur-3xl"
-            style={{ background: 'rgba(59,130,246,0.06)' }}
-          />
-          <div
-            className="absolute right-0 top-2/3 w-48 h-48 translate-x-1/3 rounded-full blur-3xl"
-            style={{ background: 'rgba(168,85,247,0.06)' }}
-          />
         </div>
 
         {/* ── 헤더 ── */}
-        <header className="relative z-10 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto w-full">
-          <div
+        <header className="relative z-10 flex items-center justify-between px-6 py-5 max-w-5xl mx-auto w-full">
+          <span
             className="text-sm font-black tracking-widest uppercase"
-            style={{ color: 'rgba(245,184,0,0.5)' }}
+            style={{ color: 'rgba(180,130,0,0.6)' }}
           >
             FlexMath
-          </div>
-          <div className="flex items-center gap-3">
+          </span>
+          <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/leaderboard')}
               className="flex items-center gap-1.5 text-sm font-bold transition-colors"
-              style={{ color: 'rgba(255,255,255,0.4)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,184,0,0.9)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+              style={{ color: 'rgba(100,80,0,0.55)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#B45309')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(100,80,0,0.55)')}
             >
               🏆 리더보드
             </button>
@@ -139,79 +111,86 @@ export function LandingPage() {
           </div>
         </header>
 
-        {/* ── 메인 콘텐츠 ── */}
-        <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-10 gap-14 max-w-3xl mx-auto w-full">
+        {/* ── 메인 ── */}
+        <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 gap-12 max-w-3xl mx-auto w-full">
 
           {/* 로고 */}
           <Logo />
 
-          {/* 입력 + 선택 섹션 */}
-          <div className="w-full flex flex-col gap-8">
-
+          {/* 카드 영역 */}
+          <div
+            className="w-full rounded-3xl p-8 flex flex-col gap-8"
+            style={{
+              background: 'rgba(255,255,255,0.70)',
+              backdropFilter: 'blur(24px)',
+              boxShadow: '0 8px 48px rgba(180,130,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+              border: '1.5px solid rgba(245,184,0,0.25)',
+            }}
+          >
             {/* 닉네임 */}
             <div className="flex flex-col items-center">
               <NicknameInput value={nickname} onChange={setNickname} />
             </div>
 
-            {/* 구분선 */}
+            {/* 구분 */}
             <div className="flex items-center gap-4">
-              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-              <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'rgba(245,184,0,0.45)' }}>
+              <div className="flex-1 h-px" style={{ background: 'rgba(180,130,0,0.15)' }} />
+              <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'rgba(180,130,0,0.5)' }}>
                 난이도 선택
               </span>
-              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+              <div className="flex-1 h-px" style={{ background: 'rgba(180,130,0,0.15)' }} />
             </div>
 
-            {/* 난이도 카드 3개 */}
+            {/* 난이도 카드 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {(['easy', 'medium', 'hard'] as Difficulty[]).map((d, i) => (
                 <motion.div
                   key={d}
-                  initial={{ opacity: 0, y: 24 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * i, duration: 0.4 }}
+                  transition={{ delay: i * 0.08, duration: 0.35 }}
                 >
                   <DifficultyCard
                     difficulty={d}
                     selected={difficulty === d}
-                    onSelect={d => { setDifficulty(d); play('click'); }}
+                    onSelect={v => { setDifficulty(v); play('click'); }}
                   />
                 </motion.div>
               ))}
             </div>
-          </div>
 
-          {/* CTA 버튼 */}
-          <div className="flex flex-col items-center gap-3">
-            <Button
-              size="lg"
-              onClick={handleStart}
-              disabled={!canStart}
-              pulse={canStart}
-              className="min-w-[220px]"
-            >
-              🚀 모험 시작!
-            </Button>
+            {/* 시작 버튼 */}
+            <div className="flex flex-col items-center gap-3">
+              <Button
+                size="lg"
+                onClick={handleStart}
+                disabled={!canStart}
+                pulse={canStart}
+                className="min-w-[220px]"
+              >
+                🚀 모험 시작!
+              </Button>
 
-            <AnimatePresence>
-              {!canStart && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-xs font-bold"
-                  style={{ color: 'rgba(245,184,0,0.45)' }}
-                >
-                  {!isNicknameValid ? '이름을 먼저 입력해줘!' : '난이도를 선택해줘!'}
-                </motion.p>
-              )}
-            </AnimatePresence>
+              <AnimatePresence>
+                {!canStart && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-xs font-bold"
+                    style={{ color: 'rgba(180,100,0,0.5)' }}
+                  >
+                    {!isNicknameValid ? '✏️ 이름을 먼저 입력해줘!' : '🗺 난이도를 선택해줘!'}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </main>
 
         {/* ── 푸터 ── */}
-        <footer className="relative z-10 text-center py-6">
-          <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.2)' }}>
+        <footer className="relative z-10 text-center py-5">
+          <p className="text-xs font-semibold" style={{ color: 'rgba(120,90,0,0.35)' }}>
             © 2025 FlexMath · 어린이날 특별 체험
           </p>
         </footer>
@@ -219,6 +198,3 @@ export function LandingPage() {
     </PageTransition>
   );
 }
-
-/* AnimatePresence import 추가 */
-import { AnimatePresence } from 'framer-motion';
