@@ -17,7 +17,7 @@ export function GradeDisplay({ grade }: Props) {
     >
       <span className="text-7xl">{cfg.emoji}</span>
       <h2 className={`text-4xl font-black ${cfg.color}`}>{grade}</h2>
-      <p className="text-white/60 text-sm">
+      <p className="text-sm font-700" style={{ color: '#888' }}>
         {grade === '큐브왕' ? '완벽해! 공간 감각이 천재급이야!' :
          grade === '건축사' ? '훌륭해! 건축사 자격증 발급!' :
          '도전 정신이 멋져! 다시 도전해봐!'}

@@ -81,7 +81,7 @@ export function GamePage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-slate-900 flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(160deg,#FFFDE7 0%,#FCE4EC 50%,#E3F2FD 100%)' }}>
         <GameHUD
           elapsed={elapsed}
           sceneIndex={currentSceneIndex}
@@ -102,7 +102,7 @@ export function GamePage() {
               faces={scene.projectionFaces ?? ['front']}
             />
             <div>
-              <p className="text-white/80 text-sm font-medium mb-3">{scene.questionText}</p>
+              <p className="text-sm font-700 mb-3" style={{ color: '#333' }}>{scene.questionText}</p>
               <OptionGrid
                 options={scene.options}
                 onAnswer={handleAnswer}

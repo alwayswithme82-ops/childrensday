@@ -11,7 +11,7 @@ export function ScoreCard({ result }: Props) {
   const hints = totalHintsUsed(result.scenes);
 
   return (
-    <div className="bg-slate-800/80 border border-white/10 rounded-2xl p-5 w-full max-w-sm">
+    <div className="rounded-2xl p-5 w-full max-w-sm" style={{ background: 'rgba(255,255,255,0.85)', border: '2px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
       <div className="grid grid-cols-2 gap-3 text-sm">
         <Row label="닉네임" value={result.nickname} />
         <Row label="난이도" value={`${cfg.label}`} />
@@ -27,8 +27,8 @@ export function ScoreCard({ result }: Props) {
 function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <>
-      <span className="text-white/50">{label}</span>
-      <span className={`font-bold text-right ${highlight ? 'text-yellow-400' : 'text-white'}`}>{value}</span>
+      <span style={{ color: '#888' }}>{label}</span>
+      <span className="font-bold text-right" style={{ color: highlight ? '#FF6B6B' : '#1a1a2e' }}>{value}</span>
     </>
   );
 }

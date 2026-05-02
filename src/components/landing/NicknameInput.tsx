@@ -2,70 +2,62 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MAX_NICKNAME_LENGTH } from '../../utils/constants';
 
-interface Props {
-  value: string;
-  onChange: (v: string) => void;
-}
-
-const VALID_PATTERN = /^[가-힣a-zA-Z0-9]*$/;
+interface Props { value: string; onChange: (v: string) => void; }
+const VALID = /^[가-힣a-zA-Z0-9]*$/;
 
 export function NicknameInput({ value, onChange }: Props) {
   const [focused, setFocused] = useState(false);
+  const isInvalid = value.length > 0 && !VALID.test(value);
+  const isValid   = value.trim().length >= 1 && !isInvalid;
 
-  const isInvalidChar = value.length > 0 && !VALID_PATTERN.test(value);
-  const isTooShort = value.length > 0 && value.trim().length < 1;
-  const showError = isInvalidChar || isTooShort;
-
-  const handleChange = (raw: string) => {
-    if (!VALID_PATTERN.test(raw) && raw !== '') return;
-    if (raw.length <= MAX_NICKNAME_LENGTH) onChange(raw);
+  const handleChange = (v: string) => {
+    if (!VALID.test(v) && v !== '') return;
+    if (v.length <= MAX_NICKNAME_LENGTH) onChange(v);
   };
 
   return (
-    <div className="flex flex-col items-center gap-2 w-full max-w-xs">
-      <label className="text-slate-400 text-sm font-medium tracking-wide">
-        건축가 이름을 알려줘!
+    <div className="flex flex-col gap-2 w-full max-w-sm">
+      <label className="text-xs font-900 uppercase tracking-widest text-gray-400">
+        건축가 닉네임 ✏️
       </label>
 
-      <div className="relative w-full">
+      <div className="relative">
         <input
           type="text"
           value={value}
           onChange={e => handleChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="건축가 이름을 알려줘!"
+          placeholder="예: 큐브왕"
           maxLength={MAX_NICKNAME_LENGTH}
-          className={`
-            w-full px-6 py-4 text-xl font-bold text-center text-white rounded-xl outline-none
-            bg-navy/50 border-2 transition-all duration-200
-            placeholder:text-slate-600
-            ${focused && !showError
-              ? 'border-gold/80 ring-2 ring-gold/30 shadow-[0_0_16px_rgba(245,158,11,0.25)]'
-              : showError
-              ? 'border-red-500/80 ring-2 ring-red-500/20'
-              : 'border-gold/30 hover:border-gold/50'
-            }
-          `}
+          className="w-full py-4 pl-5 pr-16 text-xl font-900 rounded-2xl outline-none transition-all duration-200"
+          style={{
+            fontFamily: "'Nunito', sans-serif",
+            background: focused ? '#FFFEF0' : '#F9FAFB',
+            border: `3px solid ${isInvalid ? '#FF6B6B' : focused ? '#FFD93D' : '#E5E7EB'}`,
+            boxShadow: focused
+              ? `0 0 0 4px ${isInvalid ? 'rgba(255,107,107,.15)' : 'rgba(255,217,61,.25)'}`
+              : '0 2px 8px rgba(0,0,0,.04)',
+            color: '#1a1a2e',
+          }}
         />
-        <span
-          className={`absolute right-3 bottom-2 text-xs transition-colors ${
-            value.length >= MAX_NICKNAME_LENGTH ? 'text-red-400' : 'text-slate-600'
-          }`}
-        >
-          {value.length}/{MAX_NICKNAME_LENGTH}
-        </span>
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {isValid && (
+            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400 }}>
+              ✅
+            </motion.span>
+          )}
+          <span className="text-xs font-800" style={{ color: value.length >= MAX_NICKNAME_LENGTH ? '#FF6B6B' : '#ccc' }}>
+            {value.length}/{MAX_NICKNAME_LENGTH}
+          </span>
+        </div>
       </div>
 
       <AnimatePresence>
-        {showError && (
-          <motion.p
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            className="text-red-400 text-xs font-medium"
-          >
-            {isInvalidChar ? '한글, 영문, 숫자만 사용할 수 있어요!' : '한 글자 이상 입력해주세요'}
+        {isInvalid && (
+          <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="text-xs font-800" style={{ color: '#FF6B6B' }}>
+            ⚠️ 한글·영문·숫자만 쓸 수 있어요!
           </motion.p>
         )}
       </AnimatePresence>

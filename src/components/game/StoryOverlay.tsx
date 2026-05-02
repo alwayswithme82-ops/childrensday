@@ -34,12 +34,15 @@ export function StoryOverlay({ text, characterName, onDismiss, visible }: Props)
           transition={{ type: 'spring', stiffness: 260, damping: 28 }}
           className="absolute bottom-0 left-0 right-0 z-20 p-4"
         >
-          <div className="bg-slate-800/95 backdrop-blur border border-white/10 rounded-2xl p-4 shadow-2xl">
+          <div
+            className="backdrop-blur rounded-2xl p-4 shadow-2xl"
+            style={{ background: 'rgba(255,255,255,0.95)', border: '2px solid rgba(255,107,107,0.2)' }}
+          >
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">🧝</span>
-              <span className="text-yellow-400 font-bold text-sm">{characterName}</span>
+              <span className="font-fredoka text-base" style={{ color: '#FF6B6B' }}>{characterName}</span>
             </div>
-            <p className="text-white text-sm leading-relaxed min-h-[48px]">{displayed}</p>
+            <p className="text-sm leading-relaxed min-h-[48px]" style={{ color: '#333' }}>{displayed}</p>
             {displayed.length >= text.length && (
               <div className="flex justify-end mt-3">
                 <Button size="sm" onClick={onDismiss}>다음 ▶</Button>

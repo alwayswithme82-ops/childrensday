@@ -32,7 +32,7 @@ export function ResultPage() {
   return (
     <PageTransition>
       <Confetti />
-      <div className="min-h-screen bg-slate-900 flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(160deg,#FFFDE7 0%,#FCE4EC 50%,#E3F2FD 100%)' }}>
         <TopBar />
         <div className="flex-1 flex flex-col items-center gap-6 px-4 py-8 overflow-y-auto">
           <GradeDisplay grade={result.grade} />

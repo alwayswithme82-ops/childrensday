@@ -14,7 +14,7 @@ const GRID = 4;
 function drawGrid(ctx: CanvasRenderingContext2D, grid: number[][], color: string) {
   const size = GRID * CELL;
   ctx.clearRect(0, 0, size, size);
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
   ctx.lineWidth = 1;
   for (let r = 0; r < GRID; r++) {
     for (let c = 0; c < GRID; c++) {
@@ -50,12 +50,13 @@ export function ProjectionView({ cubes, faces }: Props) {
     <div className="flex gap-3 flex-wrap justify-center">
       {faces.map(face => (
         <div key={face} className="flex flex-col items-center gap-1">
-          <span className="text-xs text-white/50 font-medium">{LABELS[face]}면</span>
+          <span className="text-xs font-700" style={{ color: '#888' }}>{LABELS[face]}면</span>
           <canvas
             ref={refs[face]}
             width={size}
             height={size}
-            className="rounded border border-white/10"
+            className="rounded"
+            style={{ border: '1px solid rgba(0,0,0,0.1)', background: '#FAFAFA' }}
           />
         </div>
       ))}

@@ -21,18 +21,22 @@ export function Certificate({ result }: Props) {
       <div
         id="certificate"
         ref={certRef}
-        className="bg-slate-900 border-4 border-yellow-400 rounded-3xl p-8 w-80 text-center shadow-2xl"
+        className="rounded-3xl p-8 w-80 text-center shadow-2xl"
+        style={{
+          background: 'linear-gradient(160deg,#FFFDE7,#FCE4EC)',
+          border: '4px solid #FFD93D',
+        }}
       >
         <div className="text-5xl mb-3">{grade.emoji}</div>
-        <h2 className="text-yellow-400 font-black text-2xl mb-1">큐브 왕국</h2>
-        <p className="text-white/50 text-xs mb-4">클리어 인증서</p>
-        <div className="border-t border-b border-white/20 py-4 my-4 flex flex-col gap-2">
-          <p className="text-white text-xl font-bold">{result.nickname}</p>
-          <p className="text-white/60 text-sm">{diff.label} 난이도 완료</p>
+        <h2 className="font-fredoka text-2xl mb-1" style={{ color: '#FF6B6B' }}>큐브 왕국</h2>
+        <p className="text-xs mb-4" style={{ color: '#aaa' }}>클리어 인증서</p>
+        <div className="py-4 my-4 flex flex-col gap-2" style={{ borderTop: '2px solid rgba(255,107,107,0.2)', borderBottom: '2px solid rgba(255,107,107,0.2)' }}>
+          <p className="font-fredoka text-xl" style={{ color: '#1a1a2e' }}>{result.nickname}</p>
+          <p className="text-sm" style={{ color: '#888' }}>{diff.label} 난이도 완료</p>
           <p className={`text-2xl font-black ${grade.color}`}>{result.grade}</p>
-          <p className="text-white/50 text-xs">{result.totalStars}/{result.maxStars}⭐ · {formatTime(result.totalTimeSeconds)}</p>
+          <p className="text-xs" style={{ color: '#aaa' }}>{result.totalStars}/{result.maxStars}⭐ · {formatTime(result.totalTimeSeconds)}</p>
         </div>
-        <p className="text-white/30 text-xs">flexmathbusiness1.pages.dev</p>
+        <p className="text-xs" style={{ color: '#ccc' }}>flexmathbusiness1.pages.dev</p>
       </div>
       <Button onClick={handleDownload} size="sm" variant="outline">
         📥 인증서 다운로드

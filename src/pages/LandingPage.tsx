@@ -11,15 +11,26 @@ import { useGameStore } from '../stores/useGameStore';
 import { useSound } from '../hooks/useSound';
 import type { Difficulty } from '../types/game';
 
-/* 별빛 배경 */
-const STARS = Array.from({ length: 40 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  dur: 1.5 + Math.random() * 2,
-  delay: Math.random() * 2,
-  size: Math.random() < 0.3 ? 'text-base' : 'text-xs',
-}));
+const BALLOONS = [
+  { icon: '🎈', x: 4,  y: 18, cls: 'balloon-0', size: 'text-5xl' },
+  { icon: '🎀', x: 91, y: 12, cls: 'balloon-1', size: 'text-4xl' },
+  { icon: '🎈', x: 87, y: 52, cls: 'balloon-2', size: 'text-6xl' },
+  { icon: '🎉', x: 6,  y: 62, cls: 'balloon-3', size: 'text-4xl' },
+  { icon: '🎈', x: 48, y: 3,  cls: 'balloon-4', size: 'text-5xl' },
+  { icon: '🎊', x: 78, y: 80, cls: 'balloon-0', size: 'text-3xl' },
+  { icon: '🎀', x: 18, y: 85, cls: 'balloon-1', size: 'text-3xl' },
+];
+
+const SPARKLES = [
+  { icon: '⭐', x: 12, y: 8,  dur: '2s',   delay: '0s' },
+  { icon: '✨', x: 82, y: 22, dur: '1.5s', delay: '0.4s' },
+  { icon: '🌟', x: 22, y: 75, dur: '2.5s', delay: '0.8s' },
+  { icon: '⭐', x: 68, y: 72, dur: '1.8s', delay: '0.3s' },
+  { icon: '✨', x: 55, y: 92, dur: '2.2s', delay: '1s' },
+  { icon: '🌟', x: 35, y: 5,  dur: '1.6s', delay: '0.6s' },
+  { icon: '💫', x: 95, y: 42, dur: '2.4s', delay: '1.2s' },
+  { icon: '✨', x: 3,  y: 42, dur: '2s',   delay: '1.5s' },
+];
 
 export function LandingPage() {
   const [nickname, setNickname] = useState('');
@@ -40,44 +51,65 @@ export function LandingPage() {
 
   return (
     <PageTransition>
-      <div className="relative min-h-screen bg-[#0F172A] flex flex-col items-center justify-center overflow-hidden">
+      <div
+        className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+        style={{
+          background: 'linear-gradient(160deg, #FFFDE7 0%, #FCE4EC 35%, #E3F2FD 65%, #F3E5F5 100%)',
+        }}
+      >
+        {/* 무지개 상단 띠 */}
+        <div
+          className="absolute top-0 left-0 right-0 h-2"
+          style={{ background: 'linear-gradient(90deg,#FF6B6B,#FFD93D,#6BCB77,#4D96FF,#C77DFF)' }}
+        />
 
-        {/* ── 별빛 배경 ── */}
+        {/* 풍선 데코 */}
         <div className="pointer-events-none absolute inset-0" aria-hidden>
-          {STARS.map(s => (
-            <motion.span
-              key={s.id}
-              className={`absolute ${s.size} text-gold/40`}
-              style={{ left: `${s.x}%`, top: `${s.y}%` }}
-              animate={{ opacity: [0.2, 0.9, 0.2], scale: [1, 1.4, 1] }}
-              transition={{ duration: s.dur, repeat: Infinity, delay: s.delay }}
+          {BALLOONS.map((b, i) => (
+            <span
+              key={i}
+              className={`absolute ${b.size} ${b.cls} select-none`}
+              style={{ left: `${b.x}%`, top: `${b.y}%` }}
             >
-              ✦
-            </motion.span>
+              {b.icon}
+            </span>
           ))}
-          {/* 배경 glow orbs */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/8 rounded-full blur-3xl" />
+
+          {/* 반짝이 별 */}
+          {SPARKLES.map((s, i) => (
+            <span
+              key={i}
+              className="absolute twinkle text-2xl select-none"
+              style={{ left: `${s.x}%`, top: `${s.y}%`, '--dur': s.dur, animationDelay: s.delay } as React.CSSProperties}
+            >
+              {s.icon}
+            </span>
+          ))}
+
+          {/* 구름 */}
+          <span className="absolute text-5xl opacity-60 select-none" style={{ left: '10%', top: '30%' }}>☁️</span>
+          <span className="absolute text-4xl opacity-50 select-none" style={{ left: '75%', top: '8%' }}>☁️</span>
+          <span className="absolute text-6xl opacity-40 select-none" style={{ left: '60%', top: '60%' }}>☁️</span>
         </div>
 
-        {/* ── 음소거 토글 ── */}
-        <div className="absolute top-4 right-4 z-10">
+        {/* 음소거 토글 */}
+        <div className="absolute top-5 right-5 z-10">
           <MuteToggle />
         </div>
 
-        {/* ── 메인 콘텐츠 ── */}
-        <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-2xl px-4 py-12">
+        {/* 메인 콘텐츠 */}
+        <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-2xl px-4 py-16">
 
-          {/* 로고 */}
           <Logo />
 
-          {/* 닉네임 입력 */}
           <NicknameInput value={nickname} onChange={setNickname} />
 
-          {/* 난이도 선택 */}
           <div className="w-full">
-            <p className="text-slate-500 text-sm text-center mb-4 tracking-wide">
-              ✦ 난이도를 선택해줘 ✦
+            <p
+              className="text-center mb-4 font-fredoka text-lg tracking-wider"
+              style={{ color: '#FF6B6B' }}
+            >
+              🌈 난이도를 골라봐! 🌈
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
@@ -91,7 +123,6 @@ export function LandingPage() {
             </div>
           </div>
 
-          {/* 시작 버튼 */}
           <Button
             size="lg"
             onClick={handleStart}
@@ -102,21 +133,34 @@ export function LandingPage() {
             🚀 모험 시작!
           </Button>
 
-          {/* 힌트 텍스트 */}
           {!isNicknameValid && (
-            <p className="text-slate-600 text-xs">이름을 입력하고 난이도를 선택하면 시작할 수 있어!</p>
+            <p className="font-fredoka text-sm" style={{ color: '#aaa' }}>
+              이름을 입력하고 난이도를 선택하면 시작돼요 ✨
+            </p>
           )}
         </div>
 
-        {/* ── 리더보드 링크 (우하단) ── */}
+        {/* 리더보드 링크 */}
         <motion.button
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/leaderboard')}
-          className="absolute bottom-6 right-6 text-slate-500 hover:text-gold text-sm transition-colors flex items-center gap-1"
+          className="absolute bottom-6 right-6 font-fredoka text-sm px-4 py-2 rounded-full transition-all"
+          style={{
+            background: 'rgba(255,255,255,0.7)',
+            color: '#4D96FF',
+            boxShadow: '0 2px 12px rgba(77,150,255,0.2)',
+            backdropFilter: 'blur(4px)',
+          }}
         >
           🏆 리더보드
         </motion.button>
+
+        {/* 무지개 하단 띠 */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-1.5"
+          style={{ background: 'linear-gradient(90deg,#C77DFF,#4D96FF,#6BCB77,#FFD93D,#FF6B6B)' }}
+        />
       </div>
     </PageTransition>
   );

@@ -29,7 +29,8 @@ export function Modal({ open, onClose, children }: Props) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.85, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="bg-slate-800 border border-white/10 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl"
+            className="rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl"
+            style={{ background: '#fff', border: '2px solid rgba(255,107,107,0.15)' }}
             onClick={e => e.stopPropagation()}
           >
             {children}

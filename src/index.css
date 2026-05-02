@@ -1,60 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
   --color-navy:   #1B2A4A;
   --color-gold:   #F59E0B;
   --color-gold-dark: #B45309;
-  --color-bg:     #0F172A;
+  --color-bg:     #FFFFFF;
 }
 
-:root {
-  color-scheme: dark;
-}
-
-* {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: #0F172A;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #ffffff;
+  font-family: 'Nunito', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  color: #1a1a2e;
+  overflow-x: hidden;
 }
 
-#root {
-  min-height: 100svh;
-}
+#root { min-height: 100svh; }
 
-/* 큐브 글로우 유틸리티 */
-.gold-glow {
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4), 0 0 40px rgba(245, 158, 11, 0.15);
-}
+.font-fredoka { font-family: 'Fredoka One', cursive; }
 
-.gold-text-shadow {
-  text-shadow:
-    2px 2px 0 #B45309,
-    4px 4px 0 #92400E,
-    6px 6px 12px rgba(0, 0, 0, 0.6);
+/* 풍선 float */
+@keyframes balloon {
+  0%,100% { transform: translateY(0) rotate(-4deg); }
+  50%      { transform: translateY(-14px) rotate(4deg); }
 }
+.balloon-0 { animation: balloon 3.2s ease-in-out infinite; }
+.balloon-1 { animation: balloon 2.8s ease-in-out infinite 0.6s; }
+.balloon-2 { animation: balloon 3.6s ease-in-out infinite 1.2s; }
+.balloon-3 { animation: balloon 3.0s ease-in-out infinite 0.3s; }
+.balloon-4 { animation: balloon 2.6s ease-in-out infinite 1.8s; }
 
-/* 별빛 배경 애니메이션 */
+/* 별 twinkle */
 @keyframes twinkle {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50%       { opacity: 1;   transform: scale(1.2); }
+  0%,100% { opacity: 0.4; transform: scale(0.85); }
+  50%      { opacity: 1;   transform: scale(1.15); }
 }
+.twinkle { animation: twinkle var(--dur, 2s) ease-in-out infinite; }
 
-.star {
-  animation: twinkle var(--dur, 2s) infinite;
-  animation-delay: var(--delay, 0s);
-}
-
-/* 골드 pulse */
+/* 버튼 pulse */
 @keyframes gold-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
-  50%       { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+  0%,100% { box-shadow: 0 0 0 0   rgba(245,158,11,0.6); }
+  50%      { box-shadow: 0 0 0 12px rgba(245,158,11,0); }
 }
+.btn-pulse { animation: gold-pulse 1.8s ease-out infinite; }
 
-.btn-pulse {
-  animation: gold-pulse 2s infinite;
+/* 큐브 spin */
+@keyframes spin-y { to { transform: rotateY(360deg); } }
+.spin-y {
+  animation: spin-y 3.5s linear infinite;
+  transform-style: preserve-3d;
+  display: inline-block;
 }

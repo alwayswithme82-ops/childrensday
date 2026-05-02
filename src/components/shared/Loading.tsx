@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 
 export function Loading() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-900">
+    <div className="flex items-center justify-center min-h-screen" style={{ background: 'linear-gradient(160deg,#FFFDE7,#FCE4EC,#E3F2FD)' }}>
       <div className="flex gap-2">
         {[0, 1, 2].map(i => (
           <motion.div

@@ -17,7 +17,11 @@ function MiniGrid({ data }: { data: number[][] }) {
         row.map((cell, c) => (
           <div
             key={`${r}-${c}`}
-            className={`w-5 h-5 border border-white/10 ${cell ? 'bg-yellow-400' : 'bg-white/5'}`}
+            style={{
+              width: CELL, height: CELL,
+              border: '1px solid rgba(0,0,0,0.1)',
+              background: cell ? '#4D96FF' : 'rgba(0,0,0,0.03)',
+            }}
           />
         ))
       )}
@@ -48,18 +52,26 @@ export function OptionGrid({ options, onAnswer, disabled = false }: Props) {
             whileTap={!selected ? { scale: 0.96 } : {}}
             onClick={() => handleClick(opt)}
             disabled={!!selected || disabled}
-            className={`relative flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all min-h-[80px]
-              ${!selected ? 'border-white/20 bg-white/5 hover:border-yellow-400/50 hover:bg-white/10 cursor-pointer' : ''}
-              ${showResult && correct ? 'border-green-400 bg-green-900/40' : ''}
-              ${showResult && !correct ? 'border-red-400 bg-red-900/40' : ''}
-              ${!showResult && selected ? 'border-white/10 bg-white/5 opacity-50' : ''}
-            `}
+            className="relative flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all min-h-[80px]"
+            style={{
+              border: showResult && correct ? '2px solid #6BCB77'
+                : showResult && !correct ? '2px solid #FF6B6B'
+                : !selected ? '2px solid #E5E7EB'
+                : '2px solid #E5E7EB',
+              background: showResult && correct ? '#F0FFF4'
+                : showResult && !correct ? '#FFF0F0'
+                : !selected ? '#FFFFFF'
+                : 'rgba(0,0,0,0.02)',
+              opacity: !showResult && selected ? 0.5 : 1,
+              cursor: selected ? 'default' : 'pointer',
+              boxShadow: !selected ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+            }}
           >
-            <span className="text-xs font-bold text-white/40">{opt.id}</span>
+            <span className="text-xs font-bold" style={{ color: '#ccc' }}>{opt.id}</span>
             {opt.projectionData ? (
               <MiniGrid data={opt.projectionData} />
             ) : (
-              <span className="text-white font-semibold text-sm">{opt.label}</span>
+              <span className="text-sm font-700" style={{ color: '#333' }}>{opt.label}</span>
             )}
             <AnimatePresence>
               {showResult && (
