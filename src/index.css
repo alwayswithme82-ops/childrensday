@@ -1,60 +1,117 @@
 @import "tailwindcss";
 
 @theme {
-  --color-navy:   #1B2A4A;
-  --color-gold:   #F59E0B;
-  --color-gold-dark: #B45309;
-  --color-bg:     #0F172A;
+  /* ── 팔레트 ── */
+  --color-magic-bg:    #1A0A3C;   /* 따뜻한 마법 보라 배경 */
+  --color-magic-mid:   #2D1454;   /* 중간 보라 */
+  --color-gold:        #FFD700;   /* 밝은 황금 */
+  --color-gold-light:  #FDE68A;   /* 연한 황금 */
+  --color-gold-dark:   #B45309;   /* 진한 황금 */
+  --color-amber:       #FBBF24;
+  --color-coral:       #FF6B6B;   /* 따뜻한 코랄 포인트 */
+  --color-mint:        #34D399;   /* 민트 포인트 */
+  --color-magic:       #C084FC;   /* 마법 보라 */
+  --color-sky:         #38BDF8;   /* 하늘 */
+
+  --font-size-display: 5rem;
 }
 
 :root {
   color-scheme: dark;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  margin: 0;
-  background: #0F172A;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #1A0A3C;
+  font-family: 'Segoe UI', system-ui, 'Apple SD Gothic Neo', sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-#root {
-  min-height: 100svh;
-}
+#root { min-height: 100svh; }
 
-/* 큐브 글로우 유틸리티 */
-.gold-glow {
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4), 0 0 40px rgba(245, 158, 11, 0.15);
-}
-
-.gold-text-shadow {
+/* ──────────────────────────────────────────
+   텍스트 이펙트
+────────────────────────────────────────── */
+.title-glow {
   text-shadow:
-    2px 2px 0 #B45309,
-    4px 4px 0 #92400E,
-    6px 6px 12px rgba(0, 0, 0, 0.6);
+    0 0 20px rgba(255, 215, 0, 0.9),
+    0 0 40px rgba(255, 215, 0, 0.5),
+    0 0 80px rgba(255, 165, 0, 0.3),
+    3px 3px 0 #92400E,
+    6px 6px 0 #78350F;
 }
 
-/* 별빛 배경 애니메이션 */
-@keyframes twinkle {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50%       { opacity: 1;   transform: scale(1.2); }
+.subtitle-glow {
+  text-shadow: 0 0 12px rgba(253, 230, 138, 0.7);
 }
 
-.star {
-  animation: twinkle var(--dur, 2s) infinite;
-  animation-delay: var(--delay, 0s);
-}
-
-/* 골드 pulse */
+/* ──────────────────────────────────────────
+   버튼 애니메이션
+────────────────────────────────────────── */
 @keyframes gold-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
-  50%       { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+  0%, 100% { box-shadow: 0 0 0 0   rgba(255,215,0,0.7), 0 8px 32px rgba(255,165,0,0.4); }
+  50%       { box-shadow: 0 0 0 14px rgba(255,215,0,0),   0 8px 32px rgba(255,165,0,0.6); }
+}
+.btn-gold-pulse { animation: gold-pulse 1.8s ease-in-out infinite; }
+
+/* ──────────────────────────────────────────
+   파티클 / 별빛
+────────────────────────────────────────── */
+@keyframes float-up {
+  0%   { transform: translateY(0)    rotate(0deg);   opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 0.8; }
+  100% { transform: translateY(-80px) rotate(360deg); opacity: 0; }
+}
+.particle { animation: float-up var(--dur, 3s) ease-in infinite; animation-delay: var(--delay, 0s); }
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50%       { opacity: 1;   transform: scale(1.3); }
+}
+.twinkle { animation: twinkle var(--dur, 2s) ease-in-out infinite; animation-delay: var(--delay, 0s); }
+
+@keyframes drift {
+  0%,100% { transform: translateY(0) translateX(0); }
+  33%     { transform: translateY(-12px) translateX(6px); }
+  66%     { transform: translateY(6px) translateX(-6px); }
+}
+.drift { animation: drift var(--dur, 4s) ease-in-out infinite; }
+
+/* ──────────────────────────────────────────
+   입력 gold glow
+────────────────────────────────────────── */
+.input-gold-focus:focus {
+  outline: none;
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255,215,0,0.25), 0 0 20px rgba(255,215,0,0.2);
 }
 
-.btn-pulse {
-  animation: gold-pulse 2s infinite;
+/* ──────────────────────────────────────────
+   카드 hover glow
+────────────────────────────────────────── */
+.card-emerald-glow { box-shadow: 0 0 32px rgba(52,211,153,0.35); }
+.card-blue-glow    { box-shadow: 0 0 32px rgba(56,189,248,0.35); }
+.card-purple-glow  { box-shadow: 0 0 32px rgba(192,132,252,0.45); }
+
+/* ──────────────────────────────────────────
+   무지개 shimmer (Logo)
+────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #FFD700 0%, #FDE68A 20%, #FFD700 40%,
+    #FBBF24 60%, #FDE68A 80%, #FFD700 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2.5s linear infinite;
 }
