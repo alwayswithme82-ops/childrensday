@@ -81,7 +81,7 @@ export function GamePage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-slate-900 flex flex-col">
         <GameHUD
           elapsed={elapsed}
           sceneIndex={currentSceneIndex}

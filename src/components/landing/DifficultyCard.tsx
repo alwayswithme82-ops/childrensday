@@ -7,90 +7,93 @@ interface Props {
   onSelect: (d: Difficulty) => void;
 }
 
-const CFG = {
+const CONFIG: Record<Difficulty, {
+  stars: string;
+  label: string;
+  emoji: string;
+  desc: string;
+  scenes: string;
+  gradient: string;
+  border: string;
+  glow: string;
+  textColor: string;
+}> = {
   easy: {
-    icon: '🌱', label: '쉬움', sub: '초등 1·2학년',
-    scenes: 5, hints: 5,
-    bg: '#E8FFF3', border: '#6BCB77', accent: '#2d8f3e',
-    selectedBg: '#6BCB77', badge: '입문',
+    stars: '⭐',
+    label: '쉬움',
+    emoji: '🌱',
+    desc: '초등 1~2학년',
+    scenes: '5문제',
+    gradient: 'from-emerald-500/20 to-emerald-600/10',
+    border: 'border-emerald-500/30',
+    glow: 'shadow-[0_0_24px_rgba(16,185,129,0.3)]',
+    textColor: 'text-emerald-400',
   },
   medium: {
-    icon: '🚀', label: '보통', sub: '초등 3·4학년',
-    scenes: 6, hints: 3,
-    bg: '#EEF4FF', border: '#4D96FF', accent: '#1a5fbf',
-    selectedBg: '#4D96FF', badge: '도전',
+    stars: '⭐⭐',
+    label: '보통',
+    emoji: '🏗',
+    desc: '초등 3~4학년',
+    scenes: '6문제',
+    gradient: 'from-blue-500/20 to-blue-600/10',
+    border: 'border-blue-500/30',
+    glow: 'shadow-[0_0_24px_rgba(59,130,246,0.3)]',
+    textColor: 'text-blue-400',
   },
   hard: {
-    icon: '🔥', label: '어려움', sub: '초등 5·6학년',
-    scenes: 7, hints: 2,
-    bg: '#FFF0F5', border: '#FF6B6B', accent: '#c0392b',
-    selectedBg: '#FF6B6B', badge: '고급',
+    stars: '⭐⭐⭐',
+    label: '어려움',
+    emoji: '🏰',
+    desc: '초등 5~6학년',
+    scenes: '7문제',
+    gradient: 'from-purple-500/20 to-purple-600/10',
+    border: 'border-purple-500/30',
+    glow: 'shadow-[0_0_24px_rgba(168,85,247,0.3)]',
+    textColor: 'text-purple-400',
   },
-} as const;
-
-const STARS: Record<string, string> = { easy: '⭐', medium: '⭐⭐', hard: '⭐⭐⭐' };
+};
 
 export function DifficultyCard({ difficulty, selected, onSelect }: Props) {
-  const c = CFG[difficulty];
+  const cfg = CONFIG[difficulty];
+
   return (
     <motion.button
-      whileHover={{ y: -6, scale: 1.03 }}
-      whileTap={{ scale: 0.96 }}
+      whileHover={{ y: -6 }}
+      whileTap={{ scale: 0.98 }}
       onClick={() => onSelect(difficulty)}
-      className="relative w-full text-left cursor-pointer rounded-3xl p-5 transition-all duration-200"
-      style={{
-        background: selected ? c.selectedBg : c.bg,
-        border: `3px solid ${selected ? c.selectedBg : c.border}`,
-        boxShadow: selected
-          ? `0 8px 24px ${c.border}55`
-          : `0 4px 12px ${c.border}22`,
-      }}
+      className={`
+        relative flex flex-col items-center gap-3 p-6 rounded-2xl border-2
+        bg-gradient-to-b ${cfg.gradient} ${cfg.border}
+        transition-all duration-200 cursor-pointer text-left w-full
+        ${selected
+          ? `ring-2 ring-gold scale-[1.03] ${cfg.glow}`
+          : 'hover:border-opacity-60'
+        }
+      `}
     >
       {/* 선택 뱃지 */}
       {selected && (
         <motion.div
-          layoutId="sel"
-          className="absolute -top-3 left-4 bg-white text-xs font-900 px-3 py-0.5 rounded-full shadow-md"
-          style={{ color: c.accent }}
+          layoutId="difficulty-badge"
+          className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-navy text-xs font-black px-3 py-0.5 rounded-full"
         >
-          ✓ 선택됨!
+          선택됨 ✓
         </motion.div>
       )}
 
-      {/* 아이콘 + 뱃지 */}
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-4xl">{c.icon}</span>
-        <span
-          className="text-xs font-900 px-2.5 py-1 rounded-full"
-          style={{
-            background: selected ? 'rgba(255,255,255,0.3)' : c.border + '22',
-            color: selected ? '#fff' : c.accent,
-          }}
-        >
-          {c.badge}
-        </span>
+      {/* 이모지 */}
+      <span className="text-4xl">{cfg.emoji}</span>
+
+      {/* 별 + 난이도 */}
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-lg">{cfg.stars}</span>
+        <span className={`text-2xl font-black ${cfg.textColor}`}>{cfg.label}</span>
       </div>
 
-      {/* 이름 */}
-      <p
-        className="font-fredoka text-2xl mb-0.5"
-        style={{ color: selected ? '#fff' : '#1a1a2e' }}
-      >
-        {c.label}
-      </p>
-      <p className="text-xs font-700" style={{ color: selected ? 'rgba(255,255,255,0.8)' : '#888' }}>
-        {c.sub}
-      </p>
-
-      {/* 구분 */}
-      <div className="my-3" style={{ height: 1, background: selected ? 'rgba(255,255,255,0.25)' : c.border + '33' }} />
-
-      {/* 스탯 */}
-      <div className="flex items-center justify-between">
-        <span className="text-lg">{STARS[difficulty]}</span>
-        <span className="text-xs font-700" style={{ color: selected ? 'rgba(255,255,255,0.75)' : '#aaa' }}>
-          📝{c.scenes}문제 · 💡{c.hints}힌트
-        </span>
+      {/* 설명 */}
+      <div className="flex flex-col items-center gap-0.5 text-center">
+        <span className="text-slate-300 text-sm font-medium">{cfg.desc}</span>
+        <span className="text-slate-500 text-xs">{cfg.scenes} · 힌트 제공</span>
       </div>
     </motion.button>
   );

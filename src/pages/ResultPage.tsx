@@ -18,26 +18,30 @@ export function ResultPage() {
 
   useEffect(() => {
     if (!difficulty || sceneResults.length === 0) { navigate('/'); return; }
-    saveScore(getGameResult());
+    const result = getGameResult();
+    saveScore(result);
     play('fanfare');
   }, []);
 
   if (!difficulty || sceneResults.length === 0) return null;
   const result = getGameResult();
 
+  const handleRetry = () => { reset(); navigate('/game'); };
+  const handleHome = () => { reset(); navigate('/'); };
+
   return (
     <PageTransition>
       <Confetti />
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-slate-900 flex flex-col">
         <TopBar />
-        <div className="flex-1 flex flex-col items-center gap-8 px-4 py-10 max-w-lg mx-auto w-full">
+        <div className="flex-1 flex flex-col items-center gap-6 px-4 py-8 overflow-y-auto">
           <GradeDisplay grade={result.grade} />
           <ScoreCard result={result} />
           <Certificate result={result} />
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Button variant="outline" onClick={() => navigate('/leaderboard')}>🏆 리더보드</Button>
-            <Button variant="outline" onClick={() => { reset(); navigate('/'); }}>🔄 다시 도전</Button>
-            <Button onClick={() => { reset(); navigate('/'); }}>🏠 처음으로</Button>
+          <div className="flex flex-wrap gap-3 justify-center mt-2">
+            <Button onClick={() => navigate('/leaderboard')} variant="outline">🏆 리더보드</Button>
+            <Button onClick={handleRetry} variant="outline">🔄 다시 도전</Button>
+            <Button onClick={handleHome}>🏠 처음으로</Button>
           </div>
         </div>
       </div>

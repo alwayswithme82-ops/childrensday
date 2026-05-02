@@ -1,39 +1,40 @@
+import { useRef } from 'react';
 import type { GameResult } from '../../types/game';
-import { DIFFICULTY_CONFIG } from '../../utils/constants';
+import { GRADE_CONFIG, DIFFICULTY_CONFIG } from '../../utils/constants';
 import { formatTime } from '../../utils/helpers';
 import { Button } from '../shared/Button';
 import { downloadCertificate } from '../../utils/certificate';
 
-const GRADE_EMOJI: Record<string, string> = { '큐브왕': '🏆', '건축사': '🏗', '견습생': '🔨' };
+interface Props {
+  result: GameResult;
+}
 
-export function Certificate({ result }: { result: GameResult }) {
+export function Certificate({ result }: Props) {
+  const certRef = useRef<HTMLDivElement>(null);
+  const grade = GRADE_CONFIG[result.grade];
   const diff = DIFFICULTY_CONFIG[result.difficulty];
 
+  const handleDownload = () => downloadCertificate('certificate', `큐브왕국_${result.nickname}`);
+
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
+    <div className="flex flex-col items-center gap-4">
       <div
         id="certificate"
-        className="w-full max-w-sm rounded-3xl p-8 text-center"
-        style={{
-          background: 'linear-gradient(160deg, #FFFBEB 0%, #FEF3C7 100%)',
-          border: '3px solid #F59E0B',
-          boxShadow: '0 8px 32px rgba(245,158,11,0.2)',
-        }}
+        ref={certRef}
+        className="bg-slate-900 border-4 border-yellow-400 rounded-3xl p-8 w-80 text-center shadow-2xl"
       >
-        <div className="text-5xl mb-2">{GRADE_EMOJI[result.grade]}</div>
-        <h2 className="text-2xl font-900 text-amber-600 mb-1">큐브왕국</h2>
-        <p className="text-xs font-700 text-amber-400 uppercase tracking-widest mb-5">클리어 인증서</p>
-        <div className="border-t border-b border-amber-200 py-4 my-3 flex flex-col gap-1.5">
-          <p className="text-2xl font-900 text-gray-800">{result.nickname}</p>
-          <p className="text-sm font-600 text-gray-500">{diff.label} 난이도 완주</p>
-          <p className="text-3xl font-900 text-amber-500 my-1">{result.grade}</p>
-          <p className="text-xs font-700 text-gray-400">
-            {result.totalStars}/{result.maxStars}⭐ · {formatTime(result.totalTimeSeconds)}
-          </p>
+        <div className="text-5xl mb-3">{grade.emoji}</div>
+        <h2 className="text-yellow-400 font-black text-2xl mb-1">큐브 왕국</h2>
+        <p className="text-white/50 text-xs mb-4">클리어 인증서</p>
+        <div className="border-t border-b border-white/20 py-4 my-4 flex flex-col gap-2">
+          <p className="text-white text-xl font-bold">{result.nickname}</p>
+          <p className="text-white/60 text-sm">{diff.label} 난이도 완료</p>
+          <p className={`text-2xl font-black ${grade.color}`}>{result.grade}</p>
+          <p className="text-white/50 text-xs">{result.totalStars}/{result.maxStars}⭐ · {formatTime(result.totalTimeSeconds)}</p>
         </div>
-        <p className="text-xs text-gray-300">flexmathbusiness1.pages.dev</p>
+        <p className="text-white/30 text-xs">flexmathbusiness1.pages.dev</p>
       </div>
-      <Button variant="outline" size="sm" onClick={() => downloadCertificate('certificate', `큐브왕국_${result.nickname}`)}>
+      <Button onClick={handleDownload} size="sm" variant="outline">
         📥 인증서 다운로드
       </Button>
     </div>
