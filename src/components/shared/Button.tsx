@@ -13,8 +13,8 @@ interface Props {
 }
 
 const sizes = {
-  sm: 'px-4 py-2 text-sm rounded-xl',
-  md: 'px-6 py-3 text-base rounded-xl',
+  sm: 'px-5 py-2.5 text-sm rounded-xl',
+  md: 'px-7 py-3.5 text-base rounded-2xl',
   lg: 'px-10 py-4 text-lg rounded-2xl',
 };
 
@@ -25,12 +25,15 @@ export function Button({ children, onClick, variant = 'primary', size = 'md', di
     return (
       <motion.button
         type={type} onClick={onClick} disabled={disabled}
-        whileTap={{ scale: disabled ? 1 : 0.95 }}
-        whileHover={{ scale: disabled ? 1 : 1.03 }}
-        className={`${base} text-white ${pulse && !disabled ? 'pulse-gold' : ''}`}
+        whileTap={{ scale: disabled ? 1 : 0.94 }}
+        whileHover={{ scale: disabled ? 1 : 1.05 }}
+        className={`${base} text-white ${pulse && !disabled ? 'btn-bounce' : ''}`}
         style={{
-          background: disabled ? '#FDE68A' : 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-          boxShadow: disabled ? 'none' : '0 4px 16px rgba(245,158,11,0.4)',
+          background: disabled
+            ? '#ddd'
+            : 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 50%, #FF6B6B 100%)',
+          backgroundSize: '200% auto',
+          boxShadow: disabled ? 'none' : '0 6px 20px rgba(255,107,107,0.4)',
         }}
       >
         {children}
@@ -42,8 +45,9 @@ export function Button({ children, onClick, variant = 'primary', size = 'md', di
     return (
       <motion.button
         type={type} onClick={onClick} disabled={disabled}
-        whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.02 }}
-        className={`${base} border-2 border-gray-200 text-gray-600 hover:border-amber-300 hover:text-amber-700 bg-white`}
+        whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.03 }}
+        className={`${base} bg-white font-800`}
+        style={{ border: '2.5px solid #E5E7EB', color: '#555' }}
       >
         {children}
       </motion.button>

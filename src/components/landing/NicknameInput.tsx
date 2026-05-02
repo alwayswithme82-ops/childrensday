@@ -2,10 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MAX_NICKNAME_LENGTH } from '../../utils/constants';
 
-interface Props {
-  value: string;
-  onChange: (v: string) => void;
-}
+interface Props { value: string; onChange: (v: string) => void; }
 
 const VALID = /^[가-힣a-zA-Z0-9]*$/;
 
@@ -21,10 +18,9 @@ export function NicknameInput({ value, onChange }: Props) {
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      <label className="text-xs font-800 text-gray-400 uppercase tracking-widest">
-        닉네임
+      <label className="text-xs font-900 uppercase tracking-widest text-gray-400">
+        건축가 닉네임 ✏️
       </label>
-
       <div className="relative">
         <input
           type="text"
@@ -34,27 +30,26 @@ export function NicknameInput({ value, onChange }: Props) {
           onBlur={() => setFocused(false)}
           placeholder="예: 큐브왕"
           maxLength={MAX_NICKNAME_LENGTH}
-          className="w-full py-3.5 pl-4 pr-20 text-lg font-800 rounded-xl transition-all duration-150 outline-none"
+          className="w-full py-4 pl-5 pr-16 rounded-2xl text-xl font-900 outline-none transition-all duration-150"
           style={{
-            border: `2px solid ${isInvalid ? '#EF4444' : focused ? '#F59E0B' : '#E5E7EB'}`,
-            boxShadow: focused ? `0 0 0 4px ${isInvalid ? 'rgba(239,68,68,.1)' : 'rgba(245,158,11,.12)'}` : 'none',
-            background: '#fff',
-            color: '#111827',
+            border: `3px solid ${isInvalid ? '#FF6B6B' : focused ? '#FFD93D' : '#E5E7EB'}`,
+            boxShadow: focused ? `0 0 0 4px ${isInvalid ? 'rgba(255,107,107,.15)' : 'rgba(255,217,61,.2)'}` : 'none',
+            background: focused ? '#FFFEF5' : '#F9FAFB',
+            color: '#1a1a2e',
           }}
         />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-          {isValid && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}>✅</motion.span>}
-          <span className="text-xs font-700" style={{ color: value.length >= MAX_NICKNAME_LENGTH ? '#EF4444' : '#9CA3AF' }}>
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {isValid && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-xl">✅</motion.span>}
+          <span className="text-xs font-800" style={{ color: value.length >= MAX_NICKNAME_LENGTH ? '#FF6B6B' : '#ccc' }}>
             {value.length}/{MAX_NICKNAME_LENGTH}
           </span>
         </div>
       </div>
-
       <AnimatePresence>
         {isInvalid && (
           <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="text-xs font-700 text-red-500">
-            ⚠ 한글·영문·숫자만 입력할 수 있어요
+            className="text-xs font-800 text-red-500">
+            ⚠️ 한글·영문·숫자만 쓸 수 있어요!
           </motion.p>
         )}
       </AnimatePresence>
