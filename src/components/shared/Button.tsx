@@ -33,7 +33,7 @@ export function Button({ children, onClick, variant = 'primary', size = 'md', di
             ? '#ccc'
             : 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
           boxShadow: disabled ? 'none' : '0 6px 24px rgba(255,107,107,0.4)',
-          fontFamily: "'Fredoka One', cursive",
+          fontFamily: "'Gamja Flower', cursive",
           letterSpacing: '0.03em',
         }}
       >

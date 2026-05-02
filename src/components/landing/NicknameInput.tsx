@@ -32,7 +32,7 @@ export function NicknameInput({ value, onChange }: Props) {
           maxLength={MAX_NICKNAME_LENGTH}
           className="w-full py-4 pl-5 pr-16 text-xl font-900 rounded-2xl outline-none transition-all duration-200"
           style={{
-            fontFamily: "'Nunito', sans-serif",
+            fontFamily: "'Jua', sans-serif",
             background: focused ? '#FFFEF0' : '#F9FAFB',
             border: `3px solid ${isInvalid ? '#FF6B6B' : focused ? '#FFD93D' : '#E5E7EB'}`,
             boxShadow: focused
