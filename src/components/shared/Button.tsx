@@ -13,31 +13,24 @@ interface Props {
 }
 
 const sizes = {
-  sm: 'px-5 py-2.5 text-sm rounded-xl',
-  md: 'px-7 py-3.5 text-base rounded-2xl',
+  sm: 'px-4 py-2 text-sm rounded-xl',
+  md: 'px-6 py-3 text-base rounded-xl',
   lg: 'px-10 py-4 text-lg rounded-2xl',
 };
 
 export function Button({ children, onClick, variant = 'primary', size = 'md', disabled, className = '', type = 'button', pulse = false }: Props) {
-  const base = `inline-flex items-center justify-center gap-2 font-black transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed ${sizes[size]} ${className}`;
+  const base = `inline-flex items-center justify-center gap-2 font-900 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed ${sizes[size]} ${className}`;
 
   if (variant === 'primary') {
     return (
       <motion.button
-        type={type}
-        onClick={onClick}
-        disabled={disabled}
+        type={type} onClick={onClick} disabled={disabled}
         whileTap={{ scale: disabled ? 1 : 0.95 }}
-        whileHover={{ scale: disabled ? 1 : 1.04 }}
-        className={`${base} ${pulse && !disabled ? 'pulse-ring btn-shine' : ''}`}
+        whileHover={{ scale: disabled ? 1 : 1.03 }}
+        className={`${base} text-white ${pulse && !disabled ? 'pulse-gold' : ''}`}
         style={{
-          background: disabled
-            ? 'rgba(245,184,0,0.25)'
-            : !pulse
-            ? 'linear-gradient(135deg, #F5B800 0%, #FFD166 50%, #F5B800 100%)'
-            : undefined,
-          color: '#09090F',
-          boxShadow: disabled ? 'none' : '0 4px 20px rgba(245,184,0,0.35)',
+          background: disabled ? '#FDE68A' : 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+          boxShadow: disabled ? 'none' : '0 4px 16px rgba(245,158,11,0.4)',
         }}
       >
         {children}
@@ -48,17 +41,9 @@ export function Button({ children, onClick, variant = 'primary', size = 'md', di
   if (variant === 'outline') {
     return (
       <motion.button
-        type={type}
-        onClick={onClick}
-        disabled={disabled}
-        whileTap={{ scale: 0.95 }}
-        whileHover={{ scale: 1.03 }}
-        className={base}
-        style={{
-          background: 'rgba(255,255,255,0.04)',
-          border: '1.5px solid rgba(245,184,0,0.35)',
-          color: 'rgba(255,255,255,0.75)',
-        }}
+        type={type} onClick={onClick} disabled={disabled}
+        whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.02 }}
+        className={`${base} border-2 border-gray-200 text-gray-600 hover:border-amber-300 hover:text-amber-700 bg-white`}
       >
         {children}
       </motion.button>
@@ -67,12 +52,9 @@ export function Button({ children, onClick, variant = 'primary', size = 'md', di
 
   return (
     <motion.button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      whileTap={{ scale: 0.95 }}
-      whileHover={{ scale: 1.02 }}
-      className={`${base} text-white/45 hover:text-white/80`}
+      type={type} onClick={onClick} disabled={disabled}
+      whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.02 }}
+      className={`${base} text-gray-400 hover:text-gray-700`}
     >
       {children}
     </motion.button>

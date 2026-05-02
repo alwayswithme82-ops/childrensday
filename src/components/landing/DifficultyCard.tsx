@@ -7,113 +7,65 @@ interface Props {
   onSelect: (d: Difficulty) => void;
 }
 
-const CONFIG = {
+const CFG = {
   easy: {
-    icon: '🌿',
-    label: '쉬움',
-    eng: 'EASY',
-    grade: '초등 1 · 2학년',
-    scenes: 5,
-    hints: 5,
-    tag: '투영도 입문',
-    accent: '#059669',
-    accentBg: 'rgba(5,150,105,0.08)',
-    accentBorder: 'rgba(5,150,105,0.25)',
-    accentSelected: 'rgba(5,150,105,0.15)',
+    icon: '🌱', label: '쉬움', sub: '초등 1·2학년',
+    scenes: 5, hints: 5, tag: '입문',
+    color: '#059669', bg: '#ECFDF5', border: '#A7F3D0', ring: 'rgba(5,150,105,.15)',
   },
   medium: {
-    icon: '⚙️',
-    label: '보통',
-    eng: 'NORMAL',
-    grade: '초등 3 · 4학년',
-    scenes: 6,
-    hints: 3,
-    tag: '복합 투영도',
-    accent: '#2563EB',
-    accentBg: 'rgba(37,99,235,0.08)',
-    accentBorder: 'rgba(37,99,235,0.25)',
-    accentSelected: 'rgba(37,99,235,0.12)',
+    icon: '⚙️', label: '보통', sub: '초등 3·4학년',
+    scenes: 6, hints: 3, tag: '도전',
+    color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', ring: 'rgba(37,99,235,.15)',
   },
   hard: {
-    icon: '🔥',
-    label: '어려움',
-    eng: 'HARD',
-    grade: '초등 5 · 6학년',
-    scenes: 7,
-    hints: 2,
-    tag: '최고 난이도',
-    accent: '#7C3AED',
-    accentBg: 'rgba(124,58,237,0.08)',
-    accentBorder: 'rgba(124,58,237,0.25)',
-    accentSelected: 'rgba(124,58,237,0.12)',
+    icon: '🔥', label: '어려움', sub: '초등 5·6학년',
+    scenes: 7, hints: 2, tag: '고급',
+    color: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE', ring: 'rgba(124,58,237,.15)',
   },
 } as const;
 
 const STARS: Record<string, string> = { easy: '⭐', medium: '⭐⭐', hard: '⭐⭐⭐' };
 
 export function DifficultyCard({ difficulty, selected, onSelect }: Props) {
-  const c = CONFIG[difficulty];
-
+  const c = CFG[difficulty];
   return (
     <motion.button
-      whileHover={{ y: -5, scale: 1.02 }}
-      whileTap={{ scale: 0.97 }}
+      whileHover={{ y: -4, boxShadow: `0 12px 32px ${c.ring}` }}
+      whileTap={{ scale: 0.98 }}
       onClick={() => onSelect(difficulty)}
-      className="relative flex flex-col gap-4 p-5 rounded-2xl cursor-pointer text-left w-full transition-all duration-200"
+      className="relative flex flex-col gap-4 p-5 rounded-2xl w-full text-left cursor-pointer transition-all duration-150"
       style={{
-        background: selected ? c.accentSelected : 'rgba(255,255,255,0.85)',
-        border: `2px solid ${selected ? c.accent : c.accentBorder}`,
-        boxShadow: selected
-          ? `0 0 0 3px ${c.accentBg}, 0 8px 32px ${c.accentBg}`
-          : '0 2px 12px rgba(0,0,0,0.06)',
+        background: selected ? c.bg : '#FAFAFA',
+        border: `2px solid ${selected ? c.color : '#E5E7EB'}`,
+        boxShadow: selected ? `0 0 0 4px ${c.ring}, 0 8px 24px ${c.ring}` : '0 2px 8px rgba(0,0,0,.05)',
       }}
     >
-      {/* 선택 뱃지 */}
       {selected && (
-        <motion.div
-          layoutId="sel-badge"
-          initial={false}
-          className="absolute -top-3 left-4 px-3 py-0.5 rounded-full text-xs font-black text-white"
-          style={{ background: c.accent }}
+        <motion.span
+          layoutId="sel"
+          className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full text-xs font-900 text-white"
+          style={{ background: c.color }}
         >
-          ✓ 선택됨
-        </motion.div>
+          ✓ 선택
+        </motion.span>
       )}
 
-      {/* 아이콘 + 태그 */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between">
         <span className="text-3xl">{c.icon}</span>
-        <span
-          className="text-xs font-black px-2 py-0.5 rounded-full"
-          style={{ background: c.accentBg, color: c.accent }}
-        >
+        <span className="text-xs font-800 px-2 py-0.5 rounded-full" style={{ background: c.bg, color: c.color }}>
           {c.tag}
         </span>
       </div>
 
-      {/* 이름 */}
       <div>
-        <p className="text-xs font-black uppercase tracking-widest mb-0.5" style={{ color: 'rgba(0,0,0,0.3)' }}>
-          {c.eng}
-        </p>
-        <p className="text-2xl font-black" style={{ color: selected ? c.accent : '#1C1917' }}>
-          {c.label}
-        </p>
-        <p className="text-xs font-semibold mt-0.5" style={{ color: 'rgba(0,0,0,0.4)' }}>
-          {c.grade}
-        </p>
+        <p className="text-2xl font-900" style={{ color: selected ? c.color : '#111827' }}>{c.label}</p>
+        <p className="text-sm font-600 text-gray-400 mt-0.5">{c.sub}</p>
       </div>
 
-      {/* 구분 */}
-      <div style={{ height: 1, background: 'rgba(0,0,0,0.07)' }} />
-
-      {/* 스탯 */}
-      <div className="flex items-center justify-between">
-        <span className="text-base">{STARS[difficulty]}</span>
-        <div className="flex gap-3 text-xs font-bold" style={{ color: 'rgba(0,0,0,0.35)' }}>
-          <span>📝 {c.scenes}문제</span>
-          <span>💡 {c.hints}개</span>
-        </div>
+      <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+        <span>{STARS[difficulty]}</span>
+        <span className="text-xs font-700 text-gray-400">📝 {c.scenes}문제 · 💡 {c.hints}개</span>
       </div>
     </motion.button>
   );

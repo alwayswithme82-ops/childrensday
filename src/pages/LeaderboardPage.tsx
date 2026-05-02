@@ -14,10 +14,10 @@ export function LeaderboardPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-slate-900 flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col">
         <TopBar />
-        <div className="flex-1 flex flex-col gap-4 px-4 py-6 max-w-lg mx-auto w-full">
-          <h1 className="text-2xl font-black text-white text-center">🏆 리더보드</h1>
+        <div className="flex-1 flex flex-col gap-6 px-4 py-8 max-w-lg mx-auto w-full">
+          <h1 className="text-2xl font-900 text-gray-800 text-center">🏆 리더보드</h1>
           <DifficultyTabs active={tab} onChange={setTab} />
           <RankTable entries={entries} myNickname={nickname} />
         </div>
