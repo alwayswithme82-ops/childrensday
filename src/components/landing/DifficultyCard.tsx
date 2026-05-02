@@ -9,117 +9,116 @@ interface Props {
 
 const CONFIG = {
   easy: {
-    emoji: '🌱',
+    icon: '🌿',
     label: '쉬움',
-    stars: '⭐',
-    grade: '초등 1~2학년',
-    scenes: '5문제',
-    hints: '5개',
-    keyword: '블록 세기·투영도 입문',
-    bg: 'linear-gradient(135deg, rgba(52,211,153,0.22) 0%, rgba(16,185,129,0.10) 100%)',
-    border: 'rgba(52,211,153,0.45)',
-    glow: 'card-emerald-glow',
-    badge: { bg: '#065F46', text: '#34D399' },
-    starColor: '#34D399',
+    eng: 'EASY',
+    grade: '초등 1 · 2학년',
+    scenes: 5,
+    hints: 5,
+    tag: '투영도 입문',
+    accent: '#10B981',
+    accentBg: 'rgba(16,185,129,0.10)',
+    accentBorder: 'rgba(16,185,129,0.30)',
+    accentGlow: 'rgba(16,185,129,0.25)',
   },
   medium: {
-    emoji: '🏗',
+    icon: '⚙️',
     label: '보통',
-    stars: '⭐⭐',
-    grade: '초등 3~4학년',
-    scenes: '6문제',
-    hints: '3개',
-    keyword: '복합 투영도·회전',
-    bg: 'linear-gradient(135deg, rgba(56,189,248,0.22) 0%, rgba(14,165,233,0.10) 100%)',
-    border: 'rgba(56,189,248,0.45)',
-    glow: 'card-blue-glow',
-    badge: { bg: '#0C4A6E', text: '#38BDF8' },
-    starColor: '#38BDF8',
+    eng: 'NORMAL',
+    grade: '초등 3 · 4학년',
+    scenes: 6,
+    hints: 3,
+    tag: '복합 투영도',
+    accent: '#3B82F6',
+    accentBg: 'rgba(59,130,246,0.10)',
+    accentBorder: 'rgba(59,130,246,0.30)',
+    accentGlow: 'rgba(59,130,246,0.25)',
   },
   hard: {
-    emoji: '🏰',
+    icon: '🔥',
     label: '어려움',
-    stars: '⭐⭐⭐',
-    grade: '초등 5~6학년',
-    scenes: '7문제',
-    hints: '2개',
-    keyword: '전개도·겉넓이·복합',
-    bg: 'linear-gradient(135deg, rgba(192,132,252,0.25) 0%, rgba(168,85,247,0.12) 100%)',
-    border: 'rgba(192,132,252,0.50)',
-    glow: 'card-purple-glow',
-    badge: { bg: '#3B0764', text: '#C084FC' },
-    starColor: '#C084FC',
+    eng: 'HARD',
+    grade: '초등 5 · 6학년',
+    scenes: 7,
+    hints: 2,
+    tag: '최고 난이도',
+    accent: '#A855F7',
+    accentBg: 'rgba(168,85,247,0.10)',
+    accentBorder: 'rgba(168,85,247,0.30)',
+    accentGlow: 'rgba(168,85,247,0.30)',
   },
 } as const;
+
+const STAR_MAP: Record<string, string> = { easy: '⭐', medium: '⭐⭐', hard: '⭐⭐⭐' };
 
 export function DifficultyCard({ difficulty, selected, onSelect }: Props) {
   const c = CONFIG[difficulty];
 
   return (
     <motion.button
-      whileHover={{ y: -8, scale: 1.03 }}
+      whileHover={{ y: -6, scale: 1.02 }}
       whileTap={{ scale: 0.97 }}
       onClick={() => onSelect(difficulty)}
-      className={`
-        relative flex flex-col items-center gap-4 p-6 rounded-3xl border-2
-        cursor-pointer text-center transition-all duration-200 w-full
-        ${selected ? c.glow : ''}
-      `}
+      className="relative flex flex-col gap-5 p-6 rounded-3xl cursor-pointer text-left w-full transition-all duration-200"
       style={{
-        background: c.bg,
-        borderColor: selected ? '#FFD700' : c.border,
+        background: selected
+          ? `linear-gradient(145deg, rgba(245,184,0,0.12) 0%, ${c.accentBg} 100%)`
+          : `linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)`,
+        border: `1.5px solid ${selected ? '#F5B800' : c.accentBorder}`,
         boxShadow: selected
-          ? `0 0 0 3px rgba(255,215,0,0.35), 0 0 40px rgba(255,215,0,0.15)`
-          : undefined,
-        backdropFilter: 'blur(16px)',
+          ? `0 0 0 3px rgba(245,184,0,0.20), 0 16px 48px ${c.accentGlow}`
+          : `0 4px 24px rgba(0,0,0,0.3)`,
+        backdropFilter: 'blur(20px)',
       }}
     >
       {/* 선택 뱃지 */}
-      {selected && (
-        <motion.div
-          layoutId="diff-badge"
-          initial={false}
-          className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-black"
-          style={{ background: '#FFD700', color: '#1A0A3C' }}
-        >
-          ✓ 선택됨
-        </motion.div>
-      )}
+      <AnimatedBadge show={selected} />
 
-      {/* 이모지 */}
-      <motion.span
-        className="text-5xl"
-        animate={selected ? { rotate: [0, -8, 8, 0] } : {}}
-        transition={{ duration: 0.5 }}
-      >
-        {c.emoji}
-      </motion.span>
-
-      {/* 별 + 이름 */}
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-2xl tracking-wider">{c.stars}</span>
+      {/* 상단: 아이콘 + 태그 */}
+      <div className="flex items-start justify-between">
+        <span className="text-4xl">{c.icon}</span>
         <span
-          className="text-2xl font-black"
-          style={{ color: selected ? '#FFD700' : c.starColor }}
+          className="text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider"
+          style={{ background: c.accentBg, color: c.accent, border: `1px solid ${c.accentBorder}` }}
         >
-          {c.label}
+          {c.tag}
         </span>
       </div>
 
-      {/* 설명 */}
-      <div className="flex flex-col items-center gap-1.5">
-        <span className="text-white/90 text-sm font-semibold">{c.grade}</span>
-        <span
-          className="text-xs px-3 py-0.5 rounded-full font-medium"
-          style={{ background: c.badge.bg, color: c.badge.text }}
-        >
-          {c.keyword}
-        </span>
-        <div className="flex gap-3 text-xs text-white/40 mt-1">
-          <span>📝 {c.scenes}</span>
+      {/* 중단: 이름 */}
+      <div>
+        <p className="text-xs font-black uppercase tracking-[0.2em] mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          {c.eng}
+        </p>
+        <p className="text-3xl font-black text-white">{c.label}</p>
+        <p className="text-sm font-semibold mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{c.grade}</p>
+      </div>
+
+      {/* 구분선 */}
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.07)' }} />
+
+      {/* 하단: 스탯 */}
+      <div className="flex items-center justify-between">
+        <span className="text-lg">{STAR_MAP[difficulty]}</span>
+        <div className="flex gap-3 text-xs font-bold" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <span>📝 {c.scenes}문제</span>
           <span>💡 힌트 {c.hints}</span>
         </div>
       </div>
     </motion.button>
+  );
+}
+
+function AnimatedBadge({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <motion.div
+      layoutId="selected-badge"
+      initial={false}
+      className="absolute -top-3 left-5 px-3 py-0.5 rounded-full text-xs font-black"
+      style={{ background: '#F5B800', color: '#09090F' }}
+    >
+      ✓ 선택됨
+    </motion.div>
   );
 }

@@ -11,23 +11,25 @@ import { useGameStore } from '../stores/useGameStore';
 import { useSound } from '../hooks/useSound';
 import type { Difficulty } from '../types/game';
 
-/* ── 배경 파티클 데이터 ── */
-const PARTICLES = Array.from({ length: 30 }, (_, i) => ({
+/* 정적 별 데이터 — 매 렌더마다 재생성 방지 */
+const STARS = Array.from({ length: 80 }, (_, i) => ({
   id: i,
   x: Math.random() * 100,
-  startY: 80 + Math.random() * 20,
-  emoji: ['✨','⭐','🌟','💫','✦'][Math.floor(Math.random() * 5)],
-  size: 10 + Math.random() * 14,
-  dur: 3 + Math.random() * 4,
-  delay: Math.random() * 5,
+  y: Math.random() * 100,
+  size: Math.random() < 0.2 ? 2 : 1,
+  delay: Math.random() * 4,
+  dur: 2 + Math.random() * 3,
 }));
 
-const CLOUDS = [
-  { x: 5,  y: 12, scale: 1.2, delay: 0 },
-  { x: 75, y: 8,  scale: 0.9, delay: 1.5 },
-  { x: 40, y: 18, scale: 0.7, delay: 3 },
-  { x: 88, y: 20, scale: 1.0, delay: 0.8 },
-];
+/* 상승 파티클 */
+const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
+  id: i,
+  x: 5 + Math.random() * 90,
+  dur: 4 + Math.random() * 5,
+  delay: Math.random() * 8,
+  glyph: ['✦', '✧', '·', '✦', '·'][i % 5],
+  size: 8 + Math.random() * 8,
+}));
 
 export function LandingPage() {
   const [nickname, setNickname] = useState('');
@@ -48,61 +50,51 @@ export function LandingPage() {
 
   return (
     <PageTransition>
+      {/* ════ 전체 래퍼 ════ */}
       <div
-        className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
-        style={{
-          background: 'radial-gradient(ellipse at 50% 0%, #3D1A7A 0%, #2D1454 30%, #1A0A3C 60%, #110726 100%)',
-        }}
+        className="relative min-h-screen flex flex-col overflow-x-hidden"
+        style={{ background: '#09090F' }}
       >
 
-        {/* ── 상단 오로라 효과 ── */}
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div
-            className="absolute -top-32 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full opacity-30 blur-3xl"
-            style={{ background: 'radial-gradient(ellipse, #FFD700 0%, #FF8C00 40%, transparent 70%)' }}
-          />
-          <div
-            className="absolute top-1/3 -left-32 w-64 h-64 rounded-full opacity-20 blur-2xl"
-            style={{ background: '#C084FC' }}
-          />
-          <div
-            className="absolute top-1/3 -right-32 w-64 h-64 rounded-full opacity-20 blur-2xl"
-            style={{ background: '#38BDF8' }}
-          />
-          {/* 하단 반짝임 */}
-          <div
-            className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[600px] h-48 rounded-full opacity-15 blur-3xl"
-            style={{ background: '#FFD700' }}
-          />
-        </div>
+        {/* ── 배경 레이어 ── */}
+        <div className="pointer-events-none fixed inset-0" aria-hidden>
 
-        {/* ── 구름 ── */}
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          {CLOUDS.map((c, i) => (
+          {/* 중앙 상단 황금 glow */}
+          <div
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[320px]"
+            style={{
+              background: 'radial-gradient(ellipse at 50% 0%, rgba(245,184,0,0.18) 0%, rgba(245,184,0,0.04) 50%, transparent 80%)',
+            }}
+          />
+
+          {/* 별 필드 */}
+          {STARS.map(s => (
             <motion.div
-              key={i}
-              className="absolute text-4xl opacity-10"
-              style={{ left: `${c.x}%`, top: `${c.y}%`, scale: c.scale }}
-              animate={{ x: [0, 20, 0] }}
-              transition={{ duration: 8 + i * 2, repeat: Infinity, delay: c.delay, ease: 'easeInOut' }}
-            >
-              ☁️
-            </motion.div>
+              key={s.id}
+              className="absolute rounded-full bg-white"
+              style={{
+                left: `${s.x}%`,
+                top: `${s.y}%`,
+                width: s.size,
+                height: s.size,
+              }}
+              animate={{ opacity: [0.1, 0.6, 0.1] }}
+              transition={{ duration: s.dur, repeat: Infinity, delay: s.delay, ease: 'easeInOut' }}
+            />
           ))}
-        </div>
 
-        {/* ── 파티클 ── */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+          {/* 상승 파티클 */}
           {PARTICLES.map(p => (
             <motion.span
               key={p.id}
-              className="absolute"
+              className="absolute font-black"
               style={{
                 left: `${p.x}%`,
-                top: `${p.startY}%`,
+                bottom: 0,
                 fontSize: p.size,
+                color: 'rgba(245,184,0,0.35)',
               }}
-              animate={{ y: [0, -120], opacity: [0, 1, 0] }}
+              animate={{ y: [0, -200], opacity: [0, 0.8, 0] }}
               transition={{
                 duration: p.dur,
                 repeat: Infinity,
@@ -110,101 +102,123 @@ export function LandingPage() {
                 ease: 'easeOut',
               }}
             >
-              {p.emoji}
+              {p.glyph}
             </motion.span>
           ))}
+
+          {/* 좌우 subtle accent */}
+          <div
+            className="absolute left-0 top-1/3 w-64 h-64 -translate-x-1/2 rounded-full blur-3xl"
+            style={{ background: 'rgba(59,130,246,0.06)' }}
+          />
+          <div
+            className="absolute right-0 top-2/3 w-48 h-48 translate-x-1/3 rounded-full blur-3xl"
+            style={{ background: 'rgba(168,85,247,0.06)' }}
+          />
         </div>
 
-        {/* ── 음소거 ── */}
-        <div className="absolute top-4 right-4 z-20">
-          <MuteToggle />
-        </div>
+        {/* ── 헤더 ── */}
+        <header className="relative z-10 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto w-full">
+          <div
+            className="text-sm font-black tracking-widest uppercase"
+            style={{ color: 'rgba(245,184,0,0.5)' }}
+          >
+            FlexMath
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/leaderboard')}
+              className="flex items-center gap-1.5 text-sm font-bold transition-colors"
+              style={{ color: 'rgba(255,255,255,0.4)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(245,184,0,0.9)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+            >
+              🏆 리더보드
+            </button>
+            <MuteToggle />
+          </div>
+        </header>
 
-        {/* ════════════════════════════════
-            메인 콘텐츠
-        ════════════════════════════════ */}
-        <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-2xl px-4 py-12">
+        {/* ── 메인 콘텐츠 ── */}
+        <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-10 gap-14 max-w-3xl mx-auto w-full">
 
           {/* 로고 */}
           <Logo />
 
-          {/* 구분선 */}
-          <div className="w-full max-w-xs flex items-center gap-3">
-            <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(255,215,0,0.4))' }} />
-            <span className="text-lg">🔮</span>
-            <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, rgba(255,215,0,0.4))' }} />
-          </div>
+          {/* 입력 + 선택 섹션 */}
+          <div className="w-full flex flex-col gap-8">
 
-          {/* 닉네임 */}
-          <NicknameInput value={nickname} onChange={setNickname} />
+            {/* 닉네임 */}
+            <div className="flex flex-col items-center">
+              <NicknameInput value={nickname} onChange={setNickname} />
+            </div>
 
-          {/* 난이도 선택 */}
-          <div className="w-full">
-            <motion.p
-              className="text-center text-sm font-bold mb-5"
-              style={{ color: '#FDE68A' }}
-              animate={{ opacity: [0.6, 1, 0.6] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              ✦ 모험 난이도를 선택해줘 ✦
-            </motion.p>
+            {/* 구분선 */}
+            <div className="flex items-center gap-4">
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+              <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'rgba(245,184,0,0.45)' }}>
+                난이도 선택
+              </span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+            </div>
+
+            {/* 난이도 카드 3개 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-                <DifficultyCard
+              {(['easy', 'medium', 'hard'] as Difficulty[]).map((d, i) => (
+                <motion.div
                   key={d}
-                  difficulty={d}
-                  selected={difficulty === d}
-                  onSelect={d => { setDifficulty(d); play('click'); }}
-                />
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * i, duration: 0.4 }}
+                >
+                  <DifficultyCard
+                    difficulty={d}
+                    selected={difficulty === d}
+                    onSelect={d => { setDifficulty(d); play('click'); }}
+                  />
+                </motion.div>
               ))}
             </div>
           </div>
 
-          {/* 시작 버튼 */}
+          {/* CTA 버튼 */}
           <div className="flex flex-col items-center gap-3">
             <Button
               size="lg"
               onClick={handleStart}
               disabled={!canStart}
               pulse={canStart}
-              className="w-full max-w-xs text-xl"
+              className="min-w-[220px]"
             >
               🚀 모험 시작!
             </Button>
 
-            {!canStart && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-xs font-medium"
-                style={{ color: 'rgba(253,230,138,0.5)' }}
-              >
-                {!isNicknameValid ? '✏️ 이름을 먼저 입력해줘!' : '🗺 난이도를 선택해줘!'}
-              </motion.p>
-            )}
+            <AnimatePresence>
+              {!canStart && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-xs font-bold"
+                  style={{ color: 'rgba(245,184,0,0.45)' }}
+                >
+                  {!isNicknameValid ? '이름을 먼저 입력해줘!' : '난이도를 선택해줘!'}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </main>
 
-        {/* ── 리더보드 링크 (우하단) ── */}
-        <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/leaderboard')}
-          className="absolute bottom-6 right-6 z-10 flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-full transition-all"
-          style={{
-            background: 'rgba(255,215,0,0.12)',
-            color: 'rgba(253,230,138,0.8)',
-            border: '1px solid rgba(255,215,0,0.25)',
-          }}
-        >
-          🏆 리더보드
-        </motion.button>
-
-        {/* ── 바닥 성 장식 ── */}
-        <div className="absolute bottom-0 left-0 right-0 flex justify-center pointer-events-none opacity-8 text-8xl select-none" aria-hidden>
-          🏰
-        </div>
+        {/* ── 푸터 ── */}
+        <footer className="relative z-10 text-center py-6">
+          <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            © 2025 FlexMath · 어린이날 특별 체험
+          </p>
+        </footer>
       </div>
     </PageTransition>
   );
 }
+
+/* AnimatePresence import 추가 */
+import { AnimatePresence } from 'framer-motion';

@@ -20,83 +20,49 @@ export function NicknameInput({ value, onChange }: Props) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full max-w-sm">
-
-      {/* 라벨 */}
-      <label className="flex items-center gap-2 text-base font-bold" style={{ color: '#FDE68A' }}>
-        <span>🏷</span>
-        <span>건축가 이름을 알려줘!</span>
+    <div className="flex flex-col gap-2.5 w-full max-w-sm">
+      <label className="text-sm font-800 uppercase tracking-widest" style={{ color: 'rgba(245,184,0,0.7)' }}>
+        건축가 닉네임
       </label>
 
-      {/* 입력 래퍼 */}
-      <div className="relative w-full">
-        {/* 배경 glow */}
-        {focused && isValid && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute inset-0 rounded-2xl blur-xl"
-            style={{ background: 'rgba(255,215,0,0.15)', zIndex: 0 }}
-          />
-        )}
-
+      <div className="relative">
         <input
           type="text"
           value={value}
           onChange={e => handleChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="예: 큐브왕 🔮"
+          placeholder="예: 큐브왕"
           maxLength={MAX_NICKNAME_LENGTH}
-          className={`
-            relative z-10 w-full px-6 py-4 text-xl font-bold text-center text-white rounded-2xl
-            border-2 transition-all duration-200
-            placeholder:text-white/25
-            input-gold-focus
-            ${isInvalidChar
-              ? 'border-red-400/70 bg-red-950/30'
-              : focused && isValid
-              ? 'border-gold bg-white/8'
-              : 'border-white/20 bg-white/6 hover:border-white/40 hover:bg-white/8'
-            }
-          `}
-          style={{ backdropFilter: 'blur(12px)' }}
+          className="w-full py-4 pl-5 pr-16 text-xl font-black text-white rounded-2xl outline-none transition-all duration-200 placeholder:font-normal"
+          style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: `2px solid ${isInvalidChar ? '#EF4444' : focused && isValid ? '#F5B800' : 'rgba(255,255,255,0.10)'}`,
+            boxShadow: focused && isValid ? '0 0 0 4px rgba(245,184,0,0.12), 0 0 24px rgba(245,184,0,0.15)' : 'none',
+          }}
         />
 
-        {/* 글자 수 */}
-        <span
-          className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold z-10 transition-colors ${
-            value.length >= MAX_NICKNAME_LENGTH ? 'text-red-400' : 'text-white/30'
-          }`}
-        >
-          {value.length}/{MAX_NICKNAME_LENGTH}
-        </span>
-
-        {/* 유효 체크 아이콘 */}
-        <AnimatePresence>
+        {/* 우측 카운터 / 아이콘 */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {isValid && (
-            <motion.span
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-xl z-10"
-            >
-              ✅
-            </motion.span>
+            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-lg">✅</motion.span>
           )}
-        </AnimatePresence>
+          <span className="text-xs font-bold" style={{ color: value.length >= MAX_NICKNAME_LENGTH ? '#EF4444' : 'rgba(255,255,255,0.25)' }}>
+            {value.length}/{MAX_NICKNAME_LENGTH}
+          </span>
+        </div>
       </div>
 
-      {/* 에러 메시지 */}
       <AnimatePresence>
         {isInvalidChar && (
           <motion.p
-            initial={{ opacity: 0, y: -6, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -6, height: 0 }}
-            className="text-red-400 text-sm font-medium flex items-center gap-1"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="text-xs font-bold"
+            style={{ color: '#EF4444' }}
           >
-            <span>⚠️</span> 한글, 영문, 숫자만 사용할 수 있어요!
+            ⚠ 한글·영문·숫자만 입력할 수 있어요
           </motion.p>
         )}
       </AnimatePresence>
