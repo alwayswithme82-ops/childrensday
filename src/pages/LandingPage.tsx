@@ -38,27 +38,38 @@ const PROLOGUE = [
     title: '이상한 초대장',
     icon: '✉️',
     animation: 'invite',
+    bg: 'linear-gradient(160deg, #FFF7AD 0%, #FFD6E7 52%, #FFE8B5 100%)',
     text: '띵동!\n어린이날 아침,\n네 앞에 반짝이는 큐브 초대장이 도착했어요.\n‘도와줘! 큐브 왕국의 보물이 사라졌어!’',
   },
   {
     title: '큐브 왕국으로!',
     icon: '🧊',
     animation: 'portal',
+    bg: 'radial-gradient(circle at 50% 45%, rgba(199,125,255,0.55), transparent 32%), linear-gradient(150deg, #312E81 0%, #4D96FF 48%, #C77DFF 100%)',
     text: '초대장을 펼치는 순간,\n큐브들이 빙글빙글 돌기 시작했어요!\n눈을 떠보니\n너는 신비한 큐브 왕국에 도착해 있었어요.',
   },
   {
     title: '큐브 요정 루비의 부탁',
     icon: '🧚',
     animation: 'ruby',
+    bg: 'linear-gradient(160deg, #CFFAFE 0%, #D1FAE5 52%, #E0F2FE 100%)',
     text: '안녕! 나는 큐브 요정 루비야!\n황금 보물상자가 검은 그림자 마법에 잠겨버렸어!\n보물을 찾으려면 네 도움이 필요해!',
   },
   {
     title: '모험의 시작',
     icon: '🗝️',
     animation: 'keys',
+    bg: 'radial-gradient(circle at 50% 25%, rgba(245,158,11,0.45), transparent 34%), linear-gradient(160deg, #0F172A 0%, #1B2A4A 55%, #F59E0B 150%)',
     text: '보물상자를 열려면\n네 개의 열쇠 조각을 찾아야 해요.\n🚪 그림자 문\n🗺️ 보물지도 바닥\n📦 숨은 큐브 창고\n🏰 비밀 보물탑\n큐브 왕국으로 모험을 떠나볼까요?',
   },
 ];
+
+const PARTICLES = Array.from({ length: 16 }, (_, i) => ({
+  left: `${6 + ((i * 23) % 88)}%`,
+  top: `${8 + ((i * 31) % 82)}%`,
+  delay: i * 0.17,
+  duration: 2.4 + (i % 5) * 0.32,
+}));
 
 type LandingStep = 'start' | 'prologue' | 'name' | 'difficulty';
 
@@ -96,58 +107,109 @@ function PrologueCard({
       exit={{ opacity: 0, y: -12, scale: 0.98 }}
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       onClick={reveal}
-      className="w-full rounded-[2rem] border-[3px] border-white bg-white/88 p-6 text-center shadow-2xl backdrop-blur"
+      className="relative w-full overflow-hidden rounded-[2rem] border-[3px] border-white bg-white/88 p-5 text-center shadow-2xl backdrop-blur sm:p-6"
     >
-      <div className="relative mx-auto mb-5 flex h-28 w-28 items-center justify-center">
-        <motion.div
-          animate={
-            scene.animation === 'invite'
-              ? { y: [0, -10, 0], rotate: [0, -4, 4, 0], scale: [1, 1.08, 1] }
-              : scene.animation === 'portal'
-                ? { rotate: 360, scale: [1, 1.08, 1] }
-                : scene.animation === 'ruby'
-                  ? { y: [0, -12, 0] }
-                  : { scale: [1, 1.12, 1] }
-          }
-          transition={{ duration: scene.animation === 'portal' ? 2.4 : 1.6, repeat: Infinity, ease: 'easeInOut' }}
-          className="flex h-24 w-24 items-center justify-center rounded-[2rem] bg-yellow-100 text-6xl shadow-inner"
-        >
-          {scene.icon}
-        </motion.div>
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        {PARTICLES.map((p, i) => (
+          <motion.span
+            key={i}
+            animate={{ opacity: [0.15, 0.75, 0.15], y: [0, -12, 0] }}
+            transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute text-sm text-yellow-300"
+            style={{ left: p.left, top: p.top }}
+          >
+            ✦
+          </motion.span>
+        ))}
+      </div>
+
+      <div className="relative mx-auto mb-4 flex h-24 w-28 items-center justify-center sm:h-28">
+        {scene.animation !== 'keys' && (
+          <motion.div
+            initial={scene.animation === 'invite' ? { y: 80, scale: 0.6, rotate: -8 } : { y: 12, scale: 0.86 }}
+            animate={
+              scene.animation === 'invite'
+                ? { y: 0, scale: 1, rotate: 0 }
+                : scene.animation === 'portal'
+                  ? { rotate: 360, scale: [1, 1.1, 1] }
+                  : { y: [0, -14, 0] }
+            }
+            transition={
+              scene.animation === 'invite'
+                ? { type: 'spring', stiffness: 260, damping: 18 }
+                : { duration: scene.animation === 'portal' ? 2.2 : 1.8, repeat: Infinity, ease: 'easeInOut' }
+            }
+            className="flex h-20 w-20 items-center justify-center rounded-[1.75rem] bg-yellow-100 text-5xl shadow-inner sm:h-24 sm:w-24 sm:text-6xl"
+          >
+            {scene.icon}
+          </motion.div>
+        )}
         {scene.animation === 'keys' && (
-          <div className="absolute inset-0 flex items-center justify-center gap-1">
+          <motion.div
+            variants={{ show: { transition: { staggerChildren: 0.18 } } }}
+            initial="hidden"
+            animate="show"
+            className="flex items-center justify-center gap-2"
+          >
             {[0, 1, 2, 3].map(i => (
               <motion.span
                 key={i}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.18, repeat: Infinity, repeatType: 'reverse', repeatDelay: 1.4 }}
-                className="absolute text-2xl"
-                style={{ transform: `rotate(${i * 90}deg) translateY(-54px)` }}
+                variants={{
+                  hidden: { opacity: 0, y: 20, scale: 0.6 },
+                  show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 360, damping: 18 } },
+                }}
+                className="text-4xl drop-shadow sm:text-5xl"
               >
-                🗝️
+                <motion.span
+                  animate={{ opacity: [1, 0.65, 1], y: [0, -6, 0] }}
+                  transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.18 }}
+                  className="inline-block"
+                >
+                  🗝️
+                </motion.span>
               </motion.span>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
 
       <p className="font-fredoka text-2xl text-[#FF6B6B]">{index + 1}장. {scene.title}</p>
-      <p className="mt-4 min-h-[12rem] whitespace-pre-line break-keep text-lg leading-relaxed text-slate-700">
+      <p className="mt-4 min-h-[10rem] whitespace-pre-line break-keep text-base leading-relaxed text-slate-700 sm:min-h-[12rem] sm:text-lg">
         {displayed}
+        {!done && <span className="ml-0.5 inline-block animate-pulse text-gold">|</span>}
       </p>
       {!done && (
         <p className="mt-2 text-xs font-bold text-slate-400">화면을 누르면 바로 읽을 수 있어요</p>
       )}
       <AnimatePresence>
         {done && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 22 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+            className="mt-6"
+          >
             <Button size="lg" className="w-full max-w-sm" onClick={onNext}>
               {index + 1 >= PROLOGUE.length ? '좋아! 출발하자 🚀' : '다음 ▶'}
             </Button>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div className="mt-5 flex justify-center gap-2">
+        {PROLOGUE.map((_, i) => (
+          <motion.span
+            key={i}
+            animate={{
+              scale: i === index ? 1.45 : 1,
+              backgroundColor: i === index ? '#F59E0B' : '#CBD5E1',
+              boxShadow: i === index ? '0 0 14px rgba(245,158,11,0.75)' : '0 0 0 rgba(0,0,0,0)',
+            }}
+            className="h-2.5 w-2.5 rounded-full"
+          />
+        ))}
+      </div>
     </motion.div>
   );
 }
@@ -188,9 +250,7 @@ export function LandingPage() {
     <PageTransition>
       <div
         className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
-        style={{
-          background: 'linear-gradient(160deg, #FFFDE7 0%, #FCE4EC 35%, #E3F2FD 65%, #F3E5F5 100%)',
-        }}
+        style={{ background: step === 'prologue' ? PROLOGUE[prologueIndex].bg : 'linear-gradient(160deg, #FFFDE7 0%, #FCE4EC 35%, #E3F2FD 65%, #F3E5F5 100%)', transition: 'background 600ms ease' }}
       >
         {/* 무지개 상단 띠 */}
         <div
@@ -233,7 +293,7 @@ export function LandingPage() {
         </div>
 
         {/* 메인 콘텐츠 */}
-        <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-4xl px-4 py-16">
+        <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-4xl px-4 py-8 sm:py-16">
 
           {step === 'start' ? (
             <motion.div
