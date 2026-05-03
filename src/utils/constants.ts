@@ -1,4 +1,4 @@
-import type { Difficulty, Grade } from '../types/game';
+import type { CubeColorKey, Difficulty, Grade } from '../types/game';
 
 export const DIFFICULTY_CONFIG: Record<Difficulty, {
   label: string;
@@ -34,6 +34,24 @@ export const CUBE_COLORS = {
   cyan:   '#06b6d4',
   gray:   '#6b7280',
 };
+
+export const CUBE_COLOR_HEX: Record<CubeColorKey, string> = {
+  red:    '#ef4444',
+  blue:   '#3b82f6',
+  yellow: '#eab308',
+  green:  '#22c55e',
+  purple: '#a855f7',
+};
+
+export const CUBE_COLOR_LABEL: Record<CubeColorKey, string> = {
+  red:    '빨강',
+  blue:   '파랑',
+  yellow: '노랑',
+  green:  '초록',
+  purple: '보라',
+};
+
+export const CUBE_COLOR_ORDER: CubeColorKey[] = ['red', 'blue', 'yellow', 'green', 'purple'];
 
 export const MAX_NICKNAME_LENGTH = 6;
 export const LEADERBOARD_KEY = 'cube_leaderboard';

@@ -1,10 +1,18 @@
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
+export type CubeColorKey = 'red' | 'blue' | 'yellow' | 'green' | 'purple';
+
 export interface CubeData {
   x: number;
   y: number;
   z: number;
   color: string;
+}
+
+export interface GridSize {
+  x: number;
+  y: number;
+  z: number;
 }
 
 export type QuestionType =
@@ -46,6 +54,8 @@ export interface Scene {
   minCubes?: number;
   exactCubes?: number;
   allowedColors?: string[];
+  requiredColorCount?: Partial<Record<CubeColorKey, number>>;
+  maxGridSize?: GridSize;
   questionText: string;
   options: Option[];
   hintText: string;

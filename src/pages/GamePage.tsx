@@ -242,6 +242,8 @@ export function GamePage() {
                   if (feedbackMessage && phase === 'playing') setFeedbackMessage(null);
                 }}
                 maxCubes={scene.maxCubes ?? scene.exactCubes ?? 10}
+                maxGridSize={scene.maxGridSize}
+                requiredColorCount={scene.requiredColorCount}
                 disabled={phase !== 'playing'}
                 onLimit={() => {
                   setRubyMessage('괜찮아! 큐브 수를 다시 맞춰보자.');
