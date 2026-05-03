@@ -8,9 +8,10 @@ interface Props {
   characterName: string;
   onDismiss: () => void;
   visible: boolean;
+  buttonText?: string;
 }
 
-export function StoryOverlay({ text, characterName, onDismiss, visible }: Props) {
+export function StoryOverlay({ text, characterName, onDismiss, visible, buttonText = '다음 ▶' }: Props) {
   const [displayed, setDisplayed] = useState('');
   const [done, setDone] = useState(false);
   const avatar = CHARACTER_AVATARS[characterName] ?? '🧝';
@@ -63,7 +64,7 @@ export function StoryOverlay({ text, characterName, onDismiss, visible }: Props)
 
           {done && (
             <div className="flex justify-end max-w-4xl mx-auto mt-3" onClick={e => e.stopPropagation()}>
-              <Button size="sm" onClick={onDismiss}>다음 ▶</Button>
+              <Button size="sm" onClick={onDismiss}>{buttonText}</Button>
             </div>
           )}
         </motion.div>

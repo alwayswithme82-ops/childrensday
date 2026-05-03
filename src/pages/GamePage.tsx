@@ -16,7 +16,57 @@ import { useSound } from '../hooks/useSound';
 import { calcStars } from '../utils/helpers';
 import type { Scene } from '../types/game';
 
-type Phase = 'story' | 'playing' | 'result';
+type Phase = 'story' | 'playing' | 'result' | 'treasure';
+
+const RUBY_CORRECT = [
+  '와! 진짜 잘했어!',
+  '역시 어린이 건축가야!',
+  '큐브 왕국이 점점 밝아지고 있어!',
+];
+
+const RUBY_WRONG = [
+  '괜찮아, 거의 다 왔어!',
+  '다시 보면 보일 거야!',
+  '큐브는 돌려보면 비밀을 알려줘!',
+];
+
+const MISSION_INTROS = [
+  {
+    text: '커다란 돌문이 길을 막고 있어요.\n문에는 이상한 큐브 그림자가 새겨져 있어요.\n루비가 속삭였어요.\n‘이 문은 앞에서 본 큐브 그림자를 맞혀야 열려!’',
+    button: '그림자 문 열기 👀',
+  },
+  {
+    text: '문을 지나자 바닥에 희미한 지도가 나타났어요.\n하지만 지도는 큐브 조각이 빠져 있어서 완성되지 않았어요.\n루비가 말했어요.\n‘위에서 봤을 때 지도 모양이 되도록 큐브를 놓아야 해!’',
+    button: '지도 완성하기 🧊',
+  },
+  {
+    text: '창고 안에는 큐브 상자가 높이높이 쌓여 있어요.\n어떤 큐브는 앞에서 보이지 않게 숨어 있었어요.\n루비가 눈을 크게 떴어요.\n‘보이는 큐브만 세면 안 돼!\n숨어 있는 큐브까지 찾아야 해.’',
+    button: '숨은 큐브 찾기 🔍',
+  },
+  {
+    text: '드디어 보물상자 앞에 도착했어요.\n하지만 상자 앞에는 무너진 큐브탑이 있었어요.\n루비가 말했어요.\n‘이 탑은 앞에서 봐도,\n위에서 봐도,\n마법 문양과 똑같아야 해.\n이 탑을 완성하면 마지막 열쇠가 나타날 거야!’',
+    button: '보물탑 완성하기 🏗️',
+  },
+];
+
+const TREASURE_SCENES = [
+  {
+    text: '네 개의 열쇠 조각이 공중으로 떠올랐어요.\n🗝️ 🗝️ 🗝️ 🗝️\n조각들이 빙글빙글 돌더니\n하나의 황금 열쇠로 합쳐졌어요.\n루비가 환하게 웃었어요.\n‘이제 보물상자를 열 수 있어!’',
+    button: '황금 열쇠 꽂기 🗝️',
+  },
+  {
+    text: '철컥!\n보물상자가 천천히 열렸어요.\n안에서는 눈부신 빛이 쏟아져 나왔어요.\n그런데 상자 안에는 금화보다 더 특별한 것이 들어 있었어요.',
+    button: '상자 안 들여다보기 💎',
+  },
+  {
+    text: '상자 안에는 작은 편지가 들어 있었어요.\n‘진짜 보물은 정답을 맞히는 힘이 아니라,\n다르게 바라보는 힘이야.’\n루비가 말했어요.\n‘너는 앞에서도 보고,\n위에서도 보고,\n왼쪽에서도 보며\n큐브 왕국의 마법을 풀었어!’',
+    button: '계속 보기 ✨',
+  },
+  {
+    text: '축하해요!\n당신은 큐브 왕국의 황금 보물을 찾아낸\n어린이 창의력 건축가입니다!',
+    button: '인증서 받기 🎖️',
+  },
+];
 
 const DIRECTION_LABELS = {
   front: '앞에서 본 모습',
@@ -34,31 +84,28 @@ function getQuestionDirection(scene: Scene): string | undefined {
 function getWrongFeedback(scene: Scene) {
   const face = scene.projectionFaces?.length === 1 ? scene.projectionFaces[0] : undefined;
   if (face === 'front') {
-    return '다시 볼까요? 지금 문제는 앞에서 본 모습을 찾는 문제예요. “앞에서 보기” 버튼을 눌러 다시 확인해봐요!';
+    return '괜찮아! 거의 다 왔어. 앞에서 본 모습만 다시 살펴보자.';
   }
   if (face === 'top') {
-    return '위에서 보면 높이는 잠깐 잊고, 바닥에 놓인 자리를 보면 돼요. “위에서 보기”로 다시 살펴봐요!';
+    return '지도 선이 아직 흐릿해요. 위에서 내려다봤을 때 모양이 같은지 다시 볼까?';
   }
   if (face === 'side') {
-    return '이번 문제는 왼쪽에서 본 모습이에요. 앞에서 본 모습과 헷갈리지 않게 “왼쪽에서 보기” 버튼을 눌러봐요!';
+    return '괜찮아! 왼쪽에서 본 모습을 다시 천천히 살펴보자. 큐브는 돌려보면 비밀을 알려줘!';
   }
   if (scene.questionType === 'counting') {
-    return '숨은 큐브까지 하나씩 손가락으로 세어봐요. 앞에 가려진 블록도 있을 수 있어요!';
+    return '큐브 하나가 아직 숨어 있어요. 뒤에 가려진 큐브가 있을지도 몰라!';
   }
-  return '보는 방향을 다시 맞춰볼까요? 버튼으로 시점을 고정한 뒤 큐브 모양을 천천히 비교해봐요!';
+  return '큐브탑이 아직 흔들리고 있어요. 앞에서 본 모습과 위에서 본 모습을 하나씩 확인해보자!';
 }
 
-function getRewardMessage(index: number, total: number) {
-  if (index + 1 >= total) {
-    return '보물상자가 열렸어요! 💎\n당신은 큐브 왕국의 창의력 건축가입니다!';
-  }
+function getRewardMessage(index: number) {
   const rewards = [
-    '찰칵! 첫 번째 열쇠 조각을 찾았어요! 🗝️',
-    '큐브 문이 열렸어요!\n보물지도 한 조각을 얻었어요. 🗺️',
-    '좋아요! 보물상자에 한 걸음 더 가까워졌어요!',
-    '반짝! 마법 열쇠가 더 밝게 빛나요. ✨',
+    '철컥!\n무거운 그림자 문이 열렸어요.\n문 안쪽에서 첫 번째 열쇠 조각이 반짝였어요.\n첫 번째 열쇠 조각 획득! 🗝️',
+    '반짝!\n바닥의 보물지도가 황금빛으로 빛났어요.\n지도 한가운데에서 두 번째 열쇠 조각이 떠올랐어요.\n두 번째 열쇠 조각 획득! 🗝️',
+    '딩동댕!\n숨어 있던 큐브들이 통통 튀어나왔어요.\n그중 하나가 세 번째 열쇠 조각으로 변했어요.\n세 번째 열쇠 조각 획득! 🗝️',
+    '쿠구궁…!\n큐브탑이 황금빛으로 빛나기 시작했어요.\n탑 꼭대기에서 마지막 열쇠 조각이 내려왔어요.\n마지막 열쇠 조각 획득! 🗝️',
   ];
-  return rewards[index % rewards.length];
+  return rewards[Math.min(index, rewards.length - 1)];
 }
 
 export function GamePage() {
@@ -77,6 +124,8 @@ export function GamePage() {
   const [hintsUsedThisScene, setHintsUsedThisScene] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [rubyMessage, setRubyMessage] = useState<string>('루비가 함께 모험 중이에요!');
+  const [treasureIndex, setTreasureIndex] = useState(0);
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -112,6 +161,7 @@ export function GamePage() {
     setHintsUsedThisScene(0);
     setSelectedOptionId(null);
     setFeedbackMessage(null);
+    setRubyMessage('루비가 함께 모험 중이에요!');
     timer.pause();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSceneIndex]);
@@ -125,6 +175,9 @@ export function GamePage() {
   const totalStars = sceneResults.reduce((s, r) => s + r.stars, 0);
   const correctId = scene.options.find(o => o.correct)?.id ?? '';
   const directionLabel = getQuestionDirection(scene);
+  const selectedIsCorrect = selectedOptionId === correctId;
+  const keyPieces = Math.min(sceneResults.length + (phase === 'result' && selectedIsCorrect ? 1 : 0), 4);
+  const mission = MISSION_INTROS[Math.min(currentSceneIndex, MISSION_INTROS.length - 1)];
 
   const handleStoryDismiss = () => {
     if (timer.time === 0 && currentSceneIndex === 0) {
@@ -149,7 +202,8 @@ export function GamePage() {
     if (opt.correct) {
       play('correct');
       timer.pause();
-      setFeedbackMessage(getRewardMessage(currentSceneIndex, level.scenes.length));
+      setRubyMessage(RUBY_CORRECT[currentSceneIndex % RUBY_CORRECT.length]);
+      setFeedbackMessage(getRewardMessage(Math.min(currentSceneIndex, 3)));
       const stars = calcStars(newAttempts, hintsUsedThisScene);
       const sceneTime = timer.getElapsed();
       const isLast = currentSceneIndex + 1 >= level.scenes.length;
@@ -164,13 +218,15 @@ export function GamePage() {
         });
         if (isLast) {
           timer.stop();
-          navigate('/result');
+          setTreasureIndex(0);
+          setPhase('treasure');
         } else {
           nextScene();
         }
       }, 1500);
     } else {
       play('wrong');
+      setRubyMessage(RUBY_WRONG[newAttempts % RUBY_WRONG.length]);
       setFeedbackMessage(getWrongFeedback(scene));
       // Allow retry after shake animation
       pendingTimeoutRef.current = setTimeout(() => {
@@ -179,6 +235,15 @@ export function GamePage() {
         setPhase('playing');
       }, 2200);
     }
+  };
+
+  const handleTreasureNext = () => {
+    play('click');
+    if (treasureIndex + 1 >= TREASURE_SCENES.length) {
+      navigate('/result');
+      return;
+    }
+    setTreasureIndex(i => i + 1);
   };
 
   const handleHint = () => {
@@ -199,6 +264,7 @@ export function GamePage() {
           stars={totalStars}
           hintsRemaining={hintsRemaining}
           onHint={handleHint}
+          keyPieces={keyPieces}
         />
 
         <AnimatePresence mode="wait">
@@ -227,6 +293,9 @@ export function GamePage() {
               <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-gold">보물의 방 {currentSceneIndex + 1}</p>
                 <p className="mt-2 text-lg text-white font-medium leading-snug">{scene.questionText}</p>
+                <div className="mt-3 rounded-xl bg-slate-950/70 px-3 py-2 text-sm font-bold text-pink-200">
+                  루비: “{rubyMessage}”
+                </div>
               </div>
               <AnimatePresence>
                 {feedbackMessage && (
@@ -258,11 +327,45 @@ export function GamePage() {
         </AnimatePresence>
 
         <StoryOverlay
-          text={scene.storyText}
+          text={mission.text}
           characterName={scene.characterName}
           visible={phase === 'story'}
           onDismiss={handleStoryDismiss}
+          buttonText={mission.button}
         />
+
+        <AnimatePresence>
+          {phase === 'treasure' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/90 px-4 backdrop-blur"
+            >
+              <motion.div
+                key={treasureIndex}
+                initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                className="w-full max-w-xl rounded-[2rem] border border-gold/40 bg-slate-900 p-6 text-center shadow-2xl"
+              >
+                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gold/20 text-5xl">
+                  {treasureIndex === 0 ? '🗝️' : treasureIndex === 1 ? '💎' : treasureIndex === 2 ? '✉️' : '🎖️'}
+                </div>
+                <p className="whitespace-pre-line break-keep text-lg font-bold leading-relaxed text-white">
+                  {TREASURE_SCENES[treasureIndex].text}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleTreasureNext}
+                  className="mt-6 w-full max-w-sm rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 px-6 py-4 text-lg font-bold text-slate-950 shadow-lg"
+                >
+                  {TREASURE_SCENES[treasureIndex].button}
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <HintModal
           open={showHint}

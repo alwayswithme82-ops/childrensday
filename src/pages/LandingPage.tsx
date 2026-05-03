@@ -33,7 +33,36 @@ const SPARKLES = [
   { icon: '✨', x: 3,  y: 42, dur: '2s',   delay: '1.5s' },
 ];
 
+const PROLOGUE = [
+  {
+    title: '1장: 이상한 초대장',
+    text: '띵동!\n어린이날 아침,\n네 앞에 반짝이는 큐브 모양 초대장이 도착했어요.\n초대장에는 이렇게 적혀 있었어요.\n‘도와줘! 큐브 왕국의 보물이 사라졌어!’',
+    button: '초대장 열어보기 ✉️',
+  },
+  {
+    title: '2장: 큐브 왕국으로 빨려 들어가다',
+    text: '초대장을 펼치는 순간,\n휘이이잉!\n빨강, 파랑, 노랑 큐브들이 빙글빙글 돌기 시작했어요.\n그리고 눈을 떠보니…\n너는 큐브로 만들어진 신비한 왕국에 도착해 있었어요!',
+    button: '큐브 왕국 둘러보기 🧊',
+  },
+  {
+    title: '3장: 울고 있는 큐브 요정 루비',
+    text: '그때 작은 큐브 요정이 날아왔어요.\n‘나는 큐브 요정 루비야!\n우리 왕국의 황금 보물상자가\n검은 그림자 마법에 잠겨버렸어!’\n루비는 반짝이는 눈으로 너를 바라보았어요.',
+    button: '루비의 이야기 듣기 ✨',
+  },
+  {
+    title: '4장: 검은 그림자 마법',
+    text: '그림자 마법은 아주 이상해.\n큐브를 앞에서 보면 다르게 보이고,\n위에서 보면 또 다르게 보이고,\n왼쪽에서 보면 완전히 다른 모양이 돼!\n하지만 네가 큐브를 잘 살펴보면\n마법을 풀 수 있을 거야!',
+    button: '내가 해볼게! 💪',
+  },
+  {
+    title: '5장: 네 개의 열쇠 조각',
+    text: '황금 보물상자를 열려면\n네 개의 열쇠 조각이 필요해요.\n열쇠 조각은 큐브 왕국의 네 장소에 숨어 있어요.\n🚪 그림자 문\n🗺️ 보물지도 바닥\n📦 숨은 큐브 창고\n🏰 비밀 보물탑',
+    button: '열쇠 조각 찾으러 가기 🗝️',
+  },
+];
+
 export function LandingPage() {
+  const [prologueIndex, setPrologueIndex] = useState(0);
   const [nickname, setNickname] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +75,7 @@ export function LandingPage() {
 
   const isNicknameValid = nickname.trim().length >= 1;
   const canStart = isNicknameValid && difficulty !== null && !isLoading;
+  const prologueDone = prologueIndex >= PROLOGUE.length;
 
   const handleStart = async () => {
     if (!canStart || !difficulty) return;
@@ -114,72 +144,115 @@ export function LandingPage() {
         {/* 메인 콘텐츠 */}
         <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-2xl px-4 py-16">
 
-          <Logo />
-
-          <NicknameInput value={nickname} onChange={setNickname} />
-
-          <div className="w-full">
-            <p
-              className="text-center mb-4 font-fredoka text-lg tracking-wider"
-              style={{ color: '#FF6B6B' }}
-            >
-              🌈 어떤 모험가가 되어볼까? 🌈
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-                <DifficultyCard
-                  key={d}
-                  difficulty={d}
-                  selected={difficulty === d}
-                  onSelect={d => { setDifficulty(d); play('click'); }}
-                />
-              ))}
-            </div>
-          </div>
-
-          <Button
-            size="lg"
-            onClick={handleStart}
-            disabled={!canStart}
-            pulse={canStart && !isLoading}
-            className="w-full max-w-xs"
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <motion.span
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
-                  style={{ display: 'inline-block' }}
+          {!prologueDone ? (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={prologueIndex}
+                initial={{ opacity: 0, y: 16, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.25 }}
+                className="w-full rounded-[2rem] border-[3px] border-white bg-white/85 p-6 text-center shadow-2xl backdrop-blur"
+              >
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-yellow-100 text-4xl shadow-inner">
+                  🧊
+                </div>
+                <p className="font-fredoka text-xl text-[#FF6B6B]">{PROLOGUE[prologueIndex].title}</p>
+                <p className="mt-4 whitespace-pre-line break-keep text-lg leading-relaxed text-slate-700">
+                  {PROLOGUE[prologueIndex].text}
+                </p>
+                <Button
+                  size="lg"
+                  className="mt-6 w-full max-w-sm"
+                  onClick={() => {
+                    play('click');
+                    setPrologueIndex(i => i + 1);
+                  }}
                 >
-                  ⚙
-                </motion.span>
-                잠깐만...
-              </span>
-            ) : '🚀 모험 시작!'}
-          </Button>
+                  {PROLOGUE[prologueIndex].button}
+                </Button>
+              </motion.div>
+            </AnimatePresence>
+          ) : (
+            <>
+              <Logo />
 
-          <AnimatePresence>
-            {error && (
-              <motion.p
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="font-fredoka text-sm text-red-500"
+              <div className="w-full max-w-lg rounded-3xl bg-white/70 p-4 text-center shadow-md backdrop-blur">
+                <p className="break-keep text-base font-bold leading-relaxed text-slate-600">
+                  루비가 작은 마법 펜을 꺼냈어요.<br />
+                  “먼저 너의 이름을 알려줘! 보물을 찾으면 큐브 왕국 인증서에 새겨줄게.”
+                </p>
+              </div>
+
+              <NicknameInput value={nickname} onChange={setNickname} />
+
+              <div className="w-full">
+                <p
+                  className="text-center mb-2 font-fredoka text-lg tracking-wider"
+                  style={{ color: '#FF6B6B' }}
+                >
+                  루비가 세 갈래 길을 보여주었어요.
+                </p>
+                <p className="mb-4 text-center text-sm font-bold text-slate-500">
+                  “어떤 길로 모험을 떠나볼래?”
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
+                    <DifficultyCard
+                      key={d}
+                      difficulty={d}
+                      selected={difficulty === d}
+                      onSelect={d => { setDifficulty(d); play('click'); }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                size="lg"
+                onClick={handleStart}
+                disabled={!canStart}
+                pulse={canStart && !isLoading}
+                className="w-full max-w-xs"
               >
-                ⚠️ {error}
-              </motion.p>
-            )}
-            {!error && !isNicknameValid && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="font-fredoka text-sm"
-                style={{ color: '#aaa' }}
-              >
-                이름을 입력하고 난이도를 선택하면 시작돼요 ✨
-              </motion.p>
-            )}
-          </AnimatePresence>
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
+                      style={{ display: 'inline-block' }}
+                    >
+                      ⚙
+                    </motion.span>
+                    잠깐만...
+                  </span>
+                ) : '열쇠 조각 찾으러 출발! 🗝️'}
+              </Button>
+
+              <AnimatePresence>
+                {error && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    className="font-fredoka text-sm text-red-500"
+                  >
+                    ⚠️ {error}
+                  </motion.p>
+                )}
+                {!error && !isNicknameValid && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="font-fredoka text-sm"
+                    style={{ color: '#aaa' }}
+                  >
+                    이름을 입력하고 모험 길을 선택하면 시작돼요 ✨
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </>
+          )}
         </div>
 
         {/* 리더보드 링크 */}

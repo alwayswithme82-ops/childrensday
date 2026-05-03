@@ -5,7 +5,7 @@ interface Props { difficulty: Difficulty; selected: boolean; onSelect: (d: Diffi
 
 const CFG = {
   easy: {
-    icon: '🌱', label: '새싹 모험', sub: '처음 하는 친구 추천',
+    icon: '🌱', label: '새싹 길', sub: '처음 온 건축가에게 추천! 작은 큐브부터 천천히 살펴봐요.',
     scenes: 5, hints: 5, stars: '⭐',
     gradient: 'linear-gradient(145deg,#E8FFF3,#C6F7DC)',
     border: '#6BCB77',
@@ -13,7 +13,7 @@ const CFG = {
     textColor: '#2D7A3A',
   },
   medium: {
-    icon: '🚀', label: '용사 모험', sub: '퍼즐을 좋아하는 친구 추천',
+    icon: '🚀', label: '용사 길', sub: '퍼즐을 좋아하는 건축가에게 추천! 앞, 위, 왼쪽 모습을 함께 생각해요.',
     scenes: 6, hints: 3, stars: '⭐⭐',
     gradient: 'linear-gradient(145deg,#EEF4FF,#DBEAFE)',
     border: '#4D96FF',
@@ -21,7 +21,7 @@ const CFG = {
     textColor: '#1A4FB5',
   },
   hard: {
-    icon: '🔥', label: '마법사 도전', sub: '진짜 큐브 고수 도전',
+    icon: '🔥', label: '마법사 길', sub: '큐브 고수 건축가에게 추천! 숨은 큐브와 비밀 구조까지 밝혀내요.',
     scenes: 7, hints: 2, stars: '⭐⭐⭐',
     gradient: 'linear-gradient(145deg,#FFF0F5,#FFD6E7)',
     border: '#FF6B6B',
@@ -77,7 +77,7 @@ export function DifficultyCard({ difficulty, selected, onSelect }: Props) {
         >
           {c.label}
         </p>
-        <p className="text-sm font-700" style={{ color: selected ? 'rgba(255,255,255,0.8)' : '#888' }}>
+        <p className="text-sm font-700 leading-snug" style={{ color: selected ? 'rgba(255,255,255,0.8)' : '#888' }}>
           {c.sub}
         </p>
       </div>

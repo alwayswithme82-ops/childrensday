@@ -9,10 +9,12 @@ interface Props {
   stars: number;
   hintsRemaining: number;
   onHint: () => void;
+  keyPieces: number;
 }
 
-export function GameHUD({ elapsed, sceneIndex, totalScenes, stars, hintsRemaining, onHint }: Props) {
+export function GameHUD({ elapsed, sceneIndex, totalScenes, stars, hintsRemaining, onHint, keyPieces }: Props) {
   const progress = ((sceneIndex + 1) / totalScenes) * 100;
+  const filled = Math.min(keyPieces, 4);
 
   return (
     <div
@@ -24,7 +26,9 @@ export function GameHUD({ elapsed, sceneIndex, totalScenes, stars, hintsRemainin
 
       {/* 중: 방 진행 */}
       <div className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
-        <span className="text-xs sm:text-sm font-medium text-white/70">방 {sceneIndex + 1}/{totalScenes}</span>
+        <span className="text-xs sm:text-sm font-medium text-white/70">
+          보물상자 마법 해제 중… {filled}/4
+        </span>
         <div className="w-full max-w-xs h-2 rounded-full bg-gold/30">
           <motion.div
             className="h-full rounded-full bg-gold"
@@ -36,7 +40,10 @@ export function GameHUD({ elapsed, sceneIndex, totalScenes, stars, hintsRemainin
 
       {/* 우: 별 + 힌트 + 음소거 */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        <span className="hidden min-[420px]:inline text-base tracking-tight leading-none">
+        <span className="hidden min-[520px]:inline text-base tracking-tight leading-none" aria-label={`열쇠 조각 ${filled}/4`}>
+          {'🗝️'.repeat(filled)}{'□'.repeat(4 - filled)}
+        </span>
+        <span className="hidden min-[700px]:inline text-base tracking-tight leading-none">
           {'⭐'.repeat(Math.min(stars, 9))}
         </span>
         <motion.button
