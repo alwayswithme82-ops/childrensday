@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '../components/landing/Logo';
@@ -35,33 +35,125 @@ const SPARKLES = [
 
 const PROLOGUE = [
   {
-    title: '1장: 이상한 초대장',
-    text: '띵동!\n어린이날 아침,\n네 앞에 반짝이는 큐브 모양 초대장이 도착했어요.\n초대장에는 이렇게 적혀 있었어요.\n‘도와줘! 큐브 왕국의 보물이 사라졌어!’',
-    button: '초대장 열어보기 ✉️',
+    title: '이상한 초대장',
+    icon: '✉️',
+    animation: 'invite',
+    text: '띵동!\n어린이날 아침,\n네 앞에 반짝이는 큐브 초대장이 도착했어요.\n‘도와줘! 큐브 왕국의 보물이 사라졌어!’',
   },
   {
-    title: '2장: 큐브 왕국으로 빨려 들어가다',
-    text: '초대장을 펼치는 순간,\n휘이이잉!\n빨강, 파랑, 노랑 큐브들이 빙글빙글 돌기 시작했어요.\n그리고 눈을 떠보니…\n너는 큐브로 만들어진 신비한 왕국에 도착해 있었어요!',
-    button: '큐브 왕국 둘러보기 🧊',
+    title: '큐브 왕국으로!',
+    icon: '🧊',
+    animation: 'portal',
+    text: '초대장을 펼치는 순간,\n큐브들이 빙글빙글 돌기 시작했어요!\n눈을 떠보니\n너는 신비한 큐브 왕국에 도착해 있었어요.',
   },
   {
-    title: '3장: 울고 있는 큐브 요정 루비',
-    text: '그때 작은 큐브 요정이 날아왔어요.\n‘나는 큐브 요정 루비야!\n우리 왕국의 황금 보물상자가\n검은 그림자 마법에 잠겨버렸어!’\n루비는 반짝이는 눈으로 너를 바라보았어요.',
-    button: '루비의 이야기 듣기 ✨',
+    title: '큐브 요정 루비의 부탁',
+    icon: '🧚',
+    animation: 'ruby',
+    text: '안녕! 나는 큐브 요정 루비야!\n황금 보물상자가 검은 그림자 마법에 잠겨버렸어!\n보물을 찾으려면 네 도움이 필요해!',
   },
   {
-    title: '4장: 검은 그림자 마법',
-    text: '그림자 마법은 아주 이상해.\n큐브를 앞에서 보면 다르게 보이고,\n위에서 보면 또 다르게 보이고,\n왼쪽에서 보면 완전히 다른 모양이 돼!\n하지만 네가 큐브를 잘 살펴보면\n마법을 풀 수 있을 거야!',
-    button: '내가 해볼게! 💪',
-  },
-  {
-    title: '5장: 네 개의 열쇠 조각',
-    text: '황금 보물상자를 열려면\n네 개의 열쇠 조각이 필요해요.\n열쇠 조각은 큐브 왕국의 네 장소에 숨어 있어요.\n🚪 그림자 문\n🗺️ 보물지도 바닥\n📦 숨은 큐브 창고\n🏰 비밀 보물탑',
-    button: '열쇠 조각 찾으러 가기 🗝️',
+    title: '모험의 시작',
+    icon: '🗝️',
+    animation: 'keys',
+    text: '보물상자를 열려면\n네 개의 열쇠 조각을 찾아야 해요.\n🚪 그림자 문\n🗺️ 보물지도 바닥\n📦 숨은 큐브 창고\n🏰 비밀 보물탑\n큐브 왕국으로 모험을 떠나볼까요?',
   },
 ];
 
+type LandingStep = 'start' | 'prologue' | 'setup';
+
+function PrologueCard({
+  index,
+  onNext,
+}: {
+  index: number;
+  onNext: () => void;
+}) {
+  const scene = PROLOGUE[index];
+  const [displayed, setDisplayed] = useState('');
+  const done = displayed.length >= scene.text.length;
+
+  useEffect(() => {
+    setDisplayed('');
+    let i = 0;
+    const timer = window.setInterval(() => {
+      i += 2;
+      setDisplayed(scene.text.slice(0, i));
+      if (i >= scene.text.length) window.clearInterval(timer);
+    }, 18);
+    return () => window.clearInterval(timer);
+  }, [scene.text]);
+
+  const reveal = () => {
+    if (!done) setDisplayed(scene.text);
+  };
+
+  return (
+    <motion.div
+      key={index}
+      initial={{ opacity: 0, y: 18, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -12, scale: 0.98 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      onClick={reveal}
+      className="w-full rounded-[2rem] border-[3px] border-white bg-white/88 p-6 text-center shadow-2xl backdrop-blur"
+    >
+      <div className="relative mx-auto mb-5 flex h-28 w-28 items-center justify-center">
+        <motion.div
+          animate={
+            scene.animation === 'invite'
+              ? { y: [0, -10, 0], rotate: [0, -4, 4, 0], scale: [1, 1.08, 1] }
+              : scene.animation === 'portal'
+                ? { rotate: 360, scale: [1, 1.08, 1] }
+                : scene.animation === 'ruby'
+                  ? { y: [0, -12, 0] }
+                  : { scale: [1, 1.12, 1] }
+          }
+          transition={{ duration: scene.animation === 'portal' ? 2.4 : 1.6, repeat: Infinity, ease: 'easeInOut' }}
+          className="flex h-24 w-24 items-center justify-center rounded-[2rem] bg-yellow-100 text-6xl shadow-inner"
+        >
+          {scene.icon}
+        </motion.div>
+        {scene.animation === 'keys' && (
+          <div className="absolute inset-0 flex items-center justify-center gap-1">
+            {[0, 1, 2, 3].map(i => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + i * 0.18, repeat: Infinity, repeatType: 'reverse', repeatDelay: 1.4 }}
+                className="absolute text-2xl"
+                style={{ transform: `rotate(${i * 90}deg) translateY(-54px)` }}
+              >
+                🗝️
+              </motion.span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <p className="font-fredoka text-2xl text-[#FF6B6B]">{index + 1}장. {scene.title}</p>
+      <p className="mt-4 min-h-[12rem] whitespace-pre-line break-keep text-lg leading-relaxed text-slate-700">
+        {displayed}
+      </p>
+      {!done && (
+        <p className="mt-2 text-xs font-bold text-slate-400">화면을 누르면 바로 읽을 수 있어요</p>
+      )}
+      <AnimatePresence>
+        {done && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-6">
+            <Button size="lg" className="w-full max-w-sm" onClick={onNext}>
+              {index + 1 >= PROLOGUE.length ? '좋아! 출발하자 🚀' : '다음 ▶'}
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 export function LandingPage() {
+  const [step, setStep] = useState<LandingStep>('start');
   const [prologueIndex, setPrologueIndex] = useState(0);
   const [nickname, setNickname] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -75,7 +167,6 @@ export function LandingPage() {
 
   const isNicknameValid = nickname.trim().length >= 1;
   const canStart = isNicknameValid && difficulty !== null && !isLoading;
-  const prologueDone = prologueIndex >= PROLOGUE.length;
 
   const handleStart = async () => {
     if (!canStart || !difficulty) return;
@@ -142,36 +233,85 @@ export function LandingPage() {
         </div>
 
         {/* 메인 콘텐츠 */}
-        <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-2xl px-4 py-16">
+        <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-4xl px-4 py-16">
 
-          {!prologueDone ? (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={prologueIndex}
-                initial={{ opacity: 0, y: 16, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                transition={{ duration: 0.25 }}
-                className="w-full rounded-[2rem] border-[3px] border-white bg-white/85 p-6 text-center shadow-2xl backdrop-blur"
-              >
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-yellow-100 text-4xl shadow-inner">
-                  🧊
-                </div>
-                <p className="font-fredoka text-xl text-[#FF6B6B]">{PROLOGUE[prologueIndex].title}</p>
-                <p className="mt-4 whitespace-pre-line break-keep text-lg leading-relaxed text-slate-700">
-                  {PROLOGUE[prologueIndex].text}
-                </p>
-                <Button
-                  size="lg"
-                  className="mt-6 w-full max-w-sm"
-                  onClick={() => {
-                    play('click');
-                    setPrologueIndex(i => i + 1);
-                  }}
+          {step === 'start' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative w-full max-w-3xl overflow-hidden rounded-[2.2rem] border-[4px] border-white bg-white/80 p-6 text-center shadow-2xl backdrop-blur sm:p-10"
+            >
+              <div className="pointer-events-none absolute inset-0" aria-hidden>
+                {['🧊', '🗝️', '💎', '⭐', '📦', '✨'].map((icon, i) => (
+                  <motion.span
+                    key={i}
+                    animate={{ y: [0, -14, 0], rotate: [0, 8, -8, 0] }}
+                    transition={{ duration: 2 + i * 0.25, repeat: Infinity, delay: i * 0.2 }}
+                    className="absolute text-3xl opacity-60"
+                    style={{ left: `${10 + (i * 16) % 78}%`, top: `${12 + (i * 19) % 70}%` }}
+                  >
+                    {icon}
+                  </motion.span>
+                ))}
+              </div>
+
+              <div className="relative z-10 flex flex-col items-center gap-5">
+                <motion.div
+                  animate={{ rotateY: 360 }}
+                  transition={{ duration: 3.2, repeat: Infinity, ease: 'linear' }}
+                  className="text-7xl"
                 >
-                  {PROLOGUE[prologueIndex].button}
-                </Button>
-              </motion.div>
+                  🧊
+                </motion.div>
+                <div>
+                  <h1
+                    className="font-fredoka leading-none"
+                    style={{
+                      fontSize: 'clamp(3.2rem, 10vw, 6.2rem)',
+                      background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 42%, #6BCB77 72%, #4D96FF 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    큐브 왕국의 보물찾기
+                  </h1>
+                  <p className="mt-4 break-keep text-lg font-bold text-slate-600">
+                    사라진 황금 보물을 찾아 떠나는 큐브 모험!
+                  </p>
+                </div>
+                <div className="flex w-full max-w-sm flex-col gap-3">
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    pulse
+                    onClick={() => {
+                      play('click');
+                      setStep('prologue');
+                    }}
+                  >
+                    🎮 게임 시작
+                  </Button>
+                  <Button size="md" variant="outline" className="w-full" onClick={() => navigate('/leaderboard')}>
+                    🏆 리더보드 보기
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          ) : step === 'prologue' ? (
+            <AnimatePresence mode="wait">
+              <PrologueCard
+                key={prologueIndex}
+                index={prologueIndex}
+                onNext={() => {
+                  play('click');
+                  if (prologueIndex + 1 >= PROLOGUE.length) {
+                    setStep('setup');
+                  } else {
+                    setPrologueIndex(i => i + 1);
+                  }
+                }}
+              />
             </AnimatePresence>
           ) : (
             <>
@@ -180,7 +320,7 @@ export function LandingPage() {
               <div className="w-full max-w-lg rounded-3xl bg-white/70 p-4 text-center shadow-md backdrop-blur">
                 <p className="break-keep text-base font-bold leading-relaxed text-slate-600">
                   루비가 작은 마법 펜을 꺼냈어요.<br />
-                  “먼저 너의 이름을 알려줘! 보물을 찾으면 큐브 왕국 인증서에 새겨줄게.”
+                  “먼저 너의 이름을 알려줘! 보물을 찾으면 인증서에 적어줄게.”
                 </p>
               </div>
 
@@ -255,21 +395,22 @@ export function LandingPage() {
           )}
         </div>
 
-        {/* 리더보드 링크 */}
-        <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/leaderboard')}
-          className="absolute bottom-6 right-6 font-fredoka text-sm px-4 py-2 rounded-full transition-all"
-          style={{
-            background: 'rgba(255,255,255,0.7)',
-            color: '#4D96FF',
-            boxShadow: '0 2px 12px rgba(77,150,255,0.2)',
-            backdropFilter: 'blur(4px)',
-          }}
-        >
-          🏆 리더보드
-        </motion.button>
+        {step !== 'start' && (
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/leaderboard')}
+            className="absolute bottom-6 right-6 font-fredoka text-sm px-4 py-2 rounded-full transition-all"
+            style={{
+              background: 'rgba(255,255,255,0.7)',
+              color: '#4D96FF',
+              boxShadow: '0 2px 12px rgba(77,150,255,0.2)',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            🏆 리더보드
+          </motion.button>
+        )}
 
         {/* 무지개 하단 띠 */}
         <div
