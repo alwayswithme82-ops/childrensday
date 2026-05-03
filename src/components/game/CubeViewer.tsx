@@ -14,7 +14,7 @@ export function CubeViewer({ cubes }: Props) {
   const cz = cubes.reduce((s, c) => s + c.z, 0) / cubes.length;
 
   return (
-    <div className="w-full h-full min-h-[280px] rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg,#EEF4FF,#F3E5F5)' }}>
+    <div className="w-full h-full min-h-[280px] rounded-2xl overflow-hidden bg-slate-900">
       <Canvas
         camera={{ position: [cx + 4, cy + 4, cz + 4], fov: 45 }}
         shadows

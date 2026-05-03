@@ -55,3 +55,10 @@ body {
   transform-style: preserve-3d;
   display: inline-block;
 }
+
+/* 내 기록 pulse */
+@keyframes pulse-slow {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+.animate-pulse-slow { animation: pulse-slow 2s ease-in-out infinite; }

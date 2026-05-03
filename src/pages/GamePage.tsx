@@ -8,6 +8,7 @@ import { OptionGrid } from '../components/game/OptionGrid';
 import { StoryOverlay } from '../components/game/StoryOverlay';
 import { HintModal } from '../components/game/HintModal';
 import { useGameStore } from '../stores/useGameStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { getLevelByDifficulty } from '../data/levels';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../hooks/useSound';
@@ -15,7 +16,8 @@ import { calcStars } from '../utils/helpers';
 
 export function GamePage() {
   const navigate = useNavigate();
-  const { difficulty, nickname, currentSceneIndex, sceneResults, hintsRemaining, nextScene, recordSceneResult, useHint } = useGameStore();
+  const { difficulty, currentSceneIndex, sceneResults, hintsRemaining, nextScene, recordSceneResult, useHint } = useGameStore();
+  const { isAuthenticated } = useAuthStore();
   const { elapsed, restart } = useTimer(false);
   const { play } = useSound();
 
@@ -27,8 +29,9 @@ export function GamePage() {
   const [answered, setAnswered] = useState(false);
 
   useEffect(() => {
-    if (!difficulty || !nickname) { navigate('/'); return; }
-  }, [difficulty, nickname, navigate]);
+    if (!isAuthenticated) { navigate('/'); return; }
+    if (!difficulty) { navigate('/'); return; }
+  }, [isAuthenticated, difficulty, navigate]);
 
   useEffect(() => {
     setShowStory(true);
@@ -81,7 +84,8 @@ export function GamePage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(160deg,#FFFDE7 0%,#FCE4EC 50%,#E3F2FD 100%)' }}>
+      <div className="h-screen flex flex-col overflow-hidden bg-slate-950">
+        {/* 상단 HUD: h-16 */}
         <GameHUD
           elapsed={elapsed}
           sceneIndex={currentSceneIndex}
@@ -91,34 +95,43 @@ export function GamePage() {
           onHint={handleHint}
         />
 
-        <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 relative">
-          <div className="flex-1 min-h-[260px]">
-            <CubeViewer cubes={scene.cubes} />
+        {/* 메인 영역: h-[calc(100vh-4rem)] */}
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+
+          {/* 좌측 w-[60%]: CubeViewer */}
+          <div className="flex-1 md:flex-none md:w-[60%] flex flex-col p-4 gap-3 min-h-[260px] md:min-h-0">
+            <div className="flex-1 bg-slate-900 rounded-2xl overflow-hidden relative">
+              <CubeViewer cubes={scene.cubes} />
+            </div>
+            <p className="text-sm text-slate-500 text-center select-none">마우스 드래그로 회전해보세요 🔄</p>
           </div>
 
-          <div className="flex flex-col gap-4 md:w-80">
+          {/* 우측 w-[40%]: 투영 + 문제 + 선택지 */}
+          <div className="md:w-[40%] p-6 flex flex-col gap-6 overflow-y-auto">
             <ProjectionView
               cubes={scene.cubes}
               faces={scene.projectionFaces ?? ['front']}
             />
-            <div>
-              <p className="text-sm font-700 mb-3" style={{ color: '#333' }}>{scene.questionText}</p>
-              <OptionGrid
-                options={scene.options}
-                onAnswer={handleAnswer}
-                disabled={showStory || answered}
-              />
-            </div>
-          </div>
 
-          <StoryOverlay
-            text={scene.storyText}
-            characterName={scene.characterName}
-            visible={showStory}
-            onDismiss={() => { setShowStory(false); restart(); }}
-          />
+            <p className="text-lg text-white font-medium leading-snug">{scene.questionText}</p>
+
+            <OptionGrid
+              options={scene.options}
+              onAnswer={handleAnswer}
+              disabled={showStory || answered}
+            />
+          </div>
         </div>
 
+        {/* 스토리 오버레이: fixed bottom-0 */}
+        <StoryOverlay
+          text={scene.storyText}
+          characterName={scene.characterName}
+          visible={showStory}
+          onDismiss={() => { setShowStory(false); restart(); }}
+        />
+
+        {/* 힌트 모달 */}
         <HintModal
           open={showHint}
           onClose={() => setShowHint(false)}

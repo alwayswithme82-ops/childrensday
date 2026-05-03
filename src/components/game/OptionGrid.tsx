@@ -19,8 +19,8 @@ function MiniGrid({ data }: { data: number[][] }) {
             key={`${r}-${c}`}
             style={{
               width: CELL, height: CELL,
-              border: '1px solid rgba(0,0,0,0.1)',
-              background: cell ? '#4D96FF' : 'rgba(0,0,0,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              background: cell ? '#4D96FF' : 'rgba(255,255,255,0.04)',
             }}
           />
         ))
@@ -29,12 +29,22 @@ function MiniGrid({ data }: { data: number[][] }) {
   );
 }
 
+const shakeVariant = {
+  shake: { x: [0, -8, 8, -6, 6, -4, 4, 0] },
+  still: { x: 0 },
+};
+
 export function OptionGrid({ options, onAnswer, disabled = false }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [shakingId, setShakingId] = useState<string | null>(null);
 
   const handleClick = (opt: Option) => {
     if (disabled || selected) return;
     setSelected(opt.id);
+    if (!opt.correct) {
+      setShakingId(opt.id);
+      setTimeout(() => setShakingId(null), 450);
+    }
     onAnswer(opt.correct, opt.id);
   };
 
@@ -42,42 +52,47 @@ export function OptionGrid({ options, onAnswer, disabled = false }: Props) {
     <div className="grid grid-cols-2 gap-3">
       {options.map(opt => {
         const isSelected = selected === opt.id;
-        const showResult = isSelected;
         const correct = opt.correct;
+
+        let ring = '';
+        let bg = 'bg-slate-800';
+        if (isSelected && correct) {
+          ring = 'ring-2 ring-emerald-500';
+          bg = 'bg-emerald-500/20';
+        } else if (isSelected && !correct) {
+          ring = 'ring-2 ring-red-500';
+          bg = 'bg-red-500/20';
+        }
 
         return (
           <motion.button
             key={opt.id}
-            whileHover={!selected ? { scale: 1.04 } : {}}
-            whileTap={!selected ? { scale: 0.96 } : {}}
+            variants={shakeVariant}
+            animate={shakingId === opt.id ? 'shake' : 'still'}
+            transition={{ duration: 0.4 }}
+            whileHover={!selected ? { scale: 1.03 } : {}}
+            whileTap={!selected ? { scale: 0.97 } : {}}
             onClick={() => handleClick(opt)}
             disabled={!!selected || disabled}
-            className="relative flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all min-h-[80px]"
-            style={{
-              border: showResult && correct ? '2px solid #6BCB77'
-                : showResult && !correct ? '2px solid #FF6B6B'
-                : !selected ? '2px solid #E5E7EB'
-                : '2px solid #E5E7EB',
-              background: showResult && correct ? '#F0FFF4'
-                : showResult && !correct ? '#FFF0F0'
-                : !selected ? '#FFFFFF'
-                : 'rgba(0,0,0,0.02)',
-              opacity: !showResult && selected ? 0.5 : 1,
-              cursor: selected ? 'default' : 'pointer',
-              boxShadow: !selected ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
-            }}
+            className={[
+              'relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-transparent transition-all min-h-[88px] cursor-pointer',
+              bg, ring,
+              !selected ? 'hover:ring-2 hover:ring-gold/60' : '',
+              !isSelected && selected ? 'opacity-40' : '',
+            ].join(' ')}
           >
-            <span className="text-xs font-bold" style={{ color: '#ccc' }}>{opt.id}</span>
+            <span className="text-xs font-bold text-slate-500">{opt.id}</span>
             {opt.projectionData ? (
               <MiniGrid data={opt.projectionData} />
             ) : (
-              <span className="text-sm font-700" style={{ color: '#333' }}>{opt.label}</span>
+              <span className="text-sm font-bold text-white">{opt.label}</span>
             )}
             <AnimatePresence>
-              {showResult && (
+              {isSelected && (
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
                   className="absolute inset-0 flex items-center justify-center rounded-xl"
                 >
                   <span className="text-3xl">{correct ? '✅' : '❌'}</span>

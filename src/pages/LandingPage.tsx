@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '../components/landing/Logo';
 import { NicknameInput } from '../components/landing/NicknameInput';
 import { DifficultyCard } from '../components/landing/DifficultyCard';
@@ -8,6 +8,7 @@ import { Button } from '../components/shared/Button';
 import { MuteToggle } from '../components/shared/MuteToggle';
 import { PageTransition } from '../components/layout/PageTransition';
 import { useGameStore } from '../stores/useGameStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { useSound } from '../hooks/useSound';
 import type { Difficulty } from '../types/game';
 
@@ -35,18 +36,31 @@ const SPARKLES = [
 export function LandingPage() {
   const [nickname, setNickname] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const { startGame } = useGameStore();
+  const { login } = useAuthStore();
   const navigate = useNavigate();
   const { play } = useSound();
 
   const isNicknameValid = nickname.trim().length >= 1;
-  const canStart = isNicknameValid && difficulty !== null;
+  const canStart = isNicknameValid && difficulty !== null && !isLoading;
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (!canStart || !difficulty) return;
     play('click');
-    startGame(difficulty, nickname.trim());
-    navigate('/game');
+    setError(null);
+    setIsLoading(true);
+    try {
+      await login(nickname.trim());
+      startGame(difficulty, nickname.trim());
+      navigate('/game');
+    } catch {
+      setError('로그인 중 문제가 발생했어요. 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -127,17 +141,45 @@ export function LandingPage() {
             size="lg"
             onClick={handleStart}
             disabled={!canStart}
-            pulse={canStart}
+            pulse={canStart && !isLoading}
             className="w-full max-w-xs"
           >
-            🚀 모험 시작!
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <motion.span
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
+                  style={{ display: 'inline-block' }}
+                >
+                  ⚙
+                </motion.span>
+                잠깐만...
+              </span>
+            ) : '🚀 모험 시작!'}
           </Button>
 
-          {!isNicknameValid && (
-            <p className="font-fredoka text-sm" style={{ color: '#aaa' }}>
-              이름을 입력하고 난이도를 선택하면 시작돼요 ✨
-            </p>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                className="font-fredoka text-sm text-red-500"
+              >
+                ⚠️ {error}
+              </motion.p>
+            )}
+            {!error && !isNicknameValid && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="font-fredoka text-sm"
+                style={{ color: '#aaa' }}
+              >
+                이름을 입력하고 난이도를 선택하면 시작돼요 ✨
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* 리더보드 링크 */}
