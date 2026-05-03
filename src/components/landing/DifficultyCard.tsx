@@ -5,7 +5,7 @@ interface Props { difficulty: Difficulty; selected: boolean; onSelect: (d: Diffi
 
 const CFG = {
   easy: {
-    icon: '🌱', label: '쉬움', sub: '초등 1·2학년',
+    icon: '🌱', label: '새싹 모험', sub: '처음 하는 친구 추천',
     scenes: 5, hints: 5, stars: '⭐',
     gradient: 'linear-gradient(145deg,#E8FFF3,#C6F7DC)',
     border: '#6BCB77',
@@ -13,7 +13,7 @@ const CFG = {
     textColor: '#2D7A3A',
   },
   medium: {
-    icon: '🚀', label: '보통', sub: '초등 3·4학년',
+    icon: '🚀', label: '용사 모험', sub: '퍼즐을 좋아하는 친구 추천',
     scenes: 6, hints: 3, stars: '⭐⭐',
     gradient: 'linear-gradient(145deg,#EEF4FF,#DBEAFE)',
     border: '#4D96FF',
@@ -21,7 +21,7 @@ const CFG = {
     textColor: '#1A4FB5',
   },
   hard: {
-    icon: '🔥', label: '어려움', sub: '초등 5·6학년',
+    icon: '🔥', label: '마법사 도전', sub: '진짜 큐브 고수 도전',
     scenes: 7, hints: 2, stars: '⭐⭐⭐',
     gradient: 'linear-gradient(145deg,#FFF0F5,#FFD6E7)',
     border: '#FF6B6B',

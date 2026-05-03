@@ -9,9 +9,9 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, {
   timeBonus: number;
   hints: number;
 }> = {
-  easy:   { label: '쉬움',   stars: 1, color: 'text-emerald-400', ring: 'ring-emerald-400', bg: 'from-emerald-900/60 to-emerald-800/40', timeBonus: 90,  hints: 5 },
-  medium: { label: '보통',   stars: 2, color: 'text-blue-400',    ring: 'ring-blue-400',    bg: 'from-blue-900/60 to-blue-800/40',       timeBonus: 150, hints: 3 },
-  hard:   { label: '어려움', stars: 3, color: 'text-purple-400',  ring: 'ring-purple-400',  bg: 'from-purple-900/60 to-purple-800/40',   timeBonus: 240, hints: 2 },
+  easy:   { label: '새싹 모험',   stars: 1, color: 'text-emerald-400', ring: 'ring-emerald-400', bg: 'from-emerald-900/60 to-emerald-800/40', timeBonus: 90,  hints: 5 },
+  medium: { label: '용사 모험',   stars: 2, color: 'text-blue-400',    ring: 'ring-blue-400',    bg: 'from-blue-900/60 to-blue-800/40',       timeBonus: 150, hints: 3 },
+  hard:   { label: '마법사 도전', stars: 3, color: 'text-purple-400',  ring: 'ring-purple-400',  bg: 'from-purple-900/60 to-purple-800/40',   timeBonus: 240, hints: 2 },
 };
 
 export const GRADE_CONFIG: Record<Grade, {

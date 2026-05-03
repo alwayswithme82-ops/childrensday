@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function GameHUD({ elapsed, sceneIndex, totalScenes, stars, hintsRemaining, onHint }: Props) {
-  const progress = (sceneIndex / totalScenes) * 100;
+  const progress = ((sceneIndex + 1) / totalScenes) * 100;
 
   return (
     <div
@@ -22,9 +22,9 @@ export function GameHUD({ elapsed, sceneIndex, totalScenes, stars, hintsRemainin
       {/* 좌: 타이머 */}
       <span className="font-mono text-lg sm:text-2xl font-bold text-gold shrink-0">⏱ {formatTime(elapsed)}</span>
 
-      {/* 중: 장면 진행 */}
+      {/* 중: 방 진행 */}
       <div className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
-        <span className="text-xs sm:text-sm font-medium text-white/70">장면 {sceneIndex + 1}/{totalScenes}</span>
+        <span className="text-xs sm:text-sm font-medium text-white/70">방 {sceneIndex + 1}/{totalScenes}</span>
         <div className="w-full max-w-xs h-2 rounded-full bg-gold/30">
           <motion.div
             className="h-full rounded-full bg-gold"

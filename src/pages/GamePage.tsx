@@ -14,8 +14,52 @@ import { getLevelByDifficulty } from '../data/levels';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../hooks/useSound';
 import { calcStars } from '../utils/helpers';
+import type { Scene } from '../types/game';
 
 type Phase = 'story' | 'playing' | 'result';
+
+const DIRECTION_LABELS = {
+  front: '앞에서 본 모습',
+  side: '왼쪽에서 본 모습',
+  top: '위에서 본 모습',
+} as const;
+
+function getQuestionDirection(scene: Scene): string | undefined {
+  if (scene.projectionFaces?.length === 1) return DIRECTION_LABELS[scene.projectionFaces[0]];
+  if (scene.questionType === 'counting') return '블록 개수';
+  if (scene.questionType === 'rotation') return '돌린 뒤 앞에서 본 모습';
+  return undefined;
+}
+
+function getWrongFeedback(scene: Scene) {
+  const face = scene.projectionFaces?.length === 1 ? scene.projectionFaces[0] : undefined;
+  if (face === 'front') {
+    return '다시 볼까요? 지금 문제는 앞에서 본 모습을 찾는 문제예요. “앞에서 보기” 버튼을 눌러 다시 확인해봐요!';
+  }
+  if (face === 'top') {
+    return '위에서 보면 높이는 잠깐 잊고, 바닥에 놓인 자리를 보면 돼요. “위에서 보기”로 다시 살펴봐요!';
+  }
+  if (face === 'side') {
+    return '이번 문제는 왼쪽에서 본 모습이에요. 앞에서 본 모습과 헷갈리지 않게 “왼쪽에서 보기” 버튼을 눌러봐요!';
+  }
+  if (scene.questionType === 'counting') {
+    return '숨은 큐브까지 하나씩 손가락으로 세어봐요. 앞에 가려진 블록도 있을 수 있어요!';
+  }
+  return '보는 방향을 다시 맞춰볼까요? 버튼으로 시점을 고정한 뒤 큐브 모양을 천천히 비교해봐요!';
+}
+
+function getRewardMessage(index: number, total: number) {
+  if (index + 1 >= total) {
+    return '보물상자가 열렸어요! 💎\n당신은 큐브 왕국의 창의력 건축가입니다!';
+  }
+  const rewards = [
+    '찰칵! 첫 번째 열쇠 조각을 찾았어요! 🗝️',
+    '큐브 문이 열렸어요!\n보물지도 한 조각을 얻었어요. 🗺️',
+    '좋아요! 보물상자에 한 걸음 더 가까워졌어요!',
+    '반짝! 마법 열쇠가 더 밝게 빛나요. ✨',
+  ];
+  return rewards[index % rewards.length];
+}
 
 export function GamePage() {
   const navigate = useNavigate();
@@ -32,6 +76,7 @@ export function GamePage() {
   const [attempts, setAttempts] = useState(0);
   const [hintsUsedThisScene, setHintsUsedThisScene] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -66,6 +111,7 @@ export function GamePage() {
     setAttempts(0);
     setHintsUsedThisScene(0);
     setSelectedOptionId(null);
+    setFeedbackMessage(null);
     timer.pause();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSceneIndex]);
@@ -78,6 +124,7 @@ export function GamePage() {
 
   const totalStars = sceneResults.reduce((s, r) => s + r.stars, 0);
   const correctId = scene.options.find(o => o.correct)?.id ?? '';
+  const directionLabel = getQuestionDirection(scene);
 
   const handleStoryDismiss = () => {
     if (timer.time === 0 && currentSceneIndex === 0) {
@@ -102,6 +149,7 @@ export function GamePage() {
     if (opt.correct) {
       play('correct');
       timer.pause();
+      setFeedbackMessage(getRewardMessage(currentSceneIndex, level.scenes.length));
       const stars = calcStars(newAttempts, hintsUsedThisScene);
       const sceneTime = timer.getElapsed();
       const isLast = currentSceneIndex + 1 >= level.scenes.length;
@@ -123,11 +171,13 @@ export function GamePage() {
       }, 1500);
     } else {
       play('wrong');
+      setFeedbackMessage(getWrongFeedback(scene));
       // Allow retry after shake animation
       pendingTimeoutRef.current = setTimeout(() => {
         setSelectedOptionId(null);
+        setFeedbackMessage(null);
         setPhase('playing');
-      }, 1000);
+      }, 2200);
     }
   };
 
@@ -174,13 +224,34 @@ export function GamePage() {
                 cubes={scene.cubes}
                 faces={scene.projectionFaces ?? ['front']}
               />
-              <p className="text-lg text-white font-medium leading-snug">{scene.questionText}</p>
+              <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-gold">보물의 방 {currentSceneIndex + 1}</p>
+                <p className="mt-2 text-lg text-white font-medium leading-snug">{scene.questionText}</p>
+              </div>
+              <AnimatePresence>
+                {feedbackMessage && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96, y: -6 }}
+                    className={[
+                      'rounded-2xl border p-4 text-sm font-bold leading-relaxed whitespace-pre-line',
+                      selectedOptionId === correctId
+                        ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-100'
+                        : 'border-amber-300/40 bg-amber-400/10 text-amber-100',
+                    ].join(' ')}
+                  >
+                    {feedbackMessage}
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <OptionGrid
                 options={scene.options}
                 onSelect={handleSelect}
                 selectedId={selectedOptionId}
                 correctId={correctId}
                 showResult={phase === 'result' && !!selectedOptionId}
+                directionLabel={directionLabel}
               />
             </div>
           </motion.div>

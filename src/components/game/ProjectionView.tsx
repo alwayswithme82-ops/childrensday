@@ -7,7 +7,11 @@ interface Props {
   faces: ('front' | 'side' | 'top')[];
 }
 
-const LABELS: Record<string, string> = { front: '앞면', side: '옆면', top: '윗면' };
+const LABELS: Record<string, string> = {
+  front: '앞에서 본 모습',
+  side: '왼쪽에서 본 모습',
+  top: '위에서 본 모습',
+};
 const CELL = 40;
 
 function ProjectionCanvas({ grid }: { grid: string[][] }) {

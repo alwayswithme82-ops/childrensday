@@ -21,7 +21,7 @@ export function Logo() {
       </p>
 
       <p className="text-sm font-700 text-gray-400 mt-1">
-        3D 블록 공간추론 · 어린이날 특별 체험 🎉
+        마법 열쇠를 모아 보물상자를 열어라! 🗝️✨
       </p>
     </div>
   );

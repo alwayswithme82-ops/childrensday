@@ -3,7 +3,7 @@ import type { Difficulty, Level, Scene } from '../types/game';
 const easyScenes: Scene[] = [
   {
     id: 1,
-    storyText: '큐브 왕국에 온 걸 환영해! 나는 큐브 요정 루비야. 저기 블록 2개가 나란히 놓여 있어. 앞에서 보면 어떻게 보일까?',
+    storyText: '첫 번째 방, 그림자 문이 나타났어! 앞에서 본 그림자를 맞히면 문이 열리고 첫 열쇠 조각을 얻을 수 있어.',
     characterName: '루비',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#ef4444' },
@@ -17,12 +17,12 @@ const easyScenes: Scene[] = [
       { id: 'C', label: '■■■', projectionData: [[1,1,1],[0,0,0]], correct: false },
       { id: 'D', label: '■⬜', projectionData: [[1,0],[1,0]], correct: false },
     ],
-    hintText: '앞에서 본다는 건 z축(앞뒤)을 무시하고 x축(좌우)과 y축(위아래)만 보는 거야!',
+    hintText: '앞에서 보면 뒤에 있는 블록은 앞 블록에 가려져요. 가로로 몇 칸, 세로로 몇 칸 보이는지 세어봐요!',
     projectionFaces: ['front'],
   },
   {
     id: 2,
-    storyText: '루비가 블록 3개를 바닥에 ㄴ자 모양으로 놓았어! 위에서 내려다보면 어떤 모양일까?',
+    storyText: '두 번째 방은 하늘 전망대야! 위에서 내려다봐야 보물지도에 그려진 길을 찾을 수 있어.',
     characterName: '루비',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#ef4444' },
@@ -37,12 +37,12 @@ const easyScenes: Scene[] = [
       { id: 'C', label: '사각', projectionData: [[1,1],[1,1]], correct: false },
       { id: 'D', label: '일자', projectionData: [[1,1],[0,0]], correct: false },
     ],
-    hintText: '위에서 본다는 건 y축(위아래)을 무시하고 x축(좌우)과 z축(앞뒤)만 보는 거야. 블록 3개를 x-z 바닥에 표시해봐!',
+    hintText: '위에서 보면 높이는 보지 않고, 바닥에 놓인 자리만 보면 돼요. 블록이 놓인 칸을 지도처럼 따라가 봐요!',
     projectionFaces: ['top'],
   },
   {
     id: 3,
-    storyText: '큐브 성의 블록들을 발견했어! 쌓여 있는 블록이 몇 개인지 세어볼까?',
+    storyText: '세 번째 방은 숨은 큐브 창고야! 큐브들이 숨어 있어. 모두 몇 개인지 세어야 열쇠가 나타나.',
     characterName: '루비',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#22c55e' },
@@ -62,7 +62,7 @@ const easyScenes: Scene[] = [
   },
   {
     id: 4,
-    storyText: '루비가 2×2 정사각형 벽을 만들었어! 옆에서 보면 어떤 모양일까?',
+    storyText: '네 번째 방은 거울 벽이야! 왼쪽에서 본 모습을 맞히면 벽 뒤의 지도 조각이 보여.',
     characterName: '루비',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#a855f7' },
@@ -71,19 +71,19 @@ const easyScenes: Scene[] = [
       { x: 1, y: 1, z: 0, color: '#f97316' },
     ],
     questionType: 'projection',
-    questionText: '옆(왼쪽)에서 보면 어떤 모양일까요?',
+    questionText: '왼쪽에서 보면 어떤 모양일까요?',
     options: [
       { id: 'A', projectionData: [[1],[1]], correct: true },
       { id: 'B', projectionData: [[1,1]], correct: false },
       { id: 'C', projectionData: [[1,1],[1,1]], correct: false },
       { id: 'D', projectionData: [[1]], correct: false },
     ],
-    hintText: '옆에서 보면 x축(좌우) 방향이 사라져서 왼쪽·오른쪽 블록이 겹쳐 보여! 위아래(y)와 앞뒤(z)만 남아.',
+    hintText: '왼쪽에서 보면 가로로 떨어져 있던 블록들이 한 줄로 겹쳐 보일 수 있어요. 위아래로 몇 층인지 먼저 봐요!',
     projectionFaces: ['side'],
   },
   {
     id: 5,
-    storyText: '루비가 4개의 블록으로 만든 탑들 중에 같은 모양이 있어! 어떤 게 똑같은 모양일까?',
+    storyText: '마지막 방, 보물상자 앞에 도착했어! 같은 모양의 큐브 장식을 찾아야 상자의 자물쇠가 풀려.',
     characterName: '루비',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#06b6d4' },
@@ -107,7 +107,7 @@ const easyScenes: Scene[] = [
 const mediumScenes: Scene[] = [
   {
     id: 6,
-    storyText: '건축사 조수 레고가 나타났어! 앞과 옆 투영도를 보고 어떤 입체인지 맞혀봐!',
+    storyText: '첫 번째 방, 그림자 문이 더 어려워졌어! 앞에서 본 모습과 왼쪽에서 본 모습을 모두 맞히면 문이 열려.',
     characterName: '레고',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#3b82f6' },
@@ -117,19 +117,19 @@ const mediumScenes: Scene[] = [
       { x: 0, y: 0, z: 1, color: '#22c55e' },
     ],
     questionType: 'projection',
-    questionText: '앞면과 옆면 투영도를 보고 맞는 블록 배치를 고르세요.',
+    questionText: '앞에서 본 모습과 왼쪽에서 본 모습을 보고 맞는 블록 배치를 고르세요.',
     options: [
       { id: 'A', label: '5개 배치 A', correct: true },
       { id: 'B', label: '4개 배치 B', correct: false },
       { id: 'C', label: '6개 배치 C', correct: false },
       { id: 'D', label: '5개 배치 D', correct: false },
     ],
-    hintText: '앞면과 옆면을 동시에 만족하는 배치를 찾아봐! 두 조건 모두 맞아야 해.',
+    hintText: '앞에서 본 모습과 왼쪽에서 본 모습을 하나씩 비교해봐. 두 그림이 모두 맞아야 열쇠가 빛나요.',
     projectionFaces: ['front', 'side'],
   },
   {
     id: 7,
-    storyText: '레고가 3면 중 1면을 지웠어! 빈칸에 들어갈 투영도를 맞혀봐.',
+    storyText: '두 번째 방은 하늘 전망대야! 지도에서 빠진 위쪽 그림을 찾아야 다음 길이 보여.',
     characterName: '레고',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#a855f7' },
@@ -140,19 +140,19 @@ const mediumScenes: Scene[] = [
       { x: 0, y: 0, z: 1, color: '#eab308' },
     ],
     questionType: 'missing',
-    questionText: '앞면과 옆면 투영도가 주어졌을 때, 위면 투영도는?',
+    questionText: '앞에서 본 모습과 왼쪽에서 본 모습이 주어졌을 때, 위에서 본 모습은?',
     options: [
       { id: 'A', projectionData: [[1,1,0],[1,1,0],[0,0,0]], correct: true },
       { id: 'B', projectionData: [[1,0,0],[1,1,0],[0,0,0]], correct: false },
       { id: 'C', projectionData: [[1,1,1],[1,0,0],[0,0,0]], correct: false },
       { id: 'D', projectionData: [[1,1,0],[0,1,0],[0,0,0]], correct: false },
     ],
-    hintText: '위에서 내려다보면 x축과 z축만 보여. 앞면에서 x 위치, 옆면에서 z 위치를 확인해봐!',
+    hintText: '위에서 내려다보면 높이는 잠깐 잊고, 바닥에 놓인 자리만 보면 돼요. 앞쪽 그림과 왼쪽 그림에서 놓인 칸을 맞춰봐요!',
     projectionFaces: ['front', 'side', 'top'],
   },
   {
     id: 8,
-    storyText: '레고가 숨겨진 블록이 있는 건물을 만들었어! 안 보이는 블록은 몇 개일까?',
+    storyText: '세 번째 방은 숨은 큐브 창고야! 앞 블록 뒤에 숨어 있는 큐브를 찾아야 지도 조각을 얻어.',
     characterName: '레고',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#6b7280' },
@@ -170,12 +170,12 @@ const mediumScenes: Scene[] = [
       { id: 'C', label: '3개', correct: false },
       { id: 'D', label: '4개', correct: false },
     ],
-    hintText: '앞줄 블록에 가려진 뒷줄 블록을 찾아봐! z=1인 아래쪽 블록들이 뒤에 있어.',
+    hintText: '앞줄 블록에 가려진 뒤쪽 블록을 찾아봐요. 앞에서 안 보여도 뒤에 숨어 있을 수 있어요!',
     projectionFaces: ['front'],
   },
   {
     id: 9,
-    storyText: '레고가 신기한 기계를 발견했어! 이 큐브를 오른쪽으로 90° 돌리면 어떻게 될까?',
+    storyText: '네 번째 방은 회전 장치 방이야! 큐브 장치를 오른쪽으로 돌린 뒤 앞에서 본 모습을 맞혀야 해.',
     characterName: '레고',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#ef4444' },
@@ -187,7 +187,7 @@ const mediumScenes: Scene[] = [
       { x: 2, y: 0, z: 1, color: '#06b6d4' },
     ],
     questionType: 'rotation',
-    questionText: '오른쪽으로 90° 돌렸을 때의 앞면 투영도는?',
+    questionText: '오른쪽으로 90° 돌렸을 때 앞에서 본 모습은?',
     options: [
       { id: 'A', projectionData: [[1,1,1],[1,0,0],[1,0,0]], correct: false },
       { id: 'B', projectionData: [[1,1,0],[1,1,0],[1,0,0]], correct: false },
@@ -199,7 +199,7 @@ const mediumScenes: Scene[] = [
   },
   {
     id: 10,
-    storyText: '레고가 앞면과 위면 투영도를 보여줬어. 옆면은 어떤 모양일까?',
+    storyText: '다섯 번째 방은 거울 벽이야! 앞에서 본 모습과 위에서 본 모습을 이용해 왼쪽 그림을 찾아봐.',
     characterName: '레고',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#3b82f6' },
@@ -212,19 +212,19 @@ const mediumScenes: Scene[] = [
       { x: 1, y: 1, z: 1, color: '#06b6d4' },
     ],
     questionType: 'missing',
-    questionText: '앞면과 위면 투영도를 보고 옆면 투영도를 맞혀봐!',
+    questionText: '앞에서 본 모습과 위에서 본 모습을 보고 왼쪽에서 본 모습을 맞혀봐!',
     options: [
       { id: 'A', projectionData: [[1,1],[1,1]], correct: true },
       { id: 'B', projectionData: [[1,0],[1,1]], correct: false },
       { id: 'C', projectionData: [[1,1],[0,1]], correct: false },
       { id: 'D', projectionData: [[0,1],[1,0]], correct: false },
     ],
-    hintText: '옆에서 보면 z축과 y축이 보여. 각 열(z)마다 가장 높은 블록을 찾아봐!',
+    hintText: '왼쪽에서 보면 앞뒤 줄과 높이가 보여요. 각 줄에서 가장 높이 올라간 곳을 찾아봐요!',
     projectionFaces: ['front', 'side', 'top'],
   },
   {
     id: 11,
-    storyText: '레고가 색상 조건이 있는 건물을 만들었어! 빨간 블록이 보이는 면을 찾아봐!',
+    storyText: '마지막 방, 보물상자 앞이야! 빨간 마법 블록이 보이는 자리를 찾으면 상자가 열릴 거야.',
     characterName: '레고',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#6b7280' },
@@ -244,7 +244,7 @@ const mediumScenes: Scene[] = [
       { id: 'C', label: '오른쪽 아래만', correct: false },
       { id: 'D', label: '왼쪽 아래만', correct: false },
     ],
-    hintText: '빨간 블록(x=1,z=0)과 (x=0,z=1)의 앞면 위치를 각각 찾아봐!',
+    hintText: '빨간 블록이 앞에서 어디에 보이는지 찾아봐요. 뒤에 있는 빨간 블록은 앞 블록에 가려질 수도 있어요!',
     projectionFaces: ['front'],
   },
 ];
@@ -252,7 +252,7 @@ const mediumScenes: Scene[] = [
 const hardScenes: Scene[] = [
   {
     id: 12,
-    storyText: '큐브 대마법사 오르가가 나타났어! 3면 투영도를 보고 최소 블록 수를 맞혀봐!',
+    storyText: '첫 번째 방, 세 개의 그림자 문이 동시에 열렸어! 앞, 왼쪽, 위에서 본 모습을 모두 만족하는 최소 큐브 수를 찾아봐.',
     characterName: '오르가',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#a855f7' },
@@ -272,12 +272,12 @@ const hardScenes: Scene[] = [
       { id: 'C', label: '7개', correct: false },
       { id: 'D', label: '8개', correct: true },
     ],
-    hintText: '각 투영도의 칸에 블록이 최소 1개는 있어야 해. 겹치는 위치를 먼저 채우면 효율적이야!',
+    hintText: '각 그림의 칸에는 큐브가 적어도 하나씩 있어야 해요. 서로 겹쳐서 해결할 수 있는 자리를 먼저 찾아봐요!',
     projectionFaces: ['front', 'side', 'top'],
   },
   {
     id: 13,
-    storyText: '오르가가 L자 특수 블록을 만들었어! 이 복잡한 구조의 투영도를 맞혀봐.',
+    storyText: '두 번째 방은 L자 미로야! 앞에서 본 그림자를 맞히면 미로 벽이 움직여 길이 열려.',
     characterName: '오르가',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#ef4444' },
@@ -291,19 +291,19 @@ const hardScenes: Scene[] = [
       { x: 2, y: 0, z: 2, color: '#06b6d4' },
     ],
     questionType: 'projection',
-    questionText: 'L자 구조의 앞면(front) 투영도는?',
+    questionText: 'L자 구조를 앞에서 본 모습은?',
     options: [
       { id: 'A', projectionData: [[1,0,0],[1,0,0],[1,1,1]], correct: true },
       { id: 'B', projectionData: [[1,1,1],[1,0,0],[0,0,0]], correct: false },
       { id: 'C', projectionData: [[0,0,1],[0,0,1],[1,1,1]], correct: false },
       { id: 'D', projectionData: [[1,1,0],[1,0,0],[1,0,0]], correct: false },
     ],
-    hintText: '앞면은 z=0 평면을 x,y로 봐. L자 세로 기둥(x=0,y=0~2)과 가로 기둥(x=0~2,y=0)을 찾아봐!',
+    hintText: '앞에서 보면 뒤쪽 깊이는 잠깐 잊고, 왼쪽의 높은 기둥과 아래쪽으로 길게 놓인 줄을 찾아봐요!',
     projectionFaces: ['front', 'side', 'top'],
   },
   {
     id: 14,
-    storyText: '오르가의 전개도 퍼즐! 이 전개도를 접으면 어떤 큐브가 완성될까?',
+    storyText: '세 번째 방은 접히는 지도 방이야! 펼쳐진 마법 지도를 접으면 어떤 큐브 상자가 되는지 상상해봐.',
     characterName: '오르가',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#ef4444' },
@@ -325,12 +325,12 @@ const hardScenes: Scene[] = [
       { id: 'C', label: '파랑 위, 빨강 앞', correct: false },
       { id: 'D', label: '노랑 위, 초록 앞', correct: false },
     ],
-    hintText: '전개도의 각 면이 접혔을 때 어느 방향(위/아래/앞/뒤/좌/우)이 되는지 순서대로 생각해봐!',
+    hintText: '종이 상자를 접는다고 생각해봐요. 서로 붙어 있는 면들이 접힌 뒤 어디로 올라가는지 손으로 접듯이 따라가 봐요!',
     projectionFaces: ['front', 'side', 'top'],
   },
   {
     id: 15,
-    storyText: '오르가의 대칭 미션! 왼쪽 구조물의 좌우 대칭을 완성하려면 블록을 어디에 추가해야 할까?',
+    storyText: '네 번째 방은 거울 벽이야! 한쪽 모양이 거울에 비친 것처럼 똑같아지도록 빠진 큐브를 찾아봐.',
     characterName: '오르가',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#3b82f6' },
@@ -353,12 +353,12 @@ const hardScenes: Scene[] = [
       { id: 'C', label: '(3,0,2), (3,2,0)에 추가', correct: false },
       { id: 'D', label: '(2,2,0), (3,1,1)에 추가', correct: false },
     ],
-    hintText: '대칭축은 x=1.5 (2와 3 사이). 왼쪽(x=0,1)의 각 블록 위치를 오른쪽(x=3,2)에 반영해봐!',
+    hintText: '가운데 거울선을 기준으로 왼쪽에 있는 큐브와 같은 높이, 같은 앞뒤 자리에 오른쪽 큐브가 있어야 해요!',
     projectionFaces: ['front', 'top'],
   },
   {
     id: 16,
-    storyText: '오르가가 3면 동시 퍼즐을 냈어! 앞, 옆, 위 세 투영도를 모두 만족하는 유일한 구조를 찾아봐!',
+    storyText: '다섯 번째 방은 세 방향 봉인의 방이야! 앞, 왼쪽, 위의 단서를 모두 맞추면 마지막 열쇠가 완성돼.',
     characterName: '오르가',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#ef4444' },
@@ -381,12 +381,12 @@ const hardScenes: Scene[] = [
       { id: 'C', label: '구조 C (12개)', correct: false },
       { id: 'D', label: '구조 D (9개)', correct: false },
     ],
-    hintText: '세 투영도를 각각 격자에 그린 후, x+y+z 조합으로 가능한 위치만 골라봐!',
+    hintText: '세 그림을 한 번에 보지 말고 하나씩 확인해봐요. 앞에서 맞고, 왼쪽에서 맞고, 위에서도 맞는 자리만 남겨요!',
     projectionFaces: ['front', 'side', 'top'],
   },
   {
     id: 17,
-    storyText: '오르가의 겉넓이 도전! 이 12개짜리 건물의 겉넓이는 큐브 면 몇 개분일까?',
+    storyText: '여섯 번째 방은 보물상자 장식 방이야! 밖에서 보이는 큐브 면의 수를 세면 상자 문양이 완성돼.',
     characterName: '오르가',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#3b82f6' },
@@ -410,12 +410,12 @@ const hardScenes: Scene[] = [
       { id: 'C', label: '44면', correct: true },
       { id: 'D', label: '48면', correct: false },
     ],
-    hintText: '각 큐브는 최대 6면. 인접한 큐브끼리 맞닿은 면은 겉넓이에서 빠져! 12×6 - (맞닿은 면×2)를 계산해봐.',
+    hintText: '큐브가 서로 붙어 있는 면은 밖에서 보이지 않아요. 바깥 공기와 닿는 면만 천천히 세어봐요!',
     projectionFaces: ['front', 'side', 'top'],
   },
   {
     id: 18,
-    storyText: '마지막 최종 보스 문제! 투영도 + 숨겨진 블록 + 색상 조건을 모두 고려해서 맞혀봐. 오르가의 최강 문제야!',
+    storyText: '마지막 방, 보물상자 바로 앞이야! 투영도, 숨은 큐브, 빨간 마법 블록 단서를 모두 모아 상자를 열어봐.',
     characterName: '오르가',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#ef4444' },
@@ -432,14 +432,14 @@ const hardScenes: Scene[] = [
       { x: 2, y: 0, z: 2, color: '#22c55e' },
     ],
     questionType: 'composite',
-    questionText: '빨간 블록만 보이는 앞면 투영도 + 블록이 12개일 때, 위면에서 보이지 않는 블록 수는?',
+    questionText: '빨간 블록만 보이는 앞에서 본 모습과 블록 12개 단서를 보고, 위에서 보이지 않는 블록 수는?',
     options: [
       { id: 'A', label: '2개', correct: false },
       { id: 'B', label: '3개', correct: true },
       { id: 'C', label: '4개', correct: false },
       { id: 'D', label: '5개', correct: false },
     ],
-    hintText: '위에서 봤을 때 다른 블록 아래에 완전히 숨겨진 블록을 찾아봐! x,z 좌표가 겹치면서 y가 낮은 블록이 숨겨져.',
+    hintText: '위에서 봤을 때 더 높은 블록 아래에 완전히 숨어 있는 큐브를 찾아봐요. 같은 자리 아래쪽에 있으면 보이지 않아요!',
     projectionFaces: ['front', 'side', 'top'],
   },
 ];
@@ -447,20 +447,20 @@ const hardScenes: Scene[] = [
 export const levels: Level[] = [
   {
     difficulty: 'easy',
-    name: '⭐ 쉬움',
-    description: '초등 1~2학년 / 기본 투영도',
+    name: '🌱 새싹 모험',
+    description: '처음 하는 친구 추천 / 기본 보물지도',
     scenes: easyScenes,
   },
   {
     difficulty: 'medium',
-    name: '⭐⭐ 보통',
-    description: '초등 3~4학년 / 복합 투영도',
+    name: '🚀 용사 모험',
+    description: '퍼즐을 좋아하는 친구 추천 / 여러 방향 단서',
     scenes: mediumScenes,
   },
   {
     difficulty: 'hard',
-    name: '⭐⭐⭐ 어려움',
-    description: '초등 5~6학년 / 최고 난이도',
+    name: '🔥 마법사 도전',
+    description: '진짜 큐브 고수 도전 / 최종 보물상자',
     scenes: hardScenes,
   },
 ];

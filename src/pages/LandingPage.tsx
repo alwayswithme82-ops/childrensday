@@ -123,7 +123,7 @@ export function LandingPage() {
               className="text-center mb-4 font-fredoka text-lg tracking-wider"
               style={{ color: '#FF6B6B' }}
             >
-              🌈 난이도를 골라봐! 🌈
+              🌈 어떤 모험가가 되어볼까? 🌈
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
