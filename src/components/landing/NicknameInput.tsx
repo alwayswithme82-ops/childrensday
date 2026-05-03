@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MAX_NICKNAME_LENGTH } from '../../utils/constants';
 
 interface Props { value: string; onChange: (v: string) => void; }
-const VALID = /^[가-힣a-zA-Z0-9]*$/;
+const VALID = /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9]*$/;
 
 export function NicknameInput({ value, onChange }: Props) {
   const [focused, setFocused] = useState(false);
