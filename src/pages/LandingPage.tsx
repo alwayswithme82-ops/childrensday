@@ -60,7 +60,7 @@ const PROLOGUE = [
   },
 ];
 
-type LandingStep = 'start' | 'prologue' | 'setup';
+type LandingStep = 'start' | 'prologue' | 'name' | 'difficulty';
 
 function PrologueCard({
   index,
@@ -306,7 +306,7 @@ export function LandingPage() {
                 onNext={() => {
                   play('click');
                   if (prologueIndex + 1 >= PROLOGUE.length) {
-                    setStep('setup');
+                    setStep('name');
                   } else {
                     setPrologueIndex(i => i + 1);
                   }
@@ -317,57 +317,76 @@ export function LandingPage() {
             <>
               <Logo />
 
-              <div className="w-full max-w-lg rounded-3xl bg-white/70 p-4 text-center shadow-md backdrop-blur">
-                <p className="break-keep text-base font-bold leading-relaxed text-slate-600">
-                  루비가 작은 마법 펜을 꺼냈어요.<br />
-                  “먼저 너의 이름을 알려줘! 보물을 찾으면 인증서에 적어줄게.”
-                </p>
-              </div>
+              {step === 'name' ? (
+                <>
+                  <div className="w-full max-w-lg rounded-3xl bg-white/70 p-4 text-center shadow-md backdrop-blur">
+                    <p className="break-keep text-base font-bold leading-relaxed text-slate-600">
+                      루비가 말했어요.<br />
+                      “먼저 너의 이름을 알려줘!<br />
+                      보물을 찾으면 인증서에 적어줄게.”
+                    </p>
+                  </div>
 
-              <NicknameInput value={nickname} onChange={setNickname} />
+                  <NicknameInput value={nickname} onChange={setNickname} />
 
-              <div className="w-full">
-                <p
-                  className="text-center mb-2 font-fredoka text-lg tracking-wider"
-                  style={{ color: '#FF6B6B' }}
-                >
-                  루비가 세 갈래 길을 보여주었어요.
-                </p>
-                <p className="mb-4 text-center text-sm font-bold text-slate-500">
-                  “어떤 길로 모험을 떠나볼래?”
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-                    <DifficultyCard
-                      key={d}
-                      difficulty={d}
-                      selected={difficulty === d}
-                      onSelect={d => { setDifficulty(d); play('click'); }}
-                    />
-                  ))}
-                </div>
-              </div>
+                  <Button
+                    size="lg"
+                    onClick={() => {
+                      if (!isNicknameValid) return;
+                      play('click');
+                      setStep('difficulty');
+                    }}
+                    disabled={!isNicknameValid}
+                    pulse={isNicknameValid}
+                    className="w-full max-w-xs"
+                  >
+                    다음: 모험길 고르기 🧭
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="w-full max-w-lg rounded-3xl bg-white/70 p-4 text-center shadow-md backdrop-blur">
+                    <p className="break-keep text-base font-bold leading-relaxed text-slate-600">
+                      루비가 세 갈래 길을 보여주었어요.<br />
+                      “어떤 길로 모험을 떠나볼래?”
+                    </p>
+                  </div>
 
-              <Button
-                size="lg"
-                onClick={handleStart}
-                disabled={!canStart}
-                pulse={canStart && !isLoading}
-                className="w-full max-w-xs"
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <motion.span
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
-                      style={{ display: 'inline-block' }}
-                    >
-                      ⚙
-                    </motion.span>
-                    잠깐만...
-                  </span>
-                ) : '열쇠 조각 찾으러 출발! 🗝️'}
-              </Button>
+                  <div className="w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
+                        <DifficultyCard
+                          key={d}
+                          difficulty={d}
+                          selected={difficulty === d}
+                          onSelect={d => { setDifficulty(d); play('click'); }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button
+                    size="lg"
+                    onClick={handleStart}
+                    disabled={!canStart}
+                    pulse={canStart && !isLoading}
+                    className="w-full max-w-xs"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
+                          style={{ display: 'inline-block' }}
+                        >
+                          ⚙
+                        </motion.span>
+                        잠깐만...
+                      </span>
+                    ) : '열쇠 조각 찾으러 출발! 🗝️'}
+                  </Button>
+                </>
+              )}
 
               <AnimatePresence>
                 {error && (
@@ -380,7 +399,7 @@ export function LandingPage() {
                     ⚠️ {error}
                   </motion.p>
                 )}
-                {!error && !isNicknameValid && (
+                {!error && step === 'name' && !isNicknameValid && (
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
