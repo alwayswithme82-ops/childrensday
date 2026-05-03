@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PageTransition } from '../components/layout/PageTransition';
 import { GameHUD } from '../components/game/GameHUD';
-import { CubeViewer } from '../components/game/CubeViewer';
-import { ProjectionView } from '../components/game/ProjectionView';
-import { OptionGrid } from '../components/game/OptionGrid';
+import { CubeBuilder } from '../components/game/CubeBuilder';
+import { TargetProjectionCard } from '../components/game/TargetProjectionCard';
 import { StoryOverlay } from '../components/game/StoryOverlay';
 import { HintModal } from '../components/game/HintModal';
 import { useGameStore } from '../stores/useGameStore';
 import { useAuthStore } from '../stores/useAuthStore';
-import { getLevelByDifficulty } from '../data/levels';
+import { getBuildLevelByDifficulty } from '../data/buildLevels';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../hooks/useSound';
 import { calcStars } from '../utils/helpers';
-import type { Scene } from '../types/game';
+import { validateBuildMission } from '../services/projection.service';
+import type { CubeData } from '../types/game';
 
 type Phase = 'story' | 'playing' | 'result' | 'treasure';
 
@@ -68,36 +68,6 @@ const TREASURE_SCENES = [
   },
 ];
 
-const DIRECTION_LABELS = {
-  front: '앞에서 본 모습',
-  side: '왼쪽에서 본 모습',
-  top: '위에서 본 모습',
-} as const;
-
-function getQuestionDirection(scene: Scene): string | undefined {
-  if (scene.projectionFaces?.length === 1) return DIRECTION_LABELS[scene.projectionFaces[0]];
-  if (scene.questionType === 'counting') return '블록 개수';
-  if (scene.questionType === 'rotation') return '돌린 뒤 앞에서 본 모습';
-  return undefined;
-}
-
-function getWrongFeedback(scene: Scene) {
-  const face = scene.projectionFaces?.length === 1 ? scene.projectionFaces[0] : undefined;
-  if (face === 'front') {
-    return '괜찮아! 거의 다 왔어. 앞에서 본 모습만 다시 살펴보자.';
-  }
-  if (face === 'top') {
-    return '지도 선이 아직 흐릿해요. 위에서 내려다봤을 때 모양이 같은지 다시 볼까?';
-  }
-  if (face === 'side') {
-    return '괜찮아! 왼쪽에서 본 모습을 다시 천천히 살펴보자. 큐브는 돌려보면 비밀을 알려줘!';
-  }
-  if (scene.questionType === 'counting') {
-    return '큐브 하나가 아직 숨어 있어요. 뒤에 가려진 큐브가 있을지도 몰라!';
-  }
-  return '큐브탑이 아직 흔들리고 있어요. 앞에서 본 모습과 위에서 본 모습을 하나씩 확인해보자!';
-}
-
 function getRewardMessage(index: number) {
   const rewards = [
     '철컥!\n무거운 그림자 문이 열렸어요.\n문 안쪽에서 첫 번째 열쇠 조각이 반짝였어요.\n첫 번째 열쇠 조각 획득! 🗝️',
@@ -122,7 +92,7 @@ export function GamePage() {
   const [showHint, setShowHint] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [hintsUsedThisScene, setHintsUsedThisScene] = useState(0);
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [builtCubes, setBuiltCubes] = useState<CubeData[]>([]);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [rubyMessage, setRubyMessage] = useState<string>('루비가 함께 모험 중이에요!');
   const [treasureIndex, setTreasureIndex] = useState(0);
@@ -159,7 +129,7 @@ export function GamePage() {
     setPhase('story');
     setAttempts(0);
     setHintsUsedThisScene(0);
-    setSelectedOptionId(null);
+    setBuiltCubes([]);
     setFeedbackMessage(null);
     setRubyMessage('루비가 함께 모험 중이에요!');
     timer.pause();
@@ -168,15 +138,13 @@ export function GamePage() {
 
   if (!difficulty) return null;
 
-  const level = getLevelByDifficulty(difficulty);
+  const level = getBuildLevelByDifficulty(difficulty);
   const scene = level.scenes[currentSceneIndex];
   if (!scene) return null;
 
   const totalStars = sceneResults.reduce((s, r) => s + r.stars, 0);
-  const correctId = scene.options.find(o => o.correct)?.id ?? '';
-  const directionLabel = getQuestionDirection(scene);
-  const selectedIsCorrect = selectedOptionId === correctId;
-  const keyPieces = Math.min(sceneResults.length + (phase === 'result' && selectedIsCorrect ? 1 : 0), 4);
+  const successShowing = phase === 'result' && feedbackMessage === (scene.successText ?? getRewardMessage(currentSceneIndex));
+  const keyPieces = Math.min(sceneResults.length + (successShowing ? 1 : 0), 4);
   const mission = MISSION_INTROS[Math.min(currentSceneIndex, MISSION_INTROS.length - 1)];
 
   const handleStoryDismiss = () => {
@@ -189,21 +157,17 @@ export function GamePage() {
     setPhase('playing');
   };
 
-  const handleSelect = (optionId: string) => {
-    if (phase !== 'playing' || selectedOptionId) return;
-    const opt = scene.options.find(o => o.id === optionId);
-    if (!opt) return;
-
+  const handleComplete = () => {
+    if (phase !== 'playing') return;
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
-    setSelectedOptionId(optionId);
-    setPhase('result');
-
-    if (opt.correct) {
+    const validation = validateBuildMission(builtCubes, scene);
+    if (validation.success) {
       play('correct');
       timer.pause();
       setRubyMessage(RUBY_CORRECT[currentSceneIndex % RUBY_CORRECT.length]);
-      setFeedbackMessage(getRewardMessage(Math.min(currentSceneIndex, 3)));
+      setFeedbackMessage(scene.successText ?? getRewardMessage(Math.min(currentSceneIndex, 3)));
+      setPhase('result');
       const stars = calcStars(newAttempts, hintsUsedThisScene);
       const sceneTime = timer.getElapsed();
       const isLast = currentSceneIndex + 1 >= level.scenes.length;
@@ -227,13 +191,7 @@ export function GamePage() {
     } else {
       play('wrong');
       setRubyMessage(RUBY_WRONG[newAttempts % RUBY_WRONG.length]);
-      setFeedbackMessage(getWrongFeedback(scene));
-      // Allow retry after shake animation
-      pendingTimeoutRef.current = setTimeout(() => {
-        setSelectedOptionId(null);
-        setFeedbackMessage(null);
-        setPhase('playing');
-      }, 2200);
+      setFeedbackMessage(validation.message);
     }
   };
 
@@ -276,27 +234,40 @@ export function GamePage() {
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
             className="flex-1 min-h-0 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden overflow-x-hidden"
           >
-            {/* 좌측: 3D 큐브 뷰어 */}
-            <div className="flex-none md:flex-1 md:w-[60%] flex flex-col p-3 sm:p-4 gap-2 sm:gap-3 min-h-[300px] sm:min-h-[360px] md:min-h-0">
-              <div className="flex-1 min-h-[240px] bg-slate-900 rounded-xl sm:rounded-2xl overflow-hidden">
-                <CubeViewer cubes={scene.cubes} />
-              </div>
-              <p className="text-xs sm:text-sm text-slate-500 text-center select-none">드래그로 회전해보세요 🔄</p>
+            <div className="flex-none md:flex-1 md:w-[60%] flex flex-col p-3 sm:p-4 gap-2 sm:gap-3 min-h-[420px] md:min-h-0">
+              <CubeBuilder
+                cubes={builtCubes}
+                onChange={(next) => {
+                  setBuiltCubes(next);
+                  if (feedbackMessage && phase === 'playing') setFeedbackMessage(null);
+                }}
+                maxCubes={scene.maxCubes ?? scene.exactCubes ?? 10}
+                disabled={phase !== 'playing'}
+                onLimit={() => {
+                  setRubyMessage('괜찮아! 큐브 수를 다시 맞춰보자.');
+                  setFeedbackMessage('큐브를 너무 많이 쌓았어요!');
+                }}
+              />
             </div>
 
-            {/* 우측: 투영도 + 문제 + 선택지 */}
+            {/* 우측: 목표 조건 + 완료 확인 */}
             <div className="md:w-[40%] p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 overflow-visible md:overflow-y-auto">
-              <ProjectionView
-                cubes={scene.cubes}
-                faces={scene.projectionFaces ?? ['front']}
-              />
               <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-gold">보물의 방 {currentSceneIndex + 1}</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-gold">{scene.title ?? `보물의 방 ${currentSceneIndex + 1}`}</p>
                 <p className="mt-2 text-lg text-white font-medium leading-snug">{scene.questionText}</p>
                 <div className="mt-3 rounded-xl bg-slate-950/70 px-3 py-2 text-sm font-bold text-pink-200">
                   루비: “{rubyMessage}”
                 </div>
               </div>
+
+              <TargetProjectionCard
+                targets={scene.targetProjections ?? {}}
+                exactCubes={scene.exactCubes}
+                minCubes={scene.minCubes}
+                maxCubes={scene.maxCubes}
+                currentCubes={builtCubes.length}
+              />
+
               <AnimatePresence>
                 {feedbackMessage && (
                   <motion.div
@@ -305,7 +276,7 @@ export function GamePage() {
                     exit={{ opacity: 0, scale: 0.96, y: -6 }}
                     className={[
                       'rounded-2xl border p-4 text-sm font-bold leading-relaxed whitespace-pre-line',
-                      selectedOptionId === correctId
+                      successShowing
                         ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-100'
                         : 'border-amber-300/40 bg-amber-400/10 text-amber-100',
                     ].join(' ')}
@@ -314,14 +285,15 @@ export function GamePage() {
                   </motion.div>
                 )}
               </AnimatePresence>
-              <OptionGrid
-                options={scene.options}
-                onSelect={handleSelect}
-                selectedId={selectedOptionId}
-                correctId={correctId}
-                showResult={phase === 'result' && !!selectedOptionId}
-                directionLabel={directionLabel}
-              />
+
+              <button
+                type="button"
+                onClick={handleComplete}
+                disabled={phase !== 'playing'}
+                className="rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 px-6 py-4 text-lg font-bold text-slate-950 shadow-lg disabled:opacity-50"
+              >
+                완성 확인 ✨
+              </button>
             </div>
           </motion.div>
         </AnimatePresence>

@@ -8,6 +8,7 @@ export interface CubeData {
 }
 
 export type QuestionType =
+  | 'building'
   | 'projection'
   | 'counting'
   | 'rotation'
@@ -26,15 +27,29 @@ export interface Option {
   correct: boolean;
 }
 
+export interface TargetProjections {
+  front?: number[][];
+  top?: number[][];
+  side?: number[][];
+}
+
 export interface Scene {
   id: number;
+  title?: string;
   storyText: string;
   characterName: string;
   cubes: CubeData[];
   questionType: QuestionType;
+  mode?: 'build';
+  targetProjections?: TargetProjections;
+  maxCubes?: number;
+  minCubes?: number;
+  exactCubes?: number;
+  allowedColors?: string[];
   questionText: string;
   options: Option[];
   hintText: string;
+  successText?: string;
   projectionFaces?: ('front' | 'side' | 'top')[];
 }
 
