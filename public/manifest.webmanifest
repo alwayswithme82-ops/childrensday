@@ -1,0 +1,15 @@
+{
+  "name": "큐브왕국 보물찾기",
+  "short_name": "큐브왕국",
+  "description": "색나무 마을의 비밀 건축가가 되어보세요!",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1B2A4A",
+  "theme_color": "#1B2A4A",
+  "lang": "ko",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

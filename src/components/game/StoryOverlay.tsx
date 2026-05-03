@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../shared/Button';
+import { CHARACTER_AVATARS } from '../../data/stories';
 
 interface Props {
   text: string;
@@ -11,18 +12,28 @@ interface Props {
 
 export function StoryOverlay({ text, characterName, onDismiss, visible }: Props) {
   const [displayed, setDisplayed] = useState('');
+  const [done, setDone] = useState(false);
+  const avatar = CHARACTER_AVATARS[characterName] ?? '🧝';
 
   useEffect(() => {
-    if (!visible) { setDisplayed(''); return; }
+    if (!visible) { setDisplayed(''); setDone(false); return; }
     setDisplayed('');
+    setDone(false);
     let i = 0;
     const timer = setInterval(() => {
       i++;
       setDisplayed(text.slice(0, i));
-      if (i >= text.length) clearInterval(timer);
+      if (i >= text.length) { clearInterval(timer); setDone(true); }
     }, 30);
     return () => clearInterval(timer);
   }, [text, visible]);
+
+  const handleSkip = () => {
+    if (!done) {
+      setDisplayed(text);
+      setDone(true);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -34,22 +45,24 @@ export function StoryOverlay({ text, characterName, onDismiss, visible }: Props)
           transition={{ type: 'spring', stiffness: 260, damping: 28 }}
           className="fixed bottom-0 left-0 w-full z-30 px-4 py-4"
           style={{ background: 'rgba(27,42,74,0.95)', backdropFilter: 'blur(12px)' }}
+          onClick={handleSkip}
         >
           <div className="max-w-4xl mx-auto flex items-end gap-4">
-            {/* 캐릭터 원형 아바타 */}
             <div className="w-20 h-20 rounded-full bg-slate-700 flex items-center justify-center text-4xl shrink-0 shadow-lg">
-              🧝
+              {avatar}
             </div>
 
-            {/* 말풍선 */}
             <div className="flex-1 bg-slate-800 rounded-2xl p-4 shadow-lg">
               <p className="text-sm font-bold text-gold mb-1.5">{characterName}</p>
               <p className="text-white text-sm leading-relaxed min-h-[3rem]">{displayed}</p>
+              {!done && (
+                <p className="text-xs text-white/30 mt-1">클릭하면 바로 넘어가요 ▶</p>
+              )}
             </div>
           </div>
 
-          {displayed.length >= text.length && (
-            <div className="flex justify-end max-w-4xl mx-auto mt-3">
+          {done && (
+            <div className="flex justify-end max-w-4xl mx-auto mt-3" onClick={e => e.stopPropagation()}>
               <Button size="sm" onClick={onDismiss}>다음 ▶</Button>
             </div>
           )}

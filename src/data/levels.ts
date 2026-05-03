@@ -22,32 +22,32 @@ const easyScenes: Scene[] = [
   },
   {
     id: 2,
-    storyText: '루비가 블록 3개로 ㄴ자 탑을 쌓았어! 위에서 내려다보면 어떤 모양일까?',
+    storyText: '루비가 블록 3개를 바닥에 ㄴ자 모양으로 놓았어! 위에서 내려다보면 어떤 모양일까?',
     characterName: '루비',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#ef4444' },
-      { x: 0, y: 1, z: 0, color: '#ef4444' },
       { x: 1, y: 0, z: 0, color: '#3b82f6' },
+      { x: 1, y: 0, z: 1, color: '#22c55e' },
     ],
     questionType: 'projection',
     questionText: '위에서 보면 어떤 모양일까요?',
     options: [
-      { id: 'A', label: 'ㄴ자', projectionData: [[1,1],[1,0]], correct: true },
-      { id: 'B', label: '일자', projectionData: [[1,1],[0,0]], correct: false },
+      { id: 'A', label: 'ㄴ자', projectionData: [[1,1],[0,1]], correct: true },
+      { id: 'B', label: '역ㄴ자', projectionData: [[1,1],[1,0]], correct: false },
       { id: 'C', label: '사각', projectionData: [[1,1],[1,1]], correct: false },
-      { id: 'D', label: '점', projectionData: [[1,0],[0,0]], correct: false },
+      { id: 'D', label: '일자', projectionData: [[1,1],[0,0]], correct: false },
     ],
-    hintText: '위에서 본다는 건 y축(위아래)을 무시하고 x축과 z축만 보는 거야. 탑이 있으면 1칸으로 표시돼!',
+    hintText: '위에서 본다는 건 y축(위아래)을 무시하고 x축(좌우)과 z축(앞뒤)만 보는 거야. 블록 3개를 x-z 바닥에 표시해봐!',
     projectionFaces: ['top'],
   },
   {
     id: 3,
-    storyText: '큐브 성의 계단을 발견했어! 쌓여 있는 블록이 몇 개인지 세어볼까?',
+    storyText: '큐브 성의 블록들을 발견했어! 쌓여 있는 블록이 몇 개인지 세어볼까?',
     characterName: '루비',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#22c55e' },
       { x: 1, y: 0, z: 0, color: '#22c55e' },
-      { x: 1, y: 1, z: 0, color: '#eab308' },
+      { x: 0, y: 1, z: 0, color: '#eab308' },
     ],
     questionType: 'counting',
     questionText: '블록이 모두 몇 개인가요?',
@@ -57,28 +57,28 @@ const easyScenes: Scene[] = [
       { id: 'C', label: '4개', correct: false },
       { id: 'D', label: '5개', correct: false },
     ],
-    hintText: '하나씩 손가락으로 짚어가며 세어봐! 아래 2개, 위에 1개.',
+    hintText: '하나씩 손가락으로 짚어가며 세어봐! 아래 2개(오른쪽, 왼쪽), 왼쪽 위에 1개.',
     projectionFaces: ['front'],
   },
   {
     id: 4,
-    storyText: '루비가 2×2 정사각형 탑을 만들었어! 옆에서 보면 어떤 모양일까?',
+    storyText: '루비가 2×2 정사각형 벽을 만들었어! 옆에서 보면 어떤 모양일까?',
     characterName: '루비',
     cubes: [
       { x: 0, y: 0, z: 0, color: '#a855f7' },
       { x: 1, y: 0, z: 0, color: '#a855f7' },
-      { x: 0, y: 0, z: 1, color: '#f97316' },
-      { x: 1, y: 0, z: 1, color: '#f97316' },
+      { x: 0, y: 1, z: 0, color: '#f97316' },
+      { x: 1, y: 1, z: 0, color: '#f97316' },
     ],
     questionType: 'projection',
     questionText: '옆(왼쪽)에서 보면 어떤 모양일까요?',
     options: [
-      { id: 'A', label: '■■', projectionData: [[1,1],[0,0]], correct: true },
-      { id: 'B', label: '■', projectionData: [[1,0],[0,0]], correct: false },
-      { id: 'C', label: '■■■■', projectionData: [[1,1,1,1],[0,0,0,0]], correct: false },
-      { id: 'D', label: '■⬜■', projectionData: [[1,0,1],[0,0,0]], correct: false },
+      { id: 'A', projectionData: [[1],[1]], correct: true },
+      { id: 'B', projectionData: [[1,1]], correct: false },
+      { id: 'C', projectionData: [[1,1],[1,1]], correct: false },
+      { id: 'D', projectionData: [[1]], correct: false },
     ],
-    hintText: '옆에서 보면 z축(앞뒤)이 보이는데, 앞뒤 블록은 겹쳐서 1개로 보여!',
+    hintText: '옆에서 보면 x축(좌우) 방향이 사라져서 왼쪽·오른쪽 블록이 겹쳐 보여! 위아래(y)와 앞뒤(z)만 남아.',
     projectionFaces: ['side'],
   },
   {
@@ -468,3 +468,9 @@ export const levels: Level[] = [
 export function getLevelByDifficulty(difficulty: Difficulty): Level {
   return levels.find(l => l.difficulty === difficulty) ?? levels[0];
 }
+
+export const LEVELS: Record<Difficulty, Level> = {
+  easy: levels[0],
+  medium: levels[1],
+  hard: levels[2],
+};

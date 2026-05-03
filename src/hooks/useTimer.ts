@@ -1,23 +1,61 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-export function useTimer(autoStart = false) {
-  const [elapsed, setElapsed] = useState(0);
-  const [running, setRunning] = useState(autoStart);
+export function useTimer() {
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeRef = useRef(0);
+  const sceneStartRef = useRef(0);
+
+  const clearInterval_ = useCallback(() => {
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
-    if (running) {
-      intervalRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+    if (isRunning) {
+      intervalRef.current = setInterval(() => {
+        timeRef.current += 1;
+        setTime(timeRef.current);
+      }, 1000);
     } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      clearInterval_();
     }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running]);
+    return clearInterval_;
+  }, [isRunning, clearInterval_]);
 
-  const start = () => setRunning(true);
-  const pause = () => setRunning(false);
-  const reset = () => { setRunning(false); setElapsed(0); };
-  const restart = () => { setElapsed(0); setRunning(true); };
+  const start = useCallback(() => {
+    clearInterval_();
+    timeRef.current = 0;
+    sceneStartRef.current = 0;
+    setTime(0);
+    setIsRunning(true);
+  }, [clearInterval_]);
 
-  return { elapsed, running, start, pause, reset, restart };
+  const pause = useCallback(() => setIsRunning(false), []);
+  const resume = useCallback(() => setIsRunning(true), []);
+  const stop = useCallback(() => setIsRunning(false), []);
+  const reset = useCallback(() => {
+    clearInterval_();
+    timeRef.current = 0;
+    sceneStartRef.current = 0;
+    setTime(0);
+    setIsRunning(false);
+  }, [clearInterval_]);
+
+  const markSceneStart = useCallback(() => {
+    sceneStartRef.current = timeRef.current;
+  }, []);
+
+  const getElapsed = useCallback(() => timeRef.current - sceneStartRef.current, []);
+
+  const formatTime = useCallback((seconds: number): string => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }, []);
+
+  return { time, isRunning, start, pause, resume, stop, reset, formatTime, markSceneStart, getElapsed };
 }

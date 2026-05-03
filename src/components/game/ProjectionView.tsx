@@ -1,72 +1,63 @@
 import { useEffect, useRef } from 'react';
 import type { CubeData } from '../../types/game';
-import { getFrontProjection, getSideProjection, getTopProjection } from '../../services/projection.service';
+import { useProjection } from '../../hooks/useProjection';
 
 interface Props {
   cubes: CubeData[];
   faces: ('front' | 'side' | 'top')[];
 }
 
-const LABELS: Record<string, string> = { front: '앞', side: '옆', top: '위' };
-const CELL = 32;
-const GRID = 4;
+const LABELS: Record<string, string> = { front: '앞면', side: '옆면', top: '윗면' };
+const CELL = 40;
 
-const COLORS: Record<string, string> = {
-  front: '#3b82f6',
-  side: '#22c55e',
-  top: '#a855f7',
-};
+function ProjectionCanvas({ grid }: { grid: string[][] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rows = grid.length;
+  const cols = grid[0]?.length ?? 0;
 
-function drawGrid(ctx: CanvasRenderingContext2D, grid: number[][], color: string) {
-  const size = GRID * CELL;
-  ctx.clearRect(0, 0, size, size);
-  for (let r = 0; r < GRID; r++) {
-    for (let c = 0; c < GRID; c++) {
-      const x = c * CELL, y = r * CELL;
-      if (grid[r]?.[c]) {
-        ctx.fillStyle = color;
-        ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+  useEffect(() => {
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx || !rows || !cols) return;
+
+    const w = cols * CELL;
+    const h = rows * CELL;
+    ctx.clearRect(0, 0, w, h);
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const color = grid[r][c];
+        ctx.fillStyle = color || '#334155';
+        ctx.fillRect(c * CELL + 1, r * CELL + 1, CELL - 2, CELL - 2);
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(c * CELL + 0.5, r * CELL + 0.5, CELL - 1, CELL - 1);
       }
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x, y, CELL, CELL);
     }
-  }
+  }, [grid, rows, cols]);
+
+  if (!rows || !cols) return null;
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={cols * CELL}
+      height={rows * CELL}
+      style={{ display: 'block', imageRendering: 'pixelated' }}
+    />
+  );
 }
 
 export function ProjectionView({ cubes, faces }: Props) {
-  const refs = {
-    front: useRef<HTMLCanvasElement>(null),
-    side: useRef<HTMLCanvasElement>(null),
-    top: useRef<HTMLCanvasElement>(null),
-  };
-
-  useEffect(() => {
-    const grids = {
-      front: getFrontProjection(cubes),
-      side: getSideProjection(cubes),
-      top: getTopProjection(cubes),
-    };
-    faces.forEach(face => {
-      const ctx = refs[face].current?.getContext('2d');
-      if (ctx) drawGrid(ctx, grids[face], COLORS[face]);
-    });
-  }, [cubes, faces]);
-
-  const size = GRID * CELL;
+  const { frontView, sideView, topView } = useProjection(cubes);
+  const views = { front: frontView, side: sideView, top: topView };
 
   return (
-    <div className="flex gap-3">
+    <div className="flex flex-wrap justify-center md:justify-start gap-3 sm:gap-4">
       {faces.map(face => (
-        <div key={face} className="flex-1 flex flex-col items-center gap-2">
-          <span className="text-xs font-bold text-slate-400">{LABELS[face]}</span>
-          <div className="w-full aspect-square bg-slate-800 rounded-xl flex items-center justify-center p-2">
-            <canvas
-              ref={refs[face]}
-              width={size}
-              height={size}
-              style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}
-            />
+        <div key={face} className="flex flex-col items-center gap-1.5 max-w-full">
+          <span className="text-xs text-slate-400 font-medium">{LABELS[face]}</span>
+          <div className="rounded-lg overflow-hidden border border-slate-700 max-w-full">
+            <ProjectionCanvas grid={views[face]} />
           </div>
         </div>
       ))}

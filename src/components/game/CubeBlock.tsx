@@ -1,50 +1,46 @@
-import { useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useState } from 'react';
 import { useSpring, animated } from '@react-spring/three';
-import type { Mesh } from 'three';
-import type { CubeData } from '../../types/game';
+import { RoundedBox, Edges } from '@react-three/drei';
 
 interface Props {
-  cube: CubeData;
-  index: number;
+  position: [number, number, number];
+  color: string;
+  delay?: number;
 }
 
-export function CubeBlock({ cube, index }: Props) {
-  const meshRef = useRef<Mesh>(null);
+export function CubeBlock({ position, color, delay = 0 }: Props) {
   const [hovered, setHovered] = useState(false);
 
   const { scale, posY } = useSpring({
-    scale: hovered ? 1.12 : 1,
-    posY: cube.y + (hovered ? 0.08 : 0),
-    config: { tension: 280, friction: 22 },
-    delay: index * 40,
-    from: { posY: cube.y + 2, scale: 0 },
-  });
-
-  useFrame(() => {
-    if (meshRef.current && hovered) {
-      meshRef.current.rotation.y += 0.02;
-    }
+    from: { scale: 0, posY: position[1] - 3 },
+    to: { scale: 1, posY: position[1] },
+    config: { tension: 200, friction: 18 },
+    delay,
   });
 
   return (
-    <animated.mesh
-      ref={meshRef}
-      position-x={cube.x}
+    <animated.group
+      position-x={position[0]}
       position-y={posY}
-      position-z={cube.z}
+      position-z={position[2]}
       scale={scale}
-      onPointerEnter={() => setHovered(true)}
-      onPointerLeave={() => setHovered(false)}
     >
-      <boxGeometry args={[0.9, 0.9, 0.9]} />
-      <meshStandardMaterial
-        color={cube.color}
-        emissive={hovered ? cube.color : '#000000'}
-        emissiveIntensity={hovered ? 0.3 : 0}
-        roughness={0.3}
-        metalness={0.1}
-      />
-    </animated.mesh>
+      <RoundedBox
+        args={[0.95, 0.95, 0.95]}
+        radius={0.05}
+        smoothness={4}
+        onPointerEnter={() => setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
+      >
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={hovered ? 0.35 : 0}
+          roughness={0.35}
+          metalness={0.1}
+        />
+        <Edges color="#000000" threshold={15} />
+      </RoundedBox>
+    </animated.group>
   );
 }

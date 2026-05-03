@@ -12,14 +12,19 @@
 
 body {
   margin: 0;
-  background: #ffffff;
+  background: #0F172A;
   font-family: 'Jua', 'Nunito', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  color: #1a1a2e;
+  color: #F8FAFC;
   overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
-#root { min-height: 100svh; }
+#root { min-height: 100svh; overflow-x: hidden; }
+
+canvas {
+  max-width: 100%;
+}
 
 .font-fredoka { font-family: 'Gamja Flower', cursive; }
 
@@ -62,3 +67,18 @@ body {
   50%      { opacity: 0.55; }
 }
 .animate-pulse-slow { animation: pulse-slow 2s ease-in-out infinite; }
+
+/* 부스 모드: rem 기준 1.2배 스케일 */
+html.booth-mode { font-size: 120%; }
+html.booth-mode body { user-select: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

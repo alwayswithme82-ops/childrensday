@@ -1,101 +1,98 @@
-import { useState } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Option } from '../../types/game';
 
 interface Props {
   options: Option[];
-  onAnswer: (correct: boolean, optionId: string) => void;
-  disabled?: boolean;
+  onSelect: (optionId: string) => void;
+  selectedId: string | null;
+  correctId: string;
+  showResult: boolean;
 }
 
-const CELL = 20;
+const CELL = 24;
 
-function MiniGrid({ data }: { data: number[][] }) {
-  return (
-    <div className="grid" style={{ gridTemplateColumns: `repeat(${data[0]?.length ?? 2}, ${CELL}px)` }}>
-      {data.map((row, r) =>
-        row.map((cell, c) => (
-          <div
-            key={`${r}-${c}`}
-            style={{
-              width: CELL, height: CELL,
-              border: '1px solid rgba(255,255,255,0.08)',
-              background: cell ? '#4D96FF' : 'rgba(255,255,255,0.04)',
-            }}
-          />
-        ))
-      )}
-    </div>
-  );
-}
+const MiniProjectionCanvas = memo(function MiniProjectionCanvas({ data }: { data: number[][] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rows = data.length;
+  const cols = data[0]?.length ?? 0;
 
-const shakeVariant = {
-  shake: { x: [0, -8, 8, -6, 6, -4, 4, 0] },
-  still: { x: 0 },
-};
-
-export function OptionGrid({ options, onAnswer, disabled = false }: Props) {
-  const [selected, setSelected] = useState<string | null>(null);
-  const [shakingId, setShakingId] = useState<string | null>(null);
-
-  const handleClick = (opt: Option) => {
-    if (disabled || selected) return;
-    setSelected(opt.id);
-    if (!opt.correct) {
-      setShakingId(opt.id);
-      setTimeout(() => setShakingId(null), 450);
+  useEffect(() => {
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx || !rows || !cols) return;
+    ctx.clearRect(0, 0, cols * CELL, rows * CELL);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        ctx.fillStyle = data[r][c] ? '#4D96FF' : '#1e293b';
+        ctx.fillRect(c * CELL + 1, r * CELL + 1, CELL - 2, CELL - 2);
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(c * CELL + 0.5, r * CELL + 0.5, CELL - 1, CELL - 1);
+      }
     }
-    onAnswer(opt.correct, opt.id);
-  };
+  }, [data, rows, cols]);
+
+  if (!rows || !cols) return null;
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={cols * CELL}
+      height={rows * CELL}
+      style={{ display: 'block', imageRendering: 'pixelated' }}
+    />
+  );
+});
+
+export function OptionGrid({ options, onSelect, selectedId, correctId, showResult }: Props) {
+  const disabled = !!selectedId;
 
   return (
     <div className="grid grid-cols-2 gap-3">
       {options.map(opt => {
-        const isSelected = selected === opt.id;
-        const correct = opt.correct;
+        const isSelected = selectedId === opt.id;
+        const isCorrect = opt.id === correctId;
+        const showCorrect = showResult && isSelected && isCorrect;
+        const showWrong = showResult && isSelected && !isCorrect;
 
-        let ring = '';
-        let bg = 'bg-slate-800';
-        if (isSelected && correct) {
-          ring = 'ring-2 ring-emerald-500';
-          bg = 'bg-emerald-500/20';
-        } else if (isSelected && !correct) {
-          ring = 'ring-2 ring-red-500';
-          bg = 'bg-red-500/20';
-        }
+        let ringClass = '';
+        let bgClass = 'bg-slate-800';
+        if (showCorrect) { ringClass = 'ring-2 ring-emerald-500'; bgClass = 'bg-emerald-500/20'; }
+        if (showWrong) { ringClass = 'ring-2 ring-red-500'; bgClass = 'bg-red-500/20'; }
 
         return (
           <motion.button
             key={opt.id}
-            variants={shakeVariant}
-            animate={shakingId === opt.id ? 'shake' : 'still'}
+            animate={showWrong ? { x: [0, -8, 8, -6, 6, -4, 4, 0] } : { x: 0 }}
             transition={{ duration: 0.4 }}
-            whileHover={!selected ? { scale: 1.03 } : {}}
-            whileTap={!selected ? { scale: 0.97 } : {}}
-            onClick={() => handleClick(opt)}
-            disabled={!!selected || disabled}
+            whileHover={!disabled ? { scale: 1.03 } : {}}
+            whileTap={!disabled ? { scale: 0.97 } : {}}
+            onClick={() => !disabled && onSelect(opt.id)}
+            disabled={disabled}
+            aria-label={`선택지 ${opt.id}${opt.label ? `: ${opt.label}` : ''}${showResult && isSelected ? (isCorrect ? ' — 정답' : ' — 오답') : ''}`}
+            aria-pressed={isSelected}
             className={[
               'relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-transparent transition-all min-h-[88px] cursor-pointer',
-              bg, ring,
-              !selected ? 'hover:ring-2 hover:ring-gold/60' : '',
-              !isSelected && selected ? 'opacity-40' : '',
+              bgClass, ringClass,
+              !disabled ? 'hover:ring-2 hover:ring-yellow-400/60' : '',
+              !isSelected && disabled ? 'opacity-40' : '',
             ].join(' ')}
           >
             <span className="text-xs font-bold text-slate-500">{opt.id}</span>
             {opt.projectionData ? (
-              <MiniGrid data={opt.projectionData} />
+              <MiniProjectionCanvas data={opt.projectionData} />
             ) : (
               <span className="text-sm font-bold text-white">{opt.label}</span>
             )}
             <AnimatePresence>
-              {isSelected && (
+              {isSelected && showResult && (
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
                   className="absolute inset-0 flex items-center justify-center rounded-xl"
                 >
-                  <span className="text-3xl">{correct ? '✅' : '❌'}</span>
+                  <span className="text-3xl">{isCorrect ? '✅' : '❌'}</span>
                 </motion.div>
               )}
             </AnimatePresence>

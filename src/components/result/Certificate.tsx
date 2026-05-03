@@ -36,6 +36,7 @@ export function Certificate({ result }: Props) {
         style={{
           width: 600,
           height: 400,
+          maxWidth: 'calc(100vw - 32px)',
           background: 'linear-gradient(135deg, #1B2A4A 0%, #0F172A 100%)',
           border: '4px solid #F59E0B',
         }}
