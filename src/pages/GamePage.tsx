@@ -15,7 +15,7 @@ import { getBuildLevelByDifficulty, getHintStages } from '../data/buildLevels';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../hooks/useSound';
 import { calcStars } from '../utils/helpers';
-import { evaluateRule, validateBuildMission } from '../utils/buildValidation';
+import { calculateColorProjection, evaluateRule, validateBuildMission } from '../utils/buildValidation';
 import type { CubeData } from '../types/game';
 
 type Phase = 'story' | 'playing' | 'result' | 'reveal';
@@ -74,7 +74,7 @@ const REVEAL_SCENES = [
 function getRewardMessage(index: number, fallback?: string) {
   const rewards = [
     '철컥!\n무지개 문이 활짝 열렸어요. 🌈',
-    '잘 숨었다!\n노랑 큐브가 방긋 웃었어요. 🫣',
+    '앞에서 본 모습이 완성됐어요!\n숨바꼭질 성공! 🫣',
     '반짝반짝!\n보물탑이 완성되자 보물상자가 열렸어요. 💎',
   ];
   return rewards[Math.min(index, rewards.length - 1)] ?? fallback ?? '잘했어요!';
@@ -84,9 +84,10 @@ export function GamePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const operatorMode = searchParams.get('admin') === 'true';
+  const strictMode = searchParams.get('strict') === 'true';
   const {
     difficulty, currentSceneIndex, sceneResults,
-    hintsRemaining, nextScene, recordSceneResult, useHint,
+    hintsRemaining, nextScene, recordSceneResult, useHint: consumeHint,
   } = useGameStore();
   const { isAuthenticated } = useAuthStore();
   const timer = useTimer();
@@ -170,7 +171,17 @@ export function GamePage() {
     if (phase !== 'playing') return;
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
-    const validation = validateBuildMission(builtCubes, scene);
+    const validation = validateBuildMission(builtCubes, scene, { strict: strictMode });
+    if (import.meta.env.DEV) {
+      console.log('[BuildDebug] complete pressed', {
+        missionId: scene.id,
+        cubes: builtCubes,
+        frontProjection: calculateColorProjection(builtCubes, 'front'),
+        topProjection: calculateColorProjection(builtCubes, 'top'),
+        frontCamera: 'front view camera is on z-small side and looks toward z-large; smallest z is visible per (x,y).',
+        validationResults: scene.id === 2 ? validation.results : undefined,
+      });
+    }
     if (validation.success) {
       play('correct');
       timer.pause();
@@ -216,9 +227,47 @@ export function GamePage() {
   const handleHint = () => {
     if (hintsRemaining <= 0) return;
     play('click');
-    useHint();
+    consumeHint();
     setHintsUsedThisScene(h => h + 1);
     setShowHint(true);
+  };
+
+  const handleForcePass = () => {
+    if (phase === 'reveal') return;
+
+    const ok = window.confirm('이 미션을 성공 처리하고 다음 단계로 넘어갈까요?');
+    if (!ok) return;
+
+    if (pendingTimeoutRef.current !== null) {
+      clearTimeout(pendingTimeoutRef.current);
+      pendingTimeoutRef.current = null;
+    }
+
+    play('correct');
+    timer.pause();
+
+    const sceneTime = timer.getElapsed();
+    const isLast = currentSceneIndex + 1 >= level.scenes.length;
+
+    recordSceneResult({
+      sceneId: scene.id,
+      correct: true,
+      attempts: Math.max(1, attempts),
+      timeSeconds: sceneTime,
+      hintsUsed: hintsUsedThisScene,
+      stars: 1,
+      forced: true,
+    });
+
+    setFeedbackMessage('다음 단계로 넘어갑니다. ⏭️');
+
+    if (isLast) {
+      timer.stop();
+      setRevealIndex(0);
+      setPhase('reveal');
+    } else {
+      nextScene();
+    }
   };
 
   return (
@@ -276,6 +325,7 @@ export function GamePage() {
                 scene={scene}
                 results={liveRuleResults}
                 currentCubes={builtCubes.length}
+                strictMode={strictMode}
               />
 
               <AnimatePresence>
@@ -305,31 +355,42 @@ export function GamePage() {
                 완성 확인 ✨
               </button>
 
-              {operatorMode && (
+              <button
+                type="button"
+                onClick={handleForcePass}
+                disabled={phase === 'reveal'}
+                className="rounded-2xl border border-white/15 bg-slate-800 px-6 py-3 text-sm font-bold text-white shadow disabled:opacity-50"
+              >
+                이 미션 넘기기 ⏭️
+              </button>
+
+              {(operatorMode || strictMode) && (
                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/5 p-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-emerald-300">
-                    🛡 운영자 모드
+                    🛡 운영자 모드{strictMode ? ' · 엄격 판정' : ''}
                   </p>
                   <p className="mt-1 text-xs text-emerald-100/70">
-                    아이에게 보여주지 마세요. URL의 ?admin=true로 진입.
+                    아이에게 보여주지 마세요. URL의 ?admin=true 또는 ?strict=true로 진입.
                   </p>
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowSolution(true)}
-                      disabled={!scene.officialSolution}
-                      className="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950 shadow disabled:opacity-40"
-                    >
-                      공식 정답 보기
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowHint(true)}
-                      className="rounded-xl bg-emerald-500/20 px-3 py-2 text-sm font-bold text-emerald-100 ring-1 ring-emerald-400/40"
-                    >
-                      힌트 모두 보기
-                    </button>
-                  </div>
+                  {operatorMode && (
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowSolution(true)}
+                        disabled={!scene.officialSolution}
+                        className="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950 shadow disabled:opacity-40"
+                      >
+                        공식 정답 보기
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowHint(true)}
+                        className="rounded-xl bg-emerald-500/20 px-3 py-2 text-sm font-bold text-emerald-100 ring-1 ring-emerald-400/40"
+                      >
+                        힌트 모두 보기
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

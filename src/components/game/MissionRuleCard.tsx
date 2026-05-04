@@ -1,14 +1,22 @@
 import type { Scene } from '../../types/game';
-import type { RuleResult } from '../../utils/buildValidation';
+import { isRuleRequiredForSuccess, type RuleResult } from '../../utils/buildValidation';
 import { VisualHints } from './VisualHints';
 
 interface Props {
   scene: Scene;
   results: RuleResult[];
   currentCubes: number;
+  strictMode?: boolean;
 }
 
-export function MissionRuleCard({ scene, results, currentCubes }: Props) {
+export function MissionRuleCard({ scene, results, currentCubes, strictMode = false }: Props) {
+  const requiredResults = strictMode
+    ? results
+    : results.filter(result => isRuleRequiredForSuccess(result.rule));
+  const challengeResults = strictMode
+    ? []
+    : results.filter(result => !isRuleRequiredForSuccess(result.rule));
+
   return (
     <div className="rounded-2xl border border-amber-300/30 bg-slate-900/85 p-4 shadow-lg">
       {scene.memo && (
@@ -31,31 +39,58 @@ export function MissionRuleCard({ scene, results, currentCubes }: Props) {
 
       <VisualHints rules={scene.rules ?? []} />
 
-      <p className="mt-4 text-xs font-bold uppercase tracking-wide text-gold">조건 체크</p>
+      <p className="mt-4 text-xs font-bold uppercase tracking-wide text-gold">꼭 맞춰야 해요</p>
       <ul className="mt-2 space-y-1.5">
-        {results.length === 0 && (
-          <li className="text-sm text-slate-400">규칙이 없는 미션이에요.</li>
+        {requiredResults.length === 0 && (
+          <li className="text-sm text-slate-400">목표 그림을 맞추면 성공해요.</li>
         )}
-        {results.map((r, i) => (
+        {requiredResults.map((r, i) => (
           <li
-            key={i}
+            key={`required-${i}`}
             className={[
               'flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm',
               r.ok
                 ? 'bg-emerald-500/15 text-emerald-100'
-                : 'bg-slate-950/60 text-slate-200',
+                : 'bg-amber-400/15 text-amber-100',
             ].join(' ')}
           >
             <span className="flex items-center gap-2">
               <span aria-hidden>{r.ok ? '✅' : '⬜'}</span>
               <span className="font-bold">{r.label}</span>
             </span>
-            <span className="text-xs font-bold text-slate-300">
+            <span className={`text-xs font-bold ${r.ok ? 'text-slate-300' : 'text-amber-200'}`}>
               {String(r.current)} / {String(r.target)}
             </span>
           </li>
         ))}
       </ul>
+
+      {challengeResults.length > 0 && (
+        <>
+          <p className="mt-4 text-xs font-bold uppercase tracking-wide text-slate-300">더 멋진 도전</p>
+          <ul className="mt-2 space-y-1.5">
+            {challengeResults.map((r, i) => (
+              <li
+                key={`challenge-${i}`}
+                className={[
+                  'flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm',
+                  r.ok
+                    ? 'bg-sky-400/10 text-sky-100'
+                    : 'bg-slate-800/70 text-slate-300',
+                ].join(' ')}
+              >
+                <span className="flex items-center gap-2">
+                  <span aria-hidden>{r.ok ? '⭐' : '☆'}</span>
+                  <span className="font-bold">{r.label}</span>
+                </span>
+                <span className="text-xs font-bold text-slate-400">
+                  {String(r.current)} / {String(r.target)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <div className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-sm font-bold text-gold">
         지금 쌓은 큐브: {currentCubes}개

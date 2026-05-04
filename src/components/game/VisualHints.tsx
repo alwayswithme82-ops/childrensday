@@ -217,10 +217,13 @@ function singleColorGrid(color: CubeColorKey, count: number, face: ViewFace): Co
   return Array.from({ length: Math.max(count, 1) }, () => [hex]);
 }
 
-function emptyGrid(face: ViewFace): ColorCell[][] {
+function emptyGrid(): ColorCell[][] {
   // "안 보임"을 표현할 빈칸 격자.
-  if (face === 'top') return [[null, null]];
-  return [[null], [null]];
+  return [
+    [null, null, null],
+    [null, null, null],
+    [null, null, null],
+  ];
 }
 
 // 1=칸이 있어야 함, 0=없어야 함. 색깔 없이 "자리 그림"만 보여주는 격자. 항상 3×3.
@@ -305,7 +308,7 @@ function ProjectionCards({ rules }: { rules: BuildRule[] }) {
       items.push({
         kind: 'color',
         face: rule.face,
-        cells: emptyGrid(rule.face),
+        cells: emptyGrid(),
         caption: `${FACE_LABEL[rule.face]} ${CUBE_COLOR_LABEL[rule.color]}은 보이지 않아요.`,
       });
     }

@@ -1,14 +1,14 @@
 import type { CubeData, Scene, TargetProjections } from '../types/game';
+import {
+  calculateColorProjection as calculateBuildColorProjection,
+  calculateShapeProjection as calculateBuildShapeProjection,
+} from '../utils/buildValidation';
 
 type Grid = number[][];
 type ColorGrid = string[][];
 
 function makeGrid(rows: number, cols: number): Grid {
   return Array.from({ length: rows }, () => Array(cols).fill(0));
-}
-
-function makeColorGrid(rows: number, cols: number): ColorGrid {
-  return Array.from({ length: rows }, () => Array(cols).fill(''));
 }
 
 // --- Legacy fixed-size projections (used by existing projectionData option grids) ---
@@ -55,8 +55,8 @@ export function calculateProjection(
   cubes: CubeData[],
   face: 'front' | 'side' | 'top',
 ): Grid {
-  const colorGrid = calculateColorProjection(cubes, face);
-  return colorGrid.map(row => row.map(cell => (cell ? 1 : 0)));
+  const buildFace = face === 'side' ? 'left' : face;
+  return calculateBuildShapeProjection(cubes, buildFace);
 }
 
 /**
@@ -67,60 +67,8 @@ export function calculateColorProjection(
   cubes: CubeData[],
   face: 'front' | 'side' | 'top',
 ): ColorGrid {
-  if (!cubes.length) return [['']];
-
-  if (face === 'front') {
-    const maxCol = Math.max(...cubes.map(c => c.x));
-    const maxRow = Math.max(...cubes.map(c => c.y));
-    const rows = maxRow + 1;
-    const cols = maxCol + 1;
-    const grid = makeColorGrid(rows, cols);
-    const depth = Array.from({ length: rows }, () => Array<number>(cols).fill(Infinity));
-    cubes.forEach(c => {
-      const r = maxRow - c.y;
-      const col = c.x;
-      if (r >= 0 && r < rows && col >= 0 && col < cols && c.z < depth[r][col]) {
-        depth[r][col] = c.z;
-        grid[r][col] = c.color;
-      }
-    });
-    return grid;
-  }
-
-  if (face === 'side') {
-    const maxCol = Math.max(...cubes.map(c => c.z));
-    const maxRow = Math.max(...cubes.map(c => c.y));
-    const rows = maxRow + 1;
-    const cols = maxCol + 1;
-    const grid = makeColorGrid(rows, cols);
-    const depth = Array.from({ length: rows }, () => Array<number>(cols).fill(Infinity));
-    cubes.forEach(c => {
-      const r = maxRow - c.y;
-      const col = c.z;
-      if (r >= 0 && r < rows && col >= 0 && col < cols && c.x < depth[r][col]) {
-        depth[r][col] = c.x;
-        grid[r][col] = c.color;
-      }
-    });
-    return grid;
-  }
-
-  // top
-  const maxCol = Math.max(...cubes.map(c => c.x));
-  const maxRow = Math.max(...cubes.map(c => c.z));
-  const rows = maxRow + 1;
-  const cols = maxCol + 1;
-  const grid = makeColorGrid(rows, cols);
-  const depth = Array.from({ length: rows }, () => Array<number>(cols).fill(-Infinity));
-  cubes.forEach(c => {
-    const r = c.z;
-    const col = c.x;
-    if (r >= 0 && r < rows && col >= 0 && col < cols && c.y > depth[r][col]) {
-      depth[r][col] = c.y;
-      grid[r][col] = c.color;
-    }
-  });
-  return grid;
+  const buildFace = face === 'side' ? 'left' : face;
+  return calculateBuildColorProjection(cubes, buildFace).map(row => row.map(cell => cell ?? ''));
 }
 
 export function normalizeProjection(grid: number[][]): number[][] {

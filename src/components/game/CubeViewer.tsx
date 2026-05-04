@@ -6,6 +6,20 @@ import type { CubeData } from '../../types/game';
 import { CubeBlock } from './CubeBlock';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 
+let webglSupportedCache: boolean | null = null;
+
+function canUseWebGL(): boolean {
+  if (webglSupportedCache !== null) return webglSupportedCache;
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
+    webglSupportedCache = !!gl;
+  } catch {
+    webglSupportedCache = false;
+  }
+  return webglSupportedCache;
+}
+
 interface CameraInitProps {
   cx: number;
   cy: number;
@@ -13,7 +27,7 @@ interface CameraInitProps {
   viewMode: ViewMode;
 }
 
-type ViewMode = 'front' | 'left' | 'top' | 'free';
+type ViewMode = 'front' | 'back' | 'left' | 'right' | 'top' | 'free';
 
 function CameraInit({ cx, cy, cz, viewMode }: CameraInitProps) {
   const { camera } = useThree();
@@ -21,9 +35,13 @@ function CameraInit({ cx, cy, cz, viewMode }: CameraInitProps) {
     const distance = 6;
     const height = Math.max(cy + 1.6, 2.4);
     if (viewMode === 'front') {
+      camera.position.set(cx, height, cz - distance);
+    } else if (viewMode === 'back') {
       camera.position.set(cx, height, cz + distance);
     } else if (viewMode === 'left') {
       camera.position.set(cx - distance, height, cz);
+    } else if (viewMode === 'right') {
+      camera.position.set(cx + distance, height, cz);
     } else if (viewMode === 'top') {
       camera.position.set(cx, cy + distance + 2, cz + 0.01);
     } else {
@@ -42,6 +60,7 @@ interface Props {
 export function CubeViewer({ cubes }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>('front');
   const [contextLost, setContextLost] = useState(false);
+  const supportsWebGL = canUseWebGL();
 
   const { cx, cy, cz } = useMemo(() => {
     const count = cubes.length || 1;
@@ -52,7 +71,7 @@ export function CubeViewer({ cubes }: Props) {
     };
   }, [cubes]);
 
-  if (contextLost) {
+  if (contextLost || !supportsWebGL) {
     return (
       <div className="flex h-full min-h-[240px] flex-col items-center justify-center gap-3 bg-slate-900 p-6 text-center">
         <p className="text-4xl">🧊</p>
@@ -60,6 +79,7 @@ export function CubeViewer({ cubes }: Props) {
         <button
           type="button"
           onClick={() => setContextLost(false)}
+          disabled={!supportsWebGL}
           className="rounded-full bg-gold px-4 py-2 text-sm font-bold text-navy"
         >
           다시 시도
@@ -126,10 +146,12 @@ export function CubeViewer({ cubes }: Props) {
         <span className="rounded-full bg-slate-950/70 px-2 py-1">☁️ 위</span>
       </div>
 
-      <div className="absolute bottom-3 left-3 right-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="absolute bottom-3 left-3 right-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {[
           ['front', '👀 앞에서 보기'],
+          ['back', '🏰 뒤에서 보기'],
           ['left', '👈 왼쪽에서 보기'],
+          ['right', '👉 오른쪽에서 보기'],
           ['top', '☁️ 위에서 보기'],
           ['free', '🔄 자유롭게 돌리기'],
         ].map(([mode, label]) => (

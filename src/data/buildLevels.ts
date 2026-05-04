@@ -1,6 +1,6 @@
 import type { Difficulty, HintStage, Level, Scene } from '../types/game';
 import { CUBE_COLOR_HEX } from '../utils/constants';
-import { validateBuildMission } from '../utils/buildValidation';
+import { calculateColorProjection, validateBuildMission } from '../utils/buildValidation';
 
 const R = CUBE_COLOR_HEX.red;
 const B = CUBE_COLOR_HEX.blue;
@@ -25,9 +25,9 @@ const MISSION_1: Scene = {
   options: [],
   questionText: '앞에서 본 그림과 똑같이 큐브를 쌓아 무지개 문을 만들어보세요.',
   rules: [
-    { type: 'exactCubeCount', count: 3 },
-    { type: 'requiredColorCount', color: 'red',  count: 1 },
-    { type: 'requiredColorCount', color: 'blue', count: 2 },
+    { type: 'exactCubeCount', count: 3, displayOnly: true },
+    { type: 'requiredColorCount', color: 'red',  count: 1, displayOnly: true },
+    { type: 'requiredColorCount', color: 'blue', count: 2, displayOnly: true },
     {
       type: 'targetColorProjection',
       face: 'front',
@@ -36,6 +36,7 @@ const MISSION_1: Scene = {
         [_, B, _],
         [R, B, _],
       ],
+      requiredForSuccess: true,
     },
   ],
   requiredColorCount: { red: 1, blue: 2 },
@@ -77,18 +78,13 @@ const MISSION_2: Scene = {
   storyText:
     '노랑 큐브가 말했어요.\n“나는 부끄러워서\n앞에서는 안 보이고 싶어!”',
   memo:
-    '“노랑 큐브를 꼭 사용하되,\n앞에서는 보이지 않게 숨겨주세요.”',
+    '“노랑 큐브를 꼭 사용하되,\n파랑 큐브 뒤쪽 바닥에 숨겨주세요.”',
   questionType: 'building',
   mode: 'build',
   cubes: [],
   options: [],
-  questionText: '노랑 큐브를 빨강 큐브 뒤에 숨겨, 앞에서는 빨강과 파랑만 보이게 만들어주세요.',
+  questionText: '노랑 큐브를 파랑 큐브 뒤쪽 바닥에 숨겨, 앞에서는 빨강과 파랑만 보이게 만들어주세요.',
   rules: [
-    { type: 'exactCubeCount', count: 3 },
-    { type: 'requiredColorCount', color: 'red',    count: 1 },
-    { type: 'requiredColorCount', color: 'blue',   count: 1 },
-    { type: 'requiredColorCount', color: 'yellow', count: 1 },
-    { type: 'colorMustBeHiddenFrom', color: 'yellow', face: 'front' },
     {
       type: 'targetColorProjection',
       face: 'front',
@@ -97,33 +93,39 @@ const MISSION_2: Scene = {
         [_, _, _],
         [R, B, _],
       ],
+      requiredForSuccess: true,
     },
+    { type: 'exactCubeCount', count: 3, displayOnly: true },
+    { type: 'requiredColorCount', color: 'red',    count: 1, displayOnly: true },
+    { type: 'requiredColorCount', color: 'blue',   count: 1, displayOnly: true },
+    { type: 'requiredColorCount', color: 'yellow', count: 1, displayOnly: true },
+    { type: 'colorMustBeHiddenFrom', color: 'yellow', face: 'front', displayOnly: true },
   ],
   requiredColorCount: { red: 1, blue: 1, yellow: 1 },
   maxCubes: 9,
   exactCubes: 3,
   maxGridSize: { x: 3, y: 4, z: 3 },
-  successText: '찾았다!\n아니, 잘 숨었다! 🫣\n노랑 큐브가 방긋 웃었어요.',
-  hintText: '노랑은 빨강 큐브 바로 뒤에 숨기면 앞에서는 안 보여요.',
+  successText: '앞에서 본 모습이 완성됐어요!\n숨바꼭질 성공! 🫣',
+  hintText: '노랑은 파랑 큐브 바로 뒤쪽 바닥에 같은 높이로 놓으면 앞에서는 안 보여요.',
   hintStages: [
-    { text: '앞에서 보면 빨강·파랑만 보여야 해요. 노랑은 다른 큐브 뒤에 숨기세요.' },
+    { text: '앞에서 보면 빨강·파랑만 보여야 해요. 노랑은 파랑 큐브 위가 아니라, 같은 높이로 뒤에 놓아야 해요.' },
     {
-      text: '위에서 보면 앞줄은 빨강·파랑, 뒷줄에 노랑이 살짝 숨어 있어요.',
+      text: '노랑 큐브는 파랑 큐브의 “뒤쪽 바닥”에 놓아야 해요.\n파랑 큐브 위에 올리면 앞에서 노랑이 보여요.',
       grid: {
         face: 'top',
         cells: [
           [R, B, _],
-          [Y, _, _],
+          [_, Y, _],
           [_, _, _],
         ] as (string | null)[][],
       },
     },
   ],
-  // 노랑 (0,0,1)은 빨강 (0,0,0) 바로 뒤. 앞에서는 빨강이 가려서 안 보임.
+  // 노랑 (1,0,1)은 파랑 (1,0,0) 바로 뒤쪽 바닥. 앞에서는 파랑이 가려서 안 보임.
   officialSolution: [
     { x: 0, y: 0, z: 0, color: R },
     { x: 1, y: 0, z: 0, color: B },
-    { x: 0, y: 0, z: 1, color: Y },
+    { x: 1, y: 0, z: 1, color: Y },
   ],
 };
 
@@ -145,10 +147,10 @@ const MISSION_3: Scene = {
   options: [],
   questionText: '앞에서 본 색과 위에서 본 ㄴ자 모양을 둘 다 만들어 보물탑을 완성해주세요.',
   rules: [
-    { type: 'exactCubeCount', count: 4 },
-    { type: 'requiredColorCount', color: 'red',   count: 1 },
-    { type: 'requiredColorCount', color: 'blue',  count: 2 },
-    { type: 'requiredColorCount', color: 'green', count: 1 },
+    { type: 'exactCubeCount', count: 4, displayOnly: true },
+    { type: 'requiredColorCount', color: 'red',   count: 1, displayOnly: true },
+    { type: 'requiredColorCount', color: 'blue',  count: 2, displayOnly: true },
+    { type: 'requiredColorCount', color: 'green', count: 1, displayOnly: true },
     {
       type: 'targetColorProjection',
       face: 'front',
@@ -157,6 +159,7 @@ const MISSION_3: Scene = {
         [_, G, _],
         [R, B, _],
       ],
+      requiredForSuccess: true,
     },
     {
       type: 'targetShapeProjection',
@@ -166,6 +169,7 @@ const MISSION_3: Scene = {
         [1, 0, 0],
         [0, 0, 0],
       ],
+      requiredForSuccess: true,
     },
   ],
   requiredColorCount: { red: 1, blue: 2, green: 1 },
@@ -229,12 +233,14 @@ const __DEV__ =
   typeof import.meta !== 'undefined' &&
   !!import.meta.env?.DEV;
 if (__DEV__) {
+  const sameGrid = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
   for (const mission of buildMissions) {
     if (!mission.officialSolution) {
       console.error(`[buildLevels] Mission "${mission.title}" has no officialSolution.`);
       continue;
     }
-    const result = validateBuildMission(mission.officialSolution, mission);
+    const result = validateBuildMission(mission.officialSolution, mission, { strict: true });
     if (!result.success) {
       const failed = result.results.filter(r => !r.ok);
       console.error(
@@ -242,6 +248,64 @@ if (__DEV__) {
         failed.map(r => `${r.label} (현재 ${r.current} / 목표 ${r.target})`).join(', '),
       );
     }
+  }
+
+  const hiddenYellowBehindBlue = [
+    { x: 0, y: 0, z: 0, color: R },
+    { x: 1, y: 0, z: 0, color: B },
+    { x: 1, y: 0, z: 1, color: Y },
+  ];
+  const expectedMission2Front = [
+    [_, _, _],
+    [_, _, _],
+    [R, B, _],
+  ];
+  const expectedMission2Top = [
+    [R, B, _],
+    [_, Y, _],
+    [_, _, _],
+  ];
+  const hiddenFront = calculateColorProjection(hiddenYellowBehindBlue, 'front');
+  const hiddenTop = calculateColorProjection(hiddenYellowBehindBlue, 'top');
+  const hiddenResult = validateBuildMission(hiddenYellowBehindBlue, MISSION_2, { strict: true });
+  if (
+    !sameGrid(hiddenFront, expectedMission2Front) ||
+    !sameGrid(hiddenTop, expectedMission2Top) ||
+    !hiddenResult.success
+  ) {
+    console.error('[buildLevels] ❌ Mission 2 front/top projection regression:', {
+      hiddenFront,
+      expectedMission2Front,
+      hiddenTop,
+      expectedMission2Top,
+      hiddenResult,
+    });
+  } else {
+    console.log('[buildLevels] ✅ Mission 2: 파랑 뒤 노랑 숨김 배치 → front/top/validation PASS');
+  }
+
+  // Mission 2: 노랑이 파랑 위에 있어 앞에서 보이는 배치는 반드시 FAIL이어야 한다.
+  const visibleYellowOnTopOfBlue = [
+    { x: 0, y: 0, z: 0, color: R }, // 빨강
+    { x: 1, y: 0, z: 0, color: B }, // 파랑
+    { x: 1, y: 1, z: 0, color: Y }, // 노랑 — 파랑 위에 올라가 앞에서 보임
+  ];
+  const expectedBadFront = [
+    [_, _, _],
+    [_, Y, _],
+    [R, B, _],
+  ];
+  const badFront = calculateColorProjection(visibleYellowOnTopOfBlue, 'front');
+  const badResult = validateBuildMission(visibleYellowOnTopOfBlue, MISSION_2);
+  if (!sameGrid(badFront, expectedBadFront) || badResult.success) {
+    console.error('[buildLevels] ❌ Mission 2 검증 버그: 노랑 앞노출 배치가 잘못 처리됨!', {
+      badFront,
+      expectedBadFront,
+      badResult,
+      visibleYellowOnTopOfBlue,
+    });
+  } else {
+    console.log('[buildLevels] ✅ Mission 2: 노랑 앞노출 배치 → 올바르게 FAIL 처리됨');
   }
 }
 

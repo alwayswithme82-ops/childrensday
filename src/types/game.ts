@@ -45,15 +45,20 @@ export type ViewFace = 'front' | 'back' | 'top' | 'left' | 'right';
 
 export type ColorCell = string | null;
 
+export interface BuildRuleBase {
+  requiredForSuccess?: boolean;
+  displayOnly?: boolean;
+}
+
 export type BuildRule =
-  | { type: 'exactCubeCount'; count: number }
-  | { type: 'requiredColorCount'; color: CubeColorKey; count: number }
-  | { type: 'targetColorProjection'; face: ViewFace; grid: ColorCell[][] }
-  | { type: 'targetShapeProjection'; face: ViewFace; grid: number[][] }
-  | { type: 'colorMustBeHiddenFrom'; color: CubeColorKey; face: ViewFace }
-  | { type: 'colorTouchCount'; colorA: CubeColorKey; colorB: CubeColorKey; count: number }
-  | { type: 'visibleColorCount'; face: ViewFace; color: CubeColorKey; count: number }
-  | { type: 'visibleBlockCountCompare'; faceA: ViewFace; faceB: ViewFace; relation: 'same' | 'different' };
+  | (BuildRuleBase & { type: 'exactCubeCount'; count: number })
+  | (BuildRuleBase & { type: 'requiredColorCount'; color: CubeColorKey; count: number })
+  | (BuildRuleBase & { type: 'targetColorProjection'; face: ViewFace; grid: ColorCell[][] })
+  | (BuildRuleBase & { type: 'targetShapeProjection'; face: ViewFace; grid: number[][] })
+  | (BuildRuleBase & { type: 'colorMustBeHiddenFrom'; color: CubeColorKey; face: ViewFace })
+  | (BuildRuleBase & { type: 'colorTouchCount'; colorA: CubeColorKey; colorB: CubeColorKey; count: number })
+  | (BuildRuleBase & { type: 'visibleColorCount'; face: ViewFace; color: CubeColorKey; count: number })
+  | (BuildRuleBase & { type: 'visibleBlockCountCompare'; faceA: ViewFace; faceB: ViewFace; relation: 'same' | 'different' });
 
 export interface HintStage {
   text: string;
@@ -105,6 +110,7 @@ export interface SceneResult {
   timeSeconds: number;
   hintsUsed: number;
   stars: 1 | 2 | 3;
+  forced?: boolean;
 }
 
 export type Grade = '견습생' | '건축사' | '큐브왕';

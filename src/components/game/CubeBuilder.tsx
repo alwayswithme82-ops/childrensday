@@ -7,10 +7,23 @@ import { CUBE_COLOR_HEX, CUBE_COLOR_LABEL, CUBE_COLOR_ORDER } from '../../utils/
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 
 type ToolMode = 'build' | 'erase';
-type ViewMode = 'front' | 'top' | 'left' | 'free';
+type ViewMode = 'front' | 'back' | 'top' | 'left' | 'right' | 'free';
 
 const DEFAULT_GRID: GridSize = { x: 3, y: 4, z: 3 };
 const TAP_THRESHOLD_PX = 8;
+let webglSupportedCache: boolean | null = null;
+
+function canUseWebGL(): boolean {
+  if (webglSupportedCache !== null) return webglSupportedCache;
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
+    webglSupportedCache = !!gl;
+  } catch {
+    webglSupportedCache = false;
+  }
+  return webglSupportedCache;
+}
 
 interface Props {
   cubes: CubeData[];
@@ -31,10 +44,12 @@ function CameraRig({ viewMode, target }: CameraRigProps) {
   const { camera } = useThree();
   useEffect(() => {
     const [tx, ty, tz] = target;
-    if (viewMode === 'front')      camera.position.set(tx, ty + 1.6, tz + 5.6);
+    if (viewMode === 'front')      camera.position.set(tx, ty + 1.6, tz - 5.6);
+    else if (viewMode === 'back')  camera.position.set(tx, ty + 1.6, tz + 5.6);
     else if (viewMode === 'left')  camera.position.set(tx - 5.6, ty + 1.6, tz);
+    else if (viewMode === 'right') camera.position.set(tx + 5.6, ty + 1.6, tz);
     else if (viewMode === 'top')   camera.position.set(tx, ty + 7, tz + 0.001);
-    else                            camera.position.set(tx + 4, ty + 4, tz + 4);
+    else                           camera.position.set(tx + 4, ty + 4, tz + 4);
     camera.lookAt(tx, ty, tz);
     camera.updateProjectionMatrix();
   }, [camera, viewMode, target]);
@@ -59,6 +74,7 @@ export function CubeBuilder({
   disabled = false,
   onLimit,
 }: Props) {
+  const supportsWebGL = canUseWebGL();
   const [tool, setTool] = useState<ToolMode>('build');
   const [viewMode, setViewMode] = useState<ViewMode>('front');
   const [selectedColor, setSelectedColor] = useState<CubeColorKey | null>(null);
@@ -281,8 +297,10 @@ export function CubeBuilder({
   // ----- Derived render values -----
   const activeColor = draggingColor ?? selectedColor;
   const hoverY = hoverCell ? Math.min(topYAt(cubes, hoverCell.x, hoverCell.z), maxGridSize.y - 1) : 0;
+  const canPlaceAt = (x: number, z: number) =>
+    !disabled && cubes.length < maxCubes && topYAt(cubes, x, z) < maxGridSize.y;
   const canPreviewPlace = !!(
-    hoverCell && activeColor && checkPlacement(activeColor, hoverCell.x, hoverCell.z).ok
+    hoverCell && activeColor && canPlaceAt(hoverCell.x, hoverCell.z)
   );
   const sortedCubes = useMemo(() => [...cubes].sort((a, b) => a.y - b.y), [cubes]);
 
@@ -334,13 +352,20 @@ export function CubeBuilder({
         className="relative flex-1 overflow-hidden rounded-2xl bg-slate-900 touch-none"
         style={{ touchAction: 'none' }}
       >
-        <ErrorBoundary
-          fallback={
-            <div className="flex h-full items-center justify-center text-sm text-slate-300">
-              3D 조립판을 표시할 수 없어요.
-            </div>
-          }
-        >
+        {!supportsWebGL ? (
+          <div className="flex h-full min-h-[280px] items-center justify-center p-6 text-center text-sm font-bold leading-relaxed text-slate-300">
+            이 브라우저에서는 3D 조립판을 표시할 수 없어요.
+            <br />
+            다른 브라우저나 기기에서 다시 열어주세요.
+          </div>
+        ) : (
+          <ErrorBoundary
+            fallback={
+              <div className="flex h-full items-center justify-center text-sm text-slate-300">
+                3D 조립판을 표시할 수 없어요.
+              </div>
+            }
+          >
           <Canvas camera={{ position: [5, 5, 5], fov: 48 }} shadows className="touch-none">
             <Suspense fallback={null}>
             <CameraRig viewMode={viewMode} target={target} />
@@ -365,12 +390,12 @@ export function CubeBuilder({
                       handleCellPointerDown(x, z);
                     }}
                     onPointerEnter={() => {
-                      if (!disabledRef.current && (draggingRef.current || selectedColor)) {
+                      if (!disabled && (draggingColor || selectedColor)) {
                         setHoverCell({ x, z });
                       }
                     }}
                     onPointerLeave={() => {
-                      if (!draggingRef.current) {
+                      if (!draggingColor) {
                         setHoverCell(prev => (prev?.x === x && prev?.z === z ? null : prev));
                       }
                     }}
@@ -400,7 +425,7 @@ export function CubeBuilder({
                   handleCubePointerDown(cube);
                 }}
                 onPointerEnter={() => {
-                  if (!disabledRef.current && (draggingRef.current || selectedColor)) {
+                  if (!disabled && (draggingColor || selectedColor)) {
                     setHoverCell({ x: cube.x, z: cube.z });
                   }
                 }}
@@ -451,7 +476,8 @@ export function CubeBuilder({
             <span className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-gold/20 px-2 py-0.5 text-gold">👈 왼쪽</span>
             <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-slate-950/70 px-2 py-0.5 text-slate-300">오른쪽</span>
           </div>
-        </ErrorBoundary>
+          </ErrorBoundary>
+        )}
 
         {/* Selected color hint */}
         {selectedColor && !draggingColor && (
@@ -548,11 +574,13 @@ export function CubeBuilder({
       </div>
 
       {/* View buttons */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {([
           ['front', '👀 앞에서'],
+          ['back', '🏰 뒤에서'],
           ['top', '☁️ 위에서'],
           ['left', '👈 왼쪽에서'],
+          ['right', '👉 오른쪽에서'],
           ['free', '🔄 자유롭게'],
         ] as const).map(([mode, label]) => (
           <button

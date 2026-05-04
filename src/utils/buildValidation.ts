@@ -48,40 +48,33 @@ export function countFaceContacts(
  * left:  smallest x per (z,y)
  * right: largest x per (z,y)
  */
-function visibleCubesFrom(cubes: CubeData[], face: ViewFace): CubeData[] {
+export function visibleCubesFrom(cubes: CubeData[], face: ViewFace): CubeData[] {
   const map = new Map<string, CubeData>();
   for (const c of cubes) {
     let key: string;
-    let depth: number;
     let better: (cur: CubeData, next: CubeData) => boolean;
     switch (face) {
       case 'front':
         key = `${c.x},${c.y}`;
-        depth = c.z;
         better = (cur, next) => next.z < cur.z;
         break;
       case 'back':
         key = `${c.x},${c.y}`;
-        depth = -c.z;
         better = (cur, next) => next.z > cur.z;
         break;
       case 'top':
         key = `${c.x},${c.z}`;
-        depth = -c.y;
         better = (cur, next) => next.y > cur.y;
         break;
       case 'left':
         key = `${c.z},${c.y}`;
-        depth = c.x;
         better = (cur, next) => next.x < cur.x;
         break;
       case 'right':
         key = `${c.z},${c.y}`;
-        depth = -c.x;
         better = (cur, next) => next.x > cur.x;
         break;
     }
-    void depth;
     const cur = map.get(key);
     if (!cur || better(cur, c)) map.set(key, c);
   }
@@ -102,24 +95,26 @@ export function calculateVisibleColorCount(
 }
 
 /**
- * Bounding-box 기준 색깔 격자 (시각화용).
+ * 3x3 색깔 격자.
+ * 어느 방향이든 같은 시선줄에서는 보는 쪽에 가장 가까운 큐브 하나만 보인다.
+ * front/back/left/right는 y=0이 화면 맨 아래, top은 z=0이 화면 맨 앞줄이다.
  */
 export function calculateColorProjection(cubes: CubeData[], face: ViewFace): ColorCell[][] {
-  if (!cubes.length) return [[null]];
+  if (!cubes.length) return normalizeProjectionTo3x3([[null]], face);
   const visible = visibleCubesFrom(cubes, face);
 
   const axes = (() => {
     switch (face) {
       // grid[row=maxRow-y][col=x]
       case 'front': return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.x, flipRow: true };
-      // back: 위쪽이 y최대, 좌우는 거울 → col = maxX - x
-      case 'back':  return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.x, flipRow: true, flipCol: true } as const;
-      // top: rows = z, cols = x
+      // back: front와 같은 좌표 격자, 보이는 큐브만 z 최대 기준.
+      case 'back':  return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.x, flipRow: true };
+      // top: rows = z(front->back), cols = x(left->right)
       case 'top':   return { row: (c: CubeData) => c.z, col: (c: CubeData) => c.x, flipRow: false };
-      // left: rows = y(flip), cols = z
+      // left: rows = y(bottom->top), cols = z(front->back)
       case 'left':  return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true };
-      // right: rows = y(flip), cols = z mirrored
-      case 'right': return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true, flipCol: true } as const;
+      // right: left와 같은 좌표 격자, 보이는 큐브만 x 최대 기준.
+      case 'right': return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true };
     }
   })();
 
@@ -137,10 +132,10 @@ export function calculateColorProjection(cubes: CubeData[], face: ViewFace): Col
     const rRaw = axes.row(c);
     const cRaw = axes.col(c);
     const r = axes.flipRow ? maxRow - rRaw : rRaw;
-    const col = 'flipCol' in axes && axes.flipCol ? maxCol - cRaw : cRaw;
+    const col = cRaw;
     if (r >= 0 && r < rows && col >= 0 && col < cols) grid[r][col] = c.color;
   }
-  return grid;
+  return normalizeProjectionTo3x3(grid, face);
 }
 
 export function calculateShapeProjection(cubes: CubeData[], face: ViewFace): number[][] {
@@ -237,7 +232,7 @@ export function evaluateRule(cubes: CubeData[], rule: BuildRule): RuleResult {
         ok,
         current: ok ? '맞음' : '다름',
         target: '일치',
-        label: `${FACE_LABEL[rule.face]} 본 모양 일치`,
+        label: `${FACE_LABEL[rule.face]} 본 자리 맞추기`,
       };
     }
     case 'targetColorProjection': {
@@ -248,47 +243,24 @@ export function evaluateRule(cubes: CubeData[], rule: BuildRule): RuleResult {
         ok,
         current: ok ? '맞음' : '다름',
         target: '일치',
-        label: `${FACE_LABEL[rule.face]} 본 색깔 일치`,
+        label: `${FACE_LABEL[rule.face]} 본 모습 맞추기`,
       };
     }
   }
 }
 
-function normalize(grid: number[][]): number[][] {
-  if (!grid.length || !grid[0]?.length) return [];
-  let top = 0, bot = grid.length - 1, left = 0, right = grid[0].length - 1;
-  while (top <= bot && grid[top].every(v => !v)) top++;
-  while (bot >= top && grid[bot].every(v => !v)) bot--;
-  while (left <= right && grid.every(r => !r[left])) left++;
-  while (right >= left && grid.every(r => !r[right])) right--;
-  if (top > bot || left > right) return [];
-  return grid.slice(top, bot + 1).map(r => r.slice(left, right + 1));
-}
-
-function normalizeColor(grid: ColorCell[][]): ColorCell[][] {
-  if (!grid.length || !grid[0]?.length) return [];
-  let top = 0, bot = grid.length - 1, left = 0, right = grid[0].length - 1;
-  const empty = (cell: ColorCell) => !cell;
-  while (top <= bot && grid[top].every(empty)) top++;
-  while (bot >= top && grid[bot].every(empty)) bot--;
-  while (left <= right && grid.every(r => empty(r[left]))) left++;
-  while (right >= left && grid.every(r => empty(r[right]))) right--;
-  if (top > bot || left > right) return [];
-  return grid.slice(top, bot + 1).map(r => r.slice(left, right + 1));
-}
-
 function compareGrid(a: number[][], b: number[][], face: ViewFace): boolean {
-  const na = normalize(normalizeProjectionTo3x3(a, face));
-  const nb = normalize(normalizeProjectionTo3x3(b, face));
+  const na = normalizeProjectionTo3x3(a, face);
+  const nb = normalizeProjectionTo3x3(b, face);
   if (na.length !== nb.length) return false;
   if ((na[0]?.length ?? 0) !== (nb[0]?.length ?? 0)) return false;
   return na.every((row, r) => row.every((c, i) => c === nb[r][i]));
 }
 
 function compareColorGrid(a: ColorCell[][], b: ColorCell[][], face: ViewFace): boolean {
-  // 색깔까지 일치하되, 3×3 보드 안의 빈 테두리 위치 차이는 허용한다.
-  const na = normalizeColor(normalizeProjectionTo3x3(a, face));
-  const nb = normalizeColor(normalizeProjectionTo3x3(b, face));
+  // 좌표 기준이 고정되어 있으므로 3×3 안의 빈칸 위치까지 정확히 비교한다.
+  const na = normalizeProjectionTo3x3(a, face);
+  const nb = normalizeProjectionTo3x3(b, face);
   if (na.length !== nb.length) return false;
   if ((na[0]?.length ?? 0) !== (nb[0]?.length ?? 0)) return false;
   return na.every((row, r) =>
@@ -306,21 +278,34 @@ export interface BuildValidationResult {
   message: string;
 }
 
-export function validateBuildMission(cubes: CubeData[], mission: Scene): BuildValidationResult {
-  const rules = mission.rules ?? [];
-  const results = rules.map(r => evaluateRule(cubes, r));
+export interface BuildValidationOptions {
+  strict?: boolean;
+}
 
-  const failed = results.filter(r => !r.ok);
-  if (failed.length === 0) {
-    return {
-      success: true,
-      results,
-      message: mission.successText ?? '비밀 건물이 완성되었어요!',
-    };
+export function isRuleRequiredForSuccess(rule: BuildRule): boolean {
+  return !rule.displayOnly && rule.requiredForSuccess !== false;
+}
+
+function missionFailureMessage(mission: Scene, first: RuleResult): string {
+  if (mission.id === 2) {
+    return '앞에서 본 모습이 아직 그림과 달라요.\n빨강과 파랑이 아래 줄에 보이게 만들어봐요.';
+  }
+  if (mission.id === 3) {
+    return '앞에서 본 그림이나 위에서 본 자리가 아직 달라요.\n힌트 그림을 다시 볼까요?';
   }
 
+  switch (first.rule.type) {
+    case 'targetShapeProjection':
+      return `${FACE_LABEL[first.rule.face]} 본 자리가 아직 달라요. 그림 모양을 다시 만들어봐요.`;
+    case 'targetColorProjection':
+      return `거의 다 왔어요! ${FACE_LABEL[first.rule.face]} 본 모습을 그림과 똑같이 만들어봐요.`;
+    default:
+      return '아직 목표 그림과 조금 달라요. 힌트 그림을 다시 볼까요?';
+  }
+}
+
+function strictFailureMessage(first: RuleResult): string {
   // 가장 먼저 실패한 규칙을 부드럽게 안내.
-  const first = failed[0];
   let detail = '';
   switch (first.rule.type) {
     case 'exactCubeCount': {
@@ -357,6 +342,31 @@ export function validateBuildMission(cubes: CubeData[], mission: Scene): BuildVa
       detail = `거의 다 왔어요! ${FACE_LABEL[first.rule.face]} 본 모습을 그림과 똑같이 만들어봐요.`;
       break;
   }
+  return detail;
+}
+
+export function validateBuildMission(
+  cubes: CubeData[],
+  mission: Scene,
+  options: BuildValidationOptions = {},
+): BuildValidationResult {
+  const rules = mission.rules ?? [];
+  const results = rules.map(r => evaluateRule(cubes, r));
+  const blockingResults = options.strict
+    ? results
+    : results.filter(result => isRuleRequiredForSuccess(result.rule));
+
+  const failed = blockingResults.filter(r => !r.ok);
+  if (failed.length === 0) {
+    return {
+      success: true,
+      results,
+      message: mission.successText ?? '비밀 건물이 완성되었어요!',
+    };
+  }
+
+  const first = failed[0];
+  const detail = options.strict ? strictFailureMessage(first) : missionFailureMessage(mission, first);
 
   return { success: false, results, message: detail };
 }
