@@ -2,7 +2,9 @@ import type { CubeData, Scene, TargetProjections } from '../types/game';
 import {
   calculateColorProjection as calculateBuildColorProjection,
   calculateShapeProjection as calculateBuildShapeProjection,
+  compareGrid as compareBuildGrid,
 } from '../utils/buildValidation';
+import { normalizeProjectionTo3x3 } from '../utils/projectionGrid';
 
 type Grid = number[][];
 type ColorGrid = string[][];
@@ -11,36 +13,34 @@ function makeGrid(rows: number, cols: number): Grid {
   return Array.from({ length: rows }, () => Array(cols).fill(0));
 }
 
+function toFixedGrid(grid: Grid, gridSize: number, bottomAlignRows: boolean): Grid {
+  const out = makeGrid(gridSize, gridSize);
+  const rows = Math.min(grid.length, gridSize);
+  const rowOffset = bottomAlignRows ? Math.max(0, gridSize - rows) : 0;
+
+  for (let r = 0; r < rows; r++) {
+    const row = grid[r] ?? [];
+    const targetRow = rowOffset + r;
+    for (let c = 0; c < Math.min(row.length, gridSize); c++) {
+      out[targetRow][c] = row[c] ? 1 : 0;
+    }
+  }
+
+  return out;
+}
+
 // --- Legacy fixed-size projections (used by existing projectionData option grids) ---
 
 export function getFrontProjection(cubes: CubeData[], gridSize = 4): Grid {
-  const grid = makeGrid(gridSize, gridSize);
-  cubes.forEach(({ x, y }) => {
-    const row = gridSize - 1 - y;
-    const col = x;
-    if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) grid[row][col] = 1;
-  });
-  return grid;
+  return toFixedGrid(calculateBuildShapeProjection(cubes, 'front'), gridSize, true);
 }
 
 export function getSideProjection(cubes: CubeData[], gridSize = 4): Grid {
-  const grid = makeGrid(gridSize, gridSize);
-  cubes.forEach(({ z, y }) => {
-    const row = gridSize - 1 - y;
-    const col = z;
-    if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) grid[row][col] = 1;
-  });
-  return grid;
+  return toFixedGrid(calculateBuildShapeProjection(cubes, 'left'), gridSize, true);
 }
 
 export function getTopProjection(cubes: CubeData[], gridSize = 4): Grid {
-  const grid = makeGrid(gridSize, gridSize);
-  cubes.forEach(({ x, z }) => {
-    const row = z;
-    const col = x;
-    if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) grid[row][col] = 1;
-  });
-  return grid;
+  return toFixedGrid(calculateBuildShapeProjection(cubes, 'top'), gridSize, false);
 }
 
 // --- New dynamic-size projections ---
@@ -72,27 +72,12 @@ export function calculateColorProjection(
 }
 
 export function normalizeProjection(grid: number[][]): number[][] {
-  if (!grid.length || !grid[0]?.length) return [];
-  let top = 0;
-  let bottom = grid.length - 1;
-  let left = 0;
-  let right = grid[0].length - 1;
-
-  while (top <= bottom && grid[top].every(cell => cell === 0)) top++;
-  while (bottom >= top && grid[bottom].every(cell => cell === 0)) bottom--;
-  while (left <= right && grid.every(row => row[left] === 0)) left++;
-  while (right >= left && grid.every(row => row[right] === 0)) right--;
-
-  if (top > bottom || left > right) return [];
-  return grid.slice(top, bottom + 1).map(row => row.slice(left, right + 1));
+  return normalizeProjectionTo3x3(grid, 'front');
 }
 
-export function compareProjection(a: number[][], b: number[][]): boolean {
-  const na = normalizeProjection(a);
-  const nb = normalizeProjection(b);
-  if (na.length !== nb.length) return false;
-  if ((na[0]?.length ?? 0) !== (nb[0]?.length ?? 0)) return false;
-  return na.every((row, r) => row.every((cell, c) => cell === nb[r][c]));
+export function compareProjection(a: number[][], b: number[][], face: 'front' | 'side' | 'top' = 'front'): boolean {
+  const buildFace = face === 'side' ? 'left' : face;
+  return compareBuildGrid(a, b, buildFace);
 }
 
 export interface BuildValidationResult {
@@ -118,7 +103,7 @@ export function validateBuildMission(cubes: CubeData[], mission: Scene): BuildVa
     const target = targets[face];
     if (!target) return;
     const actual = calculateProjection(cubes, face);
-    if (compareProjection(actual, target)) matchedFaces.push(face);
+    if (compareProjection(actual, target, face)) matchedFaces.push(face);
     else failedFaces.push(face);
   });
 

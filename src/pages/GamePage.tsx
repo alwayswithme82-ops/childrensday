@@ -173,18 +173,18 @@ export function GamePage() {
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
     const validation = validateBuildMission(builtCubes, scene, { strict: strictMode });
-    if (import.meta.env.DEV) {
-      console.log('[Build Debug] scene', scene.id, scene.title);
-      console.log('[Build Debug] cubes', builtCubes);
+    if (import.meta.env.DEV && scene.id === 1) {
+      const mission1Validation = validateBuildMission(builtCubes, scene);
+      console.log('[Mission 1 Debug] builtCubes', builtCubes);
       console.log(
-        '[Build Debug] actual front',
+        '[Mission 1 Debug] actual front',
         normalizeProjectionTo3x3(calculateColorProjection(builtCubes, 'front'), 'front'),
       );
       console.log(
-        '[Build Debug] target front',
+        '[Mission 1 Debug] target front',
         scene.rules?.find(r => r.type === 'targetColorProjection' && r.face === 'front'),
       );
-      console.table(validation.results.map(r => ({
+      console.table(mission1Validation.results.map(r => ({
         type: r.rule.type,
         ok: r.ok,
         current: r.current,
@@ -243,14 +243,18 @@ export function GamePage() {
   };
 
   const handleSkipMission = () => {
+    if (!scene || !level) return;
     if (phase === 'result' || phase === 'reveal') return;
+
+    const ok = window.confirm('이번 미션은 도움을 받고 다음으로 넘어갈까요?');
+    if (!ok) return;
 
     if (pendingTimeoutRef.current !== null) {
       clearTimeout(pendingTimeoutRef.current);
       pendingTimeoutRef.current = null;
     }
 
-    play('correct');
+    play('click');
     timer.pause();
 
     const sceneTime = timer.getElapsed();
@@ -263,10 +267,9 @@ export function GamePage() {
       timeSeconds: sceneTime,
       hintsUsed: hintsUsedThisScene,
       stars: 1,
-      forced: true,
     });
 
-    setFeedbackMessage('다음 단계로 넘어갑니다. ⏭️');
+    setFeedbackMessage('도움을 받고 다음 미션으로 이동해요. ⏭️');
 
     if (isLast) {
       timer.stop();
@@ -411,6 +414,16 @@ export function GamePage() {
           onDismiss={handleStoryDismiss}
           buttonText={mission.button}
         />
+
+        {phase === 'story' && (
+          <button
+            type="button"
+            onClick={handleSkipMission}
+            className="fixed bottom-6 right-6 z-[80] rounded-2xl border border-white/20 bg-slate-900/90 px-5 py-3 text-sm font-bold text-white shadow-xl backdrop-blur"
+          >
+            도움 받고 다음으로 ⏭️
+          </button>
+        )}
 
         <AnimatePresence>
           {phase === 'reveal' && (

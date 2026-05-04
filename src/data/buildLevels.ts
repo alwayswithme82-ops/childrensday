@@ -229,9 +229,15 @@ export function getBuildLevelByDifficulty(difficulty: Difficulty): Level {
 }
 
 // 개발 모드: 각 미션의 officialSolution이 자기 rules를 모두 통과하는지 자동 검증.
-const __DEV__ =
-  typeof import.meta !== 'undefined' &&
-  !!import.meta.env?.DEV;
+function isDevelopmentRuntime(): boolean {
+  if (typeof process !== 'undefined') return process.env.NODE_ENV !== 'production';
+  if (typeof window !== 'undefined') {
+    return ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+  }
+  return false;
+}
+
+const __DEV__ = isDevelopmentRuntime();
 if (__DEV__) {
   const sameGrid = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 

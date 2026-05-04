@@ -13,6 +13,14 @@ function isFilled(cell: ProjectionCell): boolean {
   return typeof cell === 'number' ? cell !== 0 : cell !== null && cell !== '';
 }
 
+function isDevelopmentRuntime(): boolean {
+  if (typeof process !== 'undefined') return process.env.NODE_ENV !== 'production';
+  if (typeof window !== 'undefined') {
+    return ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+  }
+  return false;
+}
+
 function normalizeSizeTo3x3<T extends ProjectionCell>(
   grid: ProjectionGrid<T>,
   bottomAlignRows: boolean,
@@ -36,7 +44,17 @@ export function normalizeProjectionTo3x3<T extends ProjectionCell>(
   grid: ProjectionGrid<T>,
   face: ViewFace,
 ): ProjectionGrid<T> {
-  return normalizeSizeTo3x3(grid, SIDE_FACES.has(face));
+  const normalized = normalizeSizeTo3x3(grid, SIDE_FACES.has(face));
+
+  if (isDevelopmentRuntime() && SIDE_FACES.has(face) && !validateProjectionGrounded(normalized)) {
+    console.warn('[projectionGrid] Side projection has floating cells after 3x3 sizing.', {
+      face,
+      grid,
+      normalized,
+    });
+  }
+
+  return normalized;
 }
 
 export function validateProjectionGrounded<T extends ProjectionCell>(grid: ProjectionGrid<T>): boolean {

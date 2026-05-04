@@ -8,6 +8,7 @@ import {
   validateProjectionGrounded,
 } from '../../utils/projectionGrid';
 import { CUBE_COLOR_HEX } from '../../utils/constants';
+import { normalizeColorValue } from '../../utils/buildValidation';
 
 interface Props {
   open: boolean;
@@ -61,7 +62,7 @@ function ColorGrid({
             style={{
               width: cellSize,
               height: cellSize,
-              background: cell ?? 'rgba(148,163,184,0.18)',
+              background: normalizeColorValue(cell) ?? 'rgba(148,163,184,0.18)',
               border: cell
                 ? '1px solid rgba(255,255,255,0.45)'
                 : '1px solid rgba(255,255,255,0.10)',
