@@ -41,6 +41,25 @@ export interface TargetProjections {
   side?: number[][];
 }
 
+export type ViewFace = 'front' | 'back' | 'top' | 'left';
+
+export type ColorCell = string | null;
+
+export type BuildRule =
+  | { type: 'exactCubeCount'; count: number }
+  | { type: 'requiredColorCount'; color: CubeColorKey; count: number }
+  | { type: 'targetColorProjection'; face: ViewFace; grid: ColorCell[][] }
+  | { type: 'targetShapeProjection'; face: ViewFace; grid: number[][] }
+  | { type: 'colorMustBeHiddenFrom'; color: CubeColorKey; face: ViewFace }
+  | { type: 'colorTouchCount'; colorA: CubeColorKey; colorB: CubeColorKey; count: number }
+  | { type: 'visibleColorCount'; face: ViewFace; color: CubeColorKey; count: number }
+  | { type: 'visibleBlockCountCompare'; faceA: ViewFace; faceB: ViewFace; relation: 'same' | 'different' };
+
+export interface HintStage {
+  text: string;
+  grid?: { face: ViewFace; cells: ColorCell[][] };
+}
+
 export interface Scene {
   id: number;
   title?: string;
@@ -61,6 +80,12 @@ export interface Scene {
   hintText: string;
   successText?: string;
   projectionFaces?: ('front' | 'side' | 'top')[];
+  // 큐브왕의 메모: 미션 카드 상단에 양피지처럼 표시되는 문구
+  memo?: string;
+  // 새 규칙 기반 검증
+  rules?: BuildRule[];
+  // 단계별 힌트 (텍스트 + 선택적 색깔 격자)
+  hintStages?: HintStage[];
 }
 
 export interface Level {

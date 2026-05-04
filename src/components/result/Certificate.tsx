@@ -51,7 +51,7 @@ export function Certificate({ result }: Props) {
           {/* 상단 타이틀 */}
           <div>
             <p className="text-xs tracking-[0.25em] text-white/40 uppercase mb-1">Certificate of Achievement</p>
-            <h2 className="text-gold font-bold text-lg">🏰 큐브왕국 공인 건축가 자격증</h2>
+            <h2 className="text-gold font-bold text-lg">🏛 색나무 마을 어린이 건축가 인증서</h2>
           </div>
 
           {/* 중앙: 닉네임 + 등급 */}

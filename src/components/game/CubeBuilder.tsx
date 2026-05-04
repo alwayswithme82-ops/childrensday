@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, RoundedBox, Text } from '@react-three/drei';
+import { OrbitControls, RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import type { CubeColorKey, CubeData, GridSize } from '../../types/game';
 import { CUBE_COLOR_HEX, CUBE_COLOR_LABEL, CUBE_COLOR_ORDER } from '../../utils/constants';
@@ -358,6 +358,7 @@ export function CubeBuilder({
           }
         >
           <Canvas camera={{ position: [5, 5, 5], fov: 48 }} shadows className="touch-none">
+            <Suspense fallback={null}>
             <CameraRig viewMode={viewMode} target={target} />
             <SceneBridge cameraRef={cameraRef} />
             <ambientLight intensity={0.62} />
@@ -448,44 +449,6 @@ export function CubeBuilder({
               </RoundedBox>
             )}
 
-            {/* Direction labels (positions tied to grid extent) */}
-            <Text
-              position={[(maxGridSize.x - 1) / 2, 0.02, maxGridSize.z + 0.05]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              fontSize={0.26}
-              color="#F59E0B"
-              anchorX="center"
-            >
-              🚪 앞
-            </Text>
-            <Text
-              position={[(maxGridSize.x - 1) / 2, 0.02, -1.05]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              fontSize={0.22}
-              color="#94A3B8"
-              anchorX="center"
-            >
-              뒤
-            </Text>
-            <Text
-              position={[-1.05, 0.02, (maxGridSize.z - 1) / 2]}
-              rotation={[-Math.PI / 2, 0, Math.PI / 2]}
-              fontSize={0.22}
-              color="#F59E0B"
-              anchorX="center"
-            >
-              👈 왼쪽
-            </Text>
-            <Text
-              position={[maxGridSize.x + 0.05, 0.02, (maxGridSize.z - 1) / 2]}
-              rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
-              fontSize={0.22}
-              color="#94A3B8"
-              anchorX="center"
-            >
-              오른쪽
-            </Text>
-
             <OrbitControls
               target={target}
               enablePan={false}
@@ -494,7 +457,16 @@ export function CubeBuilder({
               autoRotate={viewMode === 'free'}
               autoRotateSpeed={1.2}
             />
+            </Suspense>
           </Canvas>
+
+          {/* Direction labels (HTML overlay — robust on all devices) */}
+          <div className="pointer-events-none absolute inset-0 z-[1] text-[11px] font-bold sm:text-xs">
+            <span className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-slate-950/70 px-2 py-0.5 text-slate-300">뒤</span>
+            <span className="absolute left-1/2 bottom-2 -translate-x-1/2 rounded-full bg-gold/20 px-2 py-0.5 text-gold">🚪 앞</span>
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-gold/20 px-2 py-0.5 text-gold">👈 왼쪽</span>
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-slate-950/70 px-2 py-0.5 text-slate-300">오른쪽</span>
+          </div>
         </ErrorBoundary>
 
         {/* Selected color hint */}

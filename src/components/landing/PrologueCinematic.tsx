@@ -21,47 +21,47 @@ interface PrologueScene {
 const SCENES: PrologueScene[] = [
   {
     id: 'invitation',
-    title: '이상한 초대장',
+    title: '광장에 떨어진 양피지',
     speaker: '?',
-    mainObjectEmoji: '✉️',
-    sfxText: '띵동!',
+    mainObjectEmoji: '📜',
+    sfxText: '팔랑!',
     body:
-      '어린이날 아침,\n네 앞에 반짝이는 큐브 초대장이 도착했어요.\n\n‘도와줘! 큐브 왕국의 보물이 사라졌어!’',
+      '어린이날 아침, 색나무 마을 광장.\n바람을 타고 작은 양피지 한 장이\n네 발 앞에 살포시 내려앉았어요.\n\n오래된 글씨로 ‘큐브왕의 메모’라고\n적혀 있었죠.',
     theme: 'invitation',
-    buttonText: '초대장 열어보기 ✉️',
+    buttonText: '메모 펼쳐보기 📜',
   },
   {
     id: 'portal',
-    title: '큐브 왕국으로!',
-    mainObjectEmoji: '🧊',
-    sfxText: '휘이이잉!',
+    title: '솟아오른 큐브왕의 그림자',
+    mainObjectEmoji: '👑',
+    sfxText: '쿠구궁!',
     body:
-      '초대장을 펼치는 순간,\n큐브들이 빙글빙글 돌기 시작했어요!\n\n눈을 떠보니\n너는 신비한 큐브 왕국에 도착해 있었어요.',
+      '메모를 펼치는 순간,\n색깔 큐브들이 광장 위로\n빙글빙글 떠올랐어요!\n\n그 한가운데에서 거대한 큐브왕의\n그림자가 천천히 나타났어요.',
     theme: 'portal',
-    buttonText: '큐브 왕국 둘러보기 🧊',
+    buttonText: '큐브왕 만나기 👑',
   },
   {
     id: 'ruby',
-    title: '큐브 요정 루비의 부탁',
-    speaker: '루비',
-    characterEmoji: '🧚',
-    mainObjectEmoji: '💎',
-    sfxText: '반짝!',
+    title: '색나무 마을 사람의 부탁',
+    speaker: '마을 사람',
+    characterEmoji: '🧑‍🌾',
+    mainObjectEmoji: '🏛',
+    sfxText: '도와줘!',
     body:
-      '안녕! 나는 큐브 요정 루비야!\n\n황금 보물상자가\n검은 그림자 마법에 잠겨버렸어!\n\n보물을 찾으려면 네 도움이 필요해!',
+      '오래전, 큐브왕은 색나무 마을 한가운데에\n비밀 건물을 짓고 사라졌어.\n\n비밀 건물을 다시 세우는 방법은\n네 장의 메모에만 적혀 있단다.\n어린이 건축가야, 우릴 도와주겠니?',
     theme: 'ruby',
-    buttonText: '루비 도와주기 ✨',
+    buttonText: '도와줄게요! ✨',
   },
   {
     id: 'keys',
-    title: '모험의 시작',
-    speaker: '루비',
-    mainObjectEmoji: '🗝️',
-    sfxText: '출발!',
+    title: '네 장의 메모',
+    speaker: '큐브왕의 메모',
+    mainObjectEmoji: '📜',
+    sfxText: '시작!',
     body:
-      '보물상자를 열려면\n네 개의 열쇠 조각을 찾아야 해요.\n\n🚪 그림자 문\n🗺️ 보물지도 바닥\n📦 숨은 큐브 창고\n🏰 비밀 보물탑\n\n큐브 왕국으로 모험을 떠나볼까요?',
+      '비밀 건물을 다시 세우려면\n네 장의 메모를 차례대로 풀어야 해요.\n\n📜 재료 모으기\n📜 색깔이 만나는 규칙\n📜 위에서 본 모습\n📜 숨어 있는 노란 큐브\n\n색나무 마을의 비밀 건물을\n함께 완성해볼까요?',
     theme: 'keys',
-    buttonText: '좋아! 출발하자 🚀',
+    buttonText: '첫 번째 메모 펼치기 📜',
   },
 ];
 
@@ -255,10 +255,10 @@ function MainObject({ scene, reduceMotion }: MainObjectProps) {
 
   // keys
   const places = [
-    { icon: '🚪', label: '그림자 문' },
-    { icon: '🗺️', label: '보물지도' },
-    { icon: '📦', label: '큐브 창고' },
-    { icon: '🏰', label: '보물탑' },
+    { icon: '🧱', label: '재료' },
+    { icon: '🤝', label: '만남' },
+    { icon: '☁️', label: '위에서' },
+    { icon: '🟨', label: '숨김' },
   ];
   return (
     <div className="flex h-36 flex-col items-center justify-center gap-3 sm:h-44">
@@ -302,7 +302,7 @@ function MainObject({ scene, reduceMotion }: MainObjectProps) {
               }
               className="inline-block"
             >
-              🗝️
+              📜
             </motion.span>
           </motion.span>
         ))}
