@@ -116,15 +116,6 @@ export function CubeBuilder({
   const usedOf = (cs: CubeData[], color: CubeColorKey) =>
     cs.filter(c => c.color === CUBE_COLOR_HEX[color]).length;
 
-  const getRemaining = (color: CubeColorKey): number => {
-    const cs = cubesRef.current;
-    const req = requiredRef.current;
-    if (req && req[color] !== undefined) {
-      return Math.max(0, (req[color] ?? 0) - usedOf(cs, color));
-    }
-    return Math.max(0, maxCubesRef.current - cs.length);
-  };
-
   const showError = (msg: string) => {
     setErrorMsg(msg);
     if (errorTimerRef.current !== null) clearTimeout(errorTimerRef.current);
@@ -132,14 +123,13 @@ export function CubeBuilder({
   };
 
   const checkPlacement = (
-    color: CubeColorKey,
+    _color: CubeColorKey,
     x: number,
     z: number,
   ): { ok: boolean; reason?: string } => {
     if (disabledRef.current) return { ok: false };
     const cs = cubesRef.current;
     if (cs.length >= maxCubesRef.current) return { ok: false, reason: '큐브를 너무 많이 쌓았어요!' };
-    if (getRemaining(color) <= 0) return { ok: false, reason: '이 색깔 큐브는 이미 다 썼어요!' };
     if (topYAt(cs, x, z) >= maxGridRef.current.y) return { ok: false, reason: '여기에는 더 이상 쌓을 수 없어요!' };
     return { ok: true };
   };
@@ -155,7 +145,6 @@ export function CubeBuilder({
     const y = topYAt(cs, x, z);
     setHistory(h => [...h, cs]);
     onChange([...cs, { x, y, z, color: CUBE_COLOR_HEX[color] }]);
-    if (getRemaining(color) - 1 <= 0) setSelectedColor(null);
   };
 
   const removeTopAt = (x: number, z: number) => {
@@ -250,10 +239,6 @@ export function CubeBuilder({
   // ----- Palette interaction -----
   const handlePalettePointerDown = (color: CubeColorKey, e: React.PointerEvent) => {
     if (disabled) return;
-    if (getRemaining(color) <= 0) {
-      showError('이 색깔 큐브는 이미 다 썼어요!');
-      return;
-    }
     e.preventDefault();
     setTool('build');
     dragStartRef.current = { x: e.clientX, y: e.clientY };
@@ -270,7 +255,6 @@ export function CubeBuilder({
     if (e.key !== 'Enter' && e.key !== ' ') return;
     e.preventDefault();
     if (disabled) return;
-    if (getRemaining(color) <= 0) return;
     setTool('build');
     setSelectedColor(prev => (prev === color ? null : color));
   };
@@ -512,23 +496,22 @@ export function CubeBuilder({
         />
       )}
 
-      {/* Color palette */}
+      {/* Color palette — same color can be placed many times; target shown for reference */}
       <div className="flex flex-wrap items-stretch justify-center gap-2 rounded-2xl bg-slate-900/60 px-3 py-3 sm:gap-3">
         {paletteColors.map(color => {
-          const remaining = getRemaining(color);
           const used = usedOf(cubes, color);
-          const total = requiredColorCount?.[color];
+          const target = requiredColorCount?.[color];
           const isSelected = selectedColor === color;
           const isDragging = draggingColor === color;
-          const isExhausted = remaining <= 0;
+          const matchesTarget = target !== undefined && used === target;
           return (
             <button
               key={color}
               type="button"
               onPointerDown={(e) => handlePalettePointerDown(color, e)}
               onKeyDown={(e) => handlePaletteKeyDown(color, e)}
-              disabled={isExhausted || disabled}
-              aria-label={`${CUBE_COLOR_LABEL[color]} 큐브 ${total !== undefined ? `${used}/${total}` : `${remaining}개 남음`}`}
+              disabled={disabled}
+              aria-label={`${CUBE_COLOR_LABEL[color]} 큐브 ${used}개 사용${target !== undefined ? `, 목표 ${target}개` : ''}`}
               aria-pressed={isSelected}
               className={[
                 'flex min-w-[70px] flex-col items-center gap-1 rounded-2xl border-2 px-3 py-2 transition-all select-none',
@@ -537,8 +520,8 @@ export function CubeBuilder({
                   : isDragging
                     ? 'scale-95 border-white/60'
                     : 'border-white/15',
-                isExhausted
-                  ? 'cursor-not-allowed opacity-30'
+                disabled
+                  ? 'cursor-not-allowed opacity-40'
                   : 'cursor-grab hover:scale-105 hover:border-white/40 active:cursor-grabbing',
               ].join(' ')}
               style={{ background: 'rgba(15,23,42,0.85)', touchAction: 'none' }}
@@ -551,8 +534,13 @@ export function CubeBuilder({
                     'inset 0 -3px 0 rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.3)',
                 }}
               />
-              <span className="text-xs font-bold text-white">
-                {total !== undefined ? `${used}/${total}` : `×${remaining}`}
+              <span className="flex items-baseline gap-1">
+                <span className="text-sm font-bold text-white">×{used}</span>
+                {target !== undefined && (
+                  <span className={`text-[10px] font-bold ${matchesTarget ? 'text-emerald-300' : 'text-white/55'}`}>
+                    /{target}
+                  </span>
+                )}
               </span>
             </button>
           );

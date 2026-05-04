@@ -17,7 +17,19 @@ const FACE_LABEL: Record<NonNullable<HintStage['grid']>['face'], string> = {
   left: '왼쪽에서 본 모습',
 };
 
-function ColorGrid({ cells }: { cells: (string | null)[][] }) {
+function normalizeTo3x3(grid: (string | null)[][]): (string | null)[][] {
+  const out: (string | null)[][] = Array.from({ length: 3 }, () => Array<string | null>(3).fill(null));
+  for (let r = 0; r < Math.min(grid.length, 3); r++) {
+    const row = grid[r] ?? [];
+    for (let c = 0; c < Math.min(row.length, 3); c++) {
+      out[r][c] = row[c];
+    }
+  }
+  return out;
+}
+
+function ColorGrid({ cells: rawCells }: { cells: (string | null)[][] }) {
+  const cells = normalizeTo3x3(rawCells);
   const rows = cells.length;
   const cols = cells[0]?.length ?? 0;
   return (

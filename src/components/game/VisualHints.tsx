@@ -155,8 +155,32 @@ function ContactExampleCards({ rules }: { rules: BuildRule[] }) {
   );
 }
 
-// 색깔 격자 한 장. 빈칸은 연한 회색으로 명확히 보이게 표시.
-function ColorGrid({ cells, cellSize = 26 }: { cells: ColorCell[][]; cellSize?: number }) {
+// 어떤 격자든 3×3으로 좌상단 기준 패딩.
+function normalizeTo3x3ColorGrid(grid: ColorCell[][]): ColorCell[][] {
+  const out: ColorCell[][] = Array.from({ length: 3 }, () => Array<ColorCell>(3).fill(null));
+  for (let r = 0; r < Math.min(grid.length, 3); r++) {
+    const row = grid[r] ?? [];
+    for (let c = 0; c < Math.min(row.length, 3); c++) {
+      out[r][c] = row[c];
+    }
+  }
+  return out;
+}
+
+function normalizeTo3x3ShapeGrid(grid: number[][]): number[][] {
+  const out: number[][] = Array.from({ length: 3 }, () => Array<number>(3).fill(0));
+  for (let r = 0; r < Math.min(grid.length, 3); r++) {
+    const row = grid[r] ?? [];
+    for (let c = 0; c < Math.min(row.length, 3); c++) {
+      out[r][c] = row[c] ? 1 : 0;
+    }
+  }
+  return out;
+}
+
+// 색깔 격자 한 장. 빈칸은 연한 회색으로 명확히 보이게 표시. 항상 3×3.
+function ColorGrid({ cells: rawCells, cellSize = 26 }: { cells: ColorCell[][]; cellSize?: number }) {
+  const cells = normalizeTo3x3ColorGrid(rawCells);
   const rows = cells.length;
   const cols = cells[0]?.length ?? 0;
   return (
@@ -204,8 +228,9 @@ function emptyGrid(face: ViewFace): ColorCell[][] {
   return [[null], [null]];
 }
 
-// 1=칸이 있어야 함, 0=없어야 함. 색깔 없이 "자리 그림"만 보여주는 격자.
-function ShapeGrid({ cells, cellSize = 26 }: { cells: number[][]; cellSize?: number }) {
+// 1=칸이 있어야 함, 0=없어야 함. 색깔 없이 "자리 그림"만 보여주는 격자. 항상 3×3.
+function ShapeGrid({ cells: rawCells, cellSize = 26 }: { cells: number[][]; cellSize?: number }) {
+  const cells = normalizeTo3x3ShapeGrid(rawCells);
   const rows = cells.length;
   const cols = cells[0]?.length ?? 0;
   return (
@@ -240,6 +265,11 @@ type ProjectionItem =
   | { kind: 'shape'; face: ViewFace; cells: number[][]; caption: string };
 
 function ProjectionCards({ rules }: { rules: BuildRule[] }) {
+  const projectionFaces = new Set(
+    rules
+      .filter((r): r is Extract<BuildRule, { type: 'targetColorProjection' }> => r.type === 'targetColorProjection')
+      .map(r => r.face),
+  );
   const items: ProjectionItem[] = [];
   for (const rule of rules) {
     if (rule.type === 'targetColorProjection') {
@@ -263,7 +293,8 @@ function ProjectionCards({ rules }: { rules: BuildRule[] }) {
         cells: singleColorGrid(rule.color, rule.count, rule.face),
         caption: `${FACE_LABEL[rule.face]} ${CUBE_COLOR_LABEL[rule.color]}이 ${rule.count}개만 보여요.`,
       });
-    } else if (rule.type === 'colorMustBeHiddenFrom') {
+    } else if (rule.type === 'colorMustBeHiddenFrom' && !projectionFaces.has(rule.face)) {
+      // 같은 면에 targetColorProjection이 있으면 거기서 이미 보여주므로 중복 카드는 생략.
       items.push({
         kind: 'color',
         face: rule.face,
