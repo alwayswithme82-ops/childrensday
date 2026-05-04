@@ -1,9 +1,11 @@
 import type { BuildRule, Difficulty, HintStage, Level, Scene } from '../types/game';
 import { CUBE_COLOR_HEX } from '../utils/constants';
+import { validateBuildMission } from '../utils/buildValidation';
 
 const R = CUBE_COLOR_HEX.red;
 const B = CUBE_COLOR_HEX.blue;
 const G = CUBE_COLOR_HEX.green;
+const Y = CUBE_COLOR_HEX.yellow;
 const _ = null;
 
 // ──────────────────────────────────────────────────────────────────────
@@ -39,6 +41,15 @@ const MISSION_1: Scene = {
   hintStages: [
     { text: '메모를 다시 읽어봐요. 빨강 1개, 파랑 4개, 초록 2개 — 총 7개를 사용해야 해요.' },
     { text: '팔레트 아래 “남은 큐브 수”가 모두 0/총개수가 될 때까지 쌓아보세요.' },
+  ],
+  officialSolution: [
+    { x: 0, y: 0, z: 0, color: B },
+    { x: 0, y: 1, z: 0, color: B },
+    { x: 0, y: 2, z: 0, color: B },
+    { x: 0, y: 3, z: 0, color: B },
+    { x: 1, y: 0, z: 0, color: R },
+    { x: 1, y: 1, z: 0, color: G },
+    { x: 1, y: 2, z: 0, color: G },
   ],
 };
 
@@ -81,6 +92,15 @@ const MISSION_2: Scene = {
     { text: '“만남”은 두 큐브가 평평한 한 면으로 딱 붙은 경우만 세요. 모서리/꼭짓점은 ❌' },
     { text: '빨강은 파랑 옆에 한 번만 붙여요. 다른 곳은 떨어뜨려요.' },
     { text: '초록 2개가 각자 파랑 옆에 한 번씩 붙거나, 한 초록이 파랑 두 개를 동시에 붙어요.' },
+  ],
+  officialSolution: [
+    { x: 0, y: 0, z: 0, color: B },
+    { x: 0, y: 1, z: 0, color: B },
+    { x: 0, y: 2, z: 0, color: B },
+    { x: 0, y: 3, z: 0, color: B },
+    { x: 1, y: 0, z: 0, color: R },
+    { x: 1, y: 1, z: 0, color: G },
+    { x: 1, y: 2, z: 0, color: G },
   ],
 };
 
@@ -131,6 +151,17 @@ const MISSION_3: Scene = {
       },
     },
   ],
+  // 위에서 보면: (x=0,z=0)에서 가장 큰 y는 (0,3,0) 파랑 → 파랑 1개 보임 ✓
+  // (x=1,z=0)에서 가장 큰 y는 (1,2,0) 초록 → 파랑 안 보임. 총 visible blue from top = 1.
+  officialSolution: [
+    { x: 0, y: 0, z: 0, color: B },
+    { x: 0, y: 1, z: 0, color: B },
+    { x: 0, y: 2, z: 0, color: B },
+    { x: 0, y: 3, z: 0, color: B },
+    { x: 1, y: 0, z: 0, color: R },
+    { x: 1, y: 1, z: 0, color: G },
+    { x: 1, y: 2, z: 0, color: G },
+  ],
 };
 
 // ──────────────────────────────────────────────────────────────────────
@@ -174,6 +205,19 @@ const MISSION_4: Scene = {
     { text: '노랑은 다른 색 큐브 뒤에 숨기되, 파란색과 한 면이 닿아야 해요.' },
     { text: '앞·뒤 보이는 블록 수가 같은지 카드의 비교 표시(=)를 확인해요.' },
   ],
+  // 노랑 (0,3,1): 앞에서는 (0,3,0) 파랑이 가려서 안 보임, 뒤에서는 노랑이 보임.
+  // 파랑 (0,3,0)과 한 면 접촉(manhattan=1) → yellow-blue contact = 1.
+  // 앞 visible = 7 (모든 z=0 큐브), 뒤 visible = 7 (마지막 칸만 노랑으로 교체) → same.
+  officialSolution: [
+    { x: 0, y: 0, z: 0, color: B },
+    { x: 0, y: 1, z: 0, color: B },
+    { x: 0, y: 2, z: 0, color: B },
+    { x: 0, y: 3, z: 0, color: B },
+    { x: 1, y: 0, z: 0, color: R },
+    { x: 1, y: 1, z: 0, color: G },
+    { x: 1, y: 2, z: 0, color: G },
+    { x: 0, y: 3, z: 1, color: Y },
+  ],
 };
 
 const buildMissions: Scene[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4];
@@ -201,6 +245,28 @@ export const buildLevels: Level[] = [
 
 export function getBuildLevelByDifficulty(difficulty: Difficulty): Level {
   return buildLevels.find(level => level.difficulty === difficulty) ?? buildLevels[0];
+}
+
+// 개발 모드: 각 미션의 officialSolution이 자기 rules를 모두 통과하는지 자동 검증.
+// 운영 빌드에서는 트리셰이킹으로 사라진다.
+const __DEV__ =
+  typeof import.meta !== 'undefined' &&
+  !!import.meta.env?.DEV;
+if (__DEV__) {
+  for (const mission of buildMissions) {
+    if (!mission.officialSolution) {
+      console.error(`[buildLevels] Mission "${mission.title}" has no officialSolution.`);
+      continue;
+    }
+    const result = validateBuildMission(mission.officialSolution, mission);
+    if (!result.success) {
+      const failed = result.results.filter(r => !r.ok);
+      console.error(
+        `[buildLevels] Mission "${mission.title}" officialSolution FAILED:`,
+        failed.map(r => `${r.label} (현재 ${r.current} / 목표 ${r.target})`).join(', '),
+      );
+    }
+  }
 }
 
 // 헬퍼: 어떤 미션이든 단계별 힌트 배열을 안전하게 추출.

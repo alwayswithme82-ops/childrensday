@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PageTransition } from '../components/layout/PageTransition';
 import { GameHUD } from '../components/game/GameHUD';
 import { CubeBuilder } from '../components/game/CubeBuilder';
+import { CubeViewer } from '../components/game/CubeViewer';
 import { MissionRuleCard } from '../components/game/MissionRuleCard';
 import { StoryOverlay } from '../components/game/StoryOverlay';
 import { HintModal } from '../components/game/HintModal';
+import { Modal } from '../components/shared/Modal';
 import { useGameStore } from '../stores/useGameStore';
 import { useAuthStore } from '../stores/useAuthStore';
 import { getBuildLevelByDifficulty, getHintStages } from '../data/buildLevels';
@@ -92,6 +94,8 @@ function getRewardMessage(index: number, fallback?: string) {
 
 export function GamePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const operatorMode = searchParams.get('admin') === 'true';
   const {
     difficulty, currentSceneIndex, sceneResults,
     hintsRemaining, nextScene, recordSceneResult, useHint,
@@ -102,6 +106,7 @@ export function GamePage() {
 
   const [phase, setPhase] = useState<Phase>('story');
   const [showHint, setShowHint] = useState(false);
+  const [showSolution, setShowSolution] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [hintsUsedThisScene, setHintsUsedThisScene] = useState(0);
   const [builtCubes, setBuiltCubes] = useState<CubeData[]>([]);
@@ -141,6 +146,7 @@ export function GamePage() {
     setBuiltCubes([]);
     setFeedbackMessage(null);
     setKingMessage('큐브왕의 메모를 따라 재료를 모아봐.');
+    setShowSolution(false);
     timer.pause();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSceneIndex]);
@@ -310,6 +316,34 @@ export function GamePage() {
               >
                 완성 확인 ✨
               </button>
+
+              {operatorMode && (
+                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/5 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-emerald-300">
+                    🛡 운영자 모드
+                  </p>
+                  <p className="mt-1 text-xs text-emerald-100/70">
+                    아이에게 보여주지 마세요. URL의 ?admin=true로 진입.
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowSolution(true)}
+                      disabled={!scene.officialSolution}
+                      className="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950 shadow disabled:opacity-40"
+                    >
+                      공식 정답 보기
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowHint(true)}
+                      className="rounded-xl bg-emerald-500/20 px-3 py-2 text-sm font-bold text-emerald-100 ring-1 ring-emerald-400/40"
+                    >
+                      힌트 모두 보기
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </AnimatePresence>
@@ -361,6 +395,35 @@ export function GamePage() {
           stages={getHintStages(scene)}
           hintsRemaining={hintsRemaining}
         />
+
+        {operatorMode && scene.officialSolution && (
+          <Modal
+            open={showSolution}
+            onClose={() => setShowSolution(false)}
+            cardClassName="rounded-2xl p-5 max-w-2xl w-full mx-4 shadow-2xl"
+            cardStyle={{ background: '#0f172a', border: '1px solid rgba(52,211,153,0.4)' }}
+          >
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🛡</span>
+                <h2 className="font-fredoka text-xl text-emerald-300">
+                  공식 정답 — {scene.title ?? `메모 ${currentSceneIndex + 1}`}
+                </h2>
+                <span className="ml-auto text-xs text-emerald-100/60">큐브 {scene.officialSolution.length}개</span>
+              </div>
+              <div className="h-[360px] w-full overflow-hidden rounded-xl">
+                <CubeViewer cubes={scene.officialSolution} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSolution(false)}
+                className="self-end rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950"
+              >
+                닫기
+              </button>
+            </div>
+          </Modal>
+        )}
       </div>
     </PageTransition>
   );

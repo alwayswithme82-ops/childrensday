@@ -86,6 +86,9 @@ export interface Scene {
   rules?: BuildRule[];
   // 단계별 힌트 (텍스트 + 선택적 색깔 격자)
   hintStages?: HintStage[];
+  // 개발용 공식 정답 좌표 (검증 + 운영자 미리보기 기준).
+  // 게임 성공 판정은 rules로 하지만, 이 좌표는 반드시 모든 rule을 통과해야 한다.
+  officialSolution?: CubeData[];
 }
 
 export interface Level {
