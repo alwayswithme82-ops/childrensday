@@ -6,11 +6,14 @@ const {
   calculateColorProjection,
   calculateShapeProjection,
   calculateVisibleColorCount,
+  compareColorGrid,
   evaluateRule,
+  normalizeColorValue,
   validateBuildMission,
   visibleCubesFrom,
 } = jiti('../src/utils/buildValidation.ts');
 const { CUBE_COLOR_HEX } = jiti('../src/utils/constants.ts');
+const { normalizeProjectionTo3x3 } = jiti('../src/utils/projectionGrid.ts');
 
 const R = CUBE_COLOR_HEX.red;
 const B = CUBE_COLOR_HEX.blue;
@@ -22,7 +25,7 @@ function sameGrid(actual, expected, label) {
 }
 
 function visibleColors(cubes, face) {
-  return visibleCubesFrom(cubes, face).map(c => c.color).sort();
+  return visibleCubesFrom(cubes, face).map(c => normalizeColorValue(c.color)).sort();
 }
 
 const hiddenCases = [
@@ -100,6 +103,63 @@ const mission2Official = [
   { x: 1, y: 0, z: 0, color: B },
   { x: 1, y: 0, z: 1, color: Y },
 ];
+
+const mission1HexCubes = [
+  { x: 0, y: 0, z: 0, color: R },
+  { x: 1, y: 0, z: 0, color: B },
+  { x: 1, y: 1, z: 0, color: B },
+];
+const mission1KeyTarget = {
+  id: 1,
+  characterName: 'projection-test',
+  storyText: '',
+  cubes: [],
+  questionType: 'building',
+  questionText: '',
+  options: [],
+  hintText: '',
+  rules: [
+    {
+      type: 'targetColorProjection',
+      face: 'front',
+      grid: [
+        [_, _, _],
+        [_, 'blue', _],
+        ['red', 'blue', _],
+      ],
+      requiredForSuccess: true,
+    },
+  ],
+};
+const expectedMission1Front = [
+  [_, _, _],
+  [_, B, _],
+  [R, B, _],
+];
+sameGrid(
+  normalizeProjectionTo3x3(calculateColorProjection(mission1HexCubes, 'front'), 'front'),
+  expectedMission1Front,
+  'Mission 1 front projection matches the 3x3 door target',
+);
+assert.equal(
+  validateBuildMission(mission1HexCubes, mission1KeyTarget, { strict: true }).success,
+  true,
+  'Mission 1 accepts color keys in target grid against HEX cube colors',
+);
+assert.equal(
+  compareColorGrid(
+    calculateColorProjection(mission1HexCubes, 'front'),
+    [
+      [_, _, _],
+      [_, 'blue', _],
+      ['red', 'blue', _],
+    ],
+    'front',
+  ),
+  true,
+  'compareColorGrid normalizes color keys in target grid',
+);
+
 const mission2Rules = {
   id: 2,
   characterName: 'projection-test',

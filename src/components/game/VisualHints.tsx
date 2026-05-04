@@ -1,5 +1,6 @@
 import type { BuildRule, ColorCell, CubeColorKey, ViewFace } from '../../types/game';
 import { CUBE_COLOR_HEX, CUBE_COLOR_LABEL } from '../../utils/constants';
+import { normalizeColorValue } from '../../utils/buildValidation';
 import {
   isSideProjection,
   normalizeProjectionTo3x3,
@@ -192,7 +193,7 @@ function ColorGrid({
             key={`${r}-${c}`}
             className="rounded-sm"
             style={{
-              background: cell ?? 'rgba(148,163,184,0.18)',
+              background: normalizeColorValue(cell) ?? 'rgba(148,163,184,0.18)',
               border: cell
                 ? '1px solid rgba(255,255,255,0.45)'
                 : '1px solid rgba(255,255,255,0.10)',

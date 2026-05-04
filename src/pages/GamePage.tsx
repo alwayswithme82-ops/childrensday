@@ -16,6 +16,7 @@ import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../hooks/useSound';
 import { calcStars } from '../utils/helpers';
 import { calculateColorProjection, evaluateRule, validateBuildMission } from '../utils/buildValidation';
+import { normalizeProjectionTo3x3 } from '../utils/projectionGrid';
 import type { CubeData } from '../types/game';
 
 type Phase = 'story' | 'playing' | 'result' | 'reveal';
@@ -173,14 +174,23 @@ export function GamePage() {
     setAttempts(newAttempts);
     const validation = validateBuildMission(builtCubes, scene, { strict: strictMode });
     if (import.meta.env.DEV) {
-      console.log('[BuildDebug] complete pressed', {
-        missionId: scene.id,
-        cubes: builtCubes,
-        frontProjection: calculateColorProjection(builtCubes, 'front'),
-        topProjection: calculateColorProjection(builtCubes, 'top'),
-        frontCamera: 'front view camera is on z-small side and looks toward z-large; smallest z is visible per (x,y).',
-        validationResults: scene.id === 2 ? validation.results : undefined,
-      });
+      console.log('[Build Debug] scene', scene.id, scene.title);
+      console.log('[Build Debug] cubes', builtCubes);
+      console.log(
+        '[Build Debug] actual front',
+        normalizeProjectionTo3x3(calculateColorProjection(builtCubes, 'front'), 'front'),
+      );
+      console.log(
+        '[Build Debug] target front',
+        scene.rules?.find(r => r.type === 'targetColorProjection' && r.face === 'front'),
+      );
+      console.table(validation.results.map(r => ({
+        type: r.rule.type,
+        ok: r.ok,
+        current: r.current,
+        target: r.target,
+        label: r.label,
+      })));
     }
     if (validation.success) {
       play('correct');
@@ -232,11 +242,8 @@ export function GamePage() {
     setShowHint(true);
   };
 
-  const handleForcePass = () => {
-    if (phase === 'reveal') return;
-
-    const ok = window.confirm('이 미션을 성공 처리하고 다음 단계로 넘어갈까요?');
-    if (!ok) return;
+  const handleSkipMission = () => {
+    if (phase === 'result' || phase === 'reveal') return;
 
     if (pendingTimeoutRef.current !== null) {
       clearTimeout(pendingTimeoutRef.current);
@@ -357,11 +364,11 @@ export function GamePage() {
 
               <button
                 type="button"
-                onClick={handleForcePass}
-                disabled={phase === 'reveal'}
-                className="rounded-2xl border border-white/15 bg-slate-800 px-6 py-3 text-sm font-bold text-white shadow disabled:opacity-50"
+                onClick={handleSkipMission}
+                disabled={phase === 'result' || phase === 'reveal'}
+                className="rounded-2xl border border-white/15 bg-white/5 px-6 py-3 text-sm font-bold text-slate-100 shadow-sm hover:bg-white/10 disabled:opacity-40"
               >
-                이 미션 넘기기 ⏭️
+                도움 받고 다음으로 ⏭️
               </button>
 
               {(operatorMode || strictMode) && (

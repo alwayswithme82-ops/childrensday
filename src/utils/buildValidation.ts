@@ -9,9 +9,25 @@ import type {
 import { CUBE_COLOR_HEX, CUBE_COLOR_LABEL } from './constants';
 import { normalizeProjectionTo3x3 } from './projectionGrid';
 
+export function normalizeColorValue(value: string | null | undefined): string | null {
+  if (!value) return null;
+
+  const lower = value.toLowerCase();
+
+  if (lower.startsWith('#')) {
+    return lower;
+  }
+
+  if (lower in CUBE_COLOR_HEX) {
+    return CUBE_COLOR_HEX[lower as CubeColorKey].toLowerCase();
+  }
+
+  return lower;
+}
+
 export function countColor(cubes: CubeData[], color: CubeColorKey): number {
   const target = CUBE_COLOR_HEX[color].toLowerCase();
-  return cubes.filter(c => c.color.toLowerCase() === target).length;
+  return cubes.filter(c => normalizeColorValue(c.color) === target).length;
 }
 
 /**
@@ -32,8 +48,8 @@ export function countFaceContacts(
       const c2 = cubes[j];
       const manhattan = Math.abs(c1.x - c2.x) + Math.abs(c1.y - c2.y) + Math.abs(c1.z - c2.z);
       if (manhattan !== 1) continue;
-      const a = c1.color.toLowerCase();
-      const b = c2.color.toLowerCase();
+      const a = normalizeColorValue(c1.color);
+      const b = normalizeColorValue(c2.color);
       if ((a === aHex && b === bHex) || (a === bHex && b === aHex)) count++;
     }
   }
@@ -91,7 +107,7 @@ export function calculateVisibleColorCount(
   color: CubeColorKey,
 ): number {
   const target = CUBE_COLOR_HEX[color].toLowerCase();
-  return visibleCubesFrom(cubes, face).filter(c => c.color.toLowerCase() === target).length;
+  return visibleCubesFrom(cubes, face).filter(c => normalizeColorValue(c.color) === target).length;
 }
 
 /**
@@ -249,27 +265,41 @@ export function evaluateRule(cubes: CubeData[], rule: BuildRule): RuleResult {
   }
 }
 
-function compareGrid(a: number[][], b: number[][], face: ViewFace): boolean {
-  const na = normalizeProjectionTo3x3(a, face);
-  const nb = normalizeProjectionTo3x3(b, face);
-  if (na.length !== nb.length) return false;
-  if ((na[0]?.length ?? 0) !== (nb[0]?.length ?? 0)) return false;
-  return na.every((row, r) => row.every((c, i) => c === nb[r][i]));
+export function compareGrid(a: number[][], b: number[][], face: ViewFace): boolean {
+  const aa = normalizeProjectionTo3x3(a, face);
+  const bb = normalizeProjectionTo3x3(b, face);
+
+  if (aa.length !== 3 || bb.length !== 3) return false;
+
+  for (let r = 0; r < 3; r++) {
+    if ((aa[r]?.length ?? 0) !== 3 || (bb[r]?.length ?? 0) !== 3) return false;
+
+    for (let c = 0; c < 3; c++) {
+      if ((aa[r][c] ? 1 : 0) !== (bb[r][c] ? 1 : 0)) return false;
+    }
+  }
+
+  return true;
 }
 
-function compareColorGrid(a: ColorCell[][], b: ColorCell[][], face: ViewFace): boolean {
+export function compareColorGrid(a: ColorCell[][], b: ColorCell[][], face: ViewFace): boolean {
   // 좌표 기준이 고정되어 있으므로 3×3 안의 빈칸 위치까지 정확히 비교한다.
-  const na = normalizeProjectionTo3x3(a, face);
-  const nb = normalizeProjectionTo3x3(b, face);
-  if (na.length !== nb.length) return false;
-  if ((na[0]?.length ?? 0) !== (nb[0]?.length ?? 0)) return false;
-  return na.every((row, r) =>
-    row.every((cell, i) => {
-      const x = cell?.toLowerCase() ?? null;
-      const y = nb[r][i]?.toLowerCase() ?? null;
-      return x === y;
-    }),
-  );
+  const aa = normalizeProjectionTo3x3(a, face);
+  const bb = normalizeProjectionTo3x3(b, face);
+
+  if (aa.length !== 3 || bb.length !== 3) return false;
+
+  for (let r = 0; r < 3; r++) {
+    if ((aa[r]?.length ?? 0) !== 3 || (bb[r]?.length ?? 0) !== 3) return false;
+
+    for (let c = 0; c < 3; c++) {
+      const actual = normalizeColorValue(aa[r][c]);
+      const target = normalizeColorValue(bb[r][c]);
+      if (actual !== target) return false;
+    }
+  }
+
+  return true;
 }
 
 export interface BuildValidationResult {

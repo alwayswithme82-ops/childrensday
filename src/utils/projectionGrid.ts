@@ -36,23 +36,7 @@ export function normalizeProjectionTo3x3<T extends ProjectionCell>(
   grid: ProjectionGrid<T>,
   face: ViewFace,
 ): ProjectionGrid<T> {
-  const sized = normalizeSizeTo3x3(grid, SIDE_FACES.has(face));
-  if (!SIDE_FACES.has(face) || validateProjectionGrounded(sized)) return sized;
-
-  const sample = sized.flat().find(cell => cell !== undefined);
-  const out = Array.from({ length: 3 }, () => Array<T>(3).fill(emptyCell(sample)));
-
-  for (let c = 0; c < 3; c++) {
-    const stack: T[] = [];
-    for (let r = 2; r >= 0; r--) {
-      if (isFilled(sized[r][c])) stack.push(sized[r][c]);
-    }
-    for (let i = 0; i < Math.min(stack.length, 3); i++) {
-      out[2 - i][c] = stack[i];
-    }
-  }
-
-  return out;
+  return normalizeSizeTo3x3(grid, SIDE_FACES.has(face));
 }
 
 export function validateProjectionGrounded<T extends ProjectionCell>(grid: ProjectionGrid<T>): boolean {
