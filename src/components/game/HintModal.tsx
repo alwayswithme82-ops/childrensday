@@ -34,8 +34,11 @@ function ColorGrid({ cells }: { cells: (string | null)[][] }) {
             key={`${r}-${c}`}
             className="h-7 w-7 rounded"
             style={{
-              background: cell ?? 'transparent',
-              border: cell ? '1px solid rgba(255,255,255,0.4)' : '1px dashed rgba(255,255,255,0.15)',
+              background: cell ?? 'rgba(148,163,184,0.18)',
+              border: cell
+                ? '1px solid rgba(255,255,255,0.45)'
+                : '1px solid rgba(255,255,255,0.10)',
+              boxShadow: cell ? 'inset 0 -3px 0 rgba(0,0,0,0.18)' : 'none',
             }}
           />
         )),

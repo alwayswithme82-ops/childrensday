@@ -295,39 +295,42 @@ export function validateBuildMission(cubes: CubeData[], mission: Scene): BuildVa
     };
   }
 
-  // 가장 먼저 실패한 규칙을 안내
+  // 가장 먼저 실패한 규칙을 부드럽게 안내.
   const first = failed[0];
   let detail = '';
   switch (first.rule.type) {
     case 'exactCubeCount': {
       const diff = (first.current as number) - (first.target as number);
       detail = diff > 0
-        ? `큐브가 ${diff}개 많아요.`
-        : `큐브가 ${Math.abs(diff)}개 부족해요.`;
+        ? `큐브 수가 조금 달라요. ${diff}개만 살짝 빼볼까요?`
+        : `큐브 수가 조금 달라요. ${Math.abs(diff)}개만 더 놓아볼까요?`;
       break;
     }
     case 'requiredColorCount': {
+      const label = CUBE_COLOR_LABEL[first.rule.color];
       const diff = (first.current as number) - (first.target as number);
       detail = diff > 0
-        ? `${CUBE_COLOR_LABEL[first.rule.color]} ${diff}개 줄여요.`
-        : `${CUBE_COLOR_LABEL[first.rule.color]} ${Math.abs(diff)}개 더 놓아요.`;
+        ? `${label} 큐브가 조금 많아요. ${diff}개만 빼볼까요?`
+        : `${label} 큐브가 조금 부족해요. ${Math.abs(diff)}개만 더 놓아볼까요?`;
       break;
     }
     case 'colorTouchCount':
-      detail = `${first.label} (지금 ${first.current}번)`;
+      detail = '두 색깔이 만나는 횟수가 조금 달라요. 옆으로 살짝 옮겨볼까요?';
       break;
     case 'visibleColorCount':
-      detail = `${first.label} (지금 ${first.current}개 보임)`;
+      detail = `${FACE_LABEL[first.rule.face]} 본 ${CUBE_COLOR_LABEL[first.rule.color]} 큐브 수가 아직 달라요. 그림과 다시 비교해봐요.`;
       break;
     case 'colorMustBeHiddenFrom':
-      detail = `${first.label} — 지금 ${first.current}개 보여요.`;
+      detail = `${CUBE_COLOR_LABEL[first.rule.color]} 큐브가 ${FACE_LABEL[first.rule.face]} 보여요. 다른 큐브 뒤에 살짝 숨겨볼까요?`;
       break;
     case 'visibleBlockCountCompare':
-      detail = `${first.label} (지금 ${first.current})`;
+      detail = '앞에서와 뒤에서 보이는 칸 수를 한 번 더 맞춰볼까요?';
       break;
     case 'targetShapeProjection':
+      detail = `${FACE_LABEL[first.rule.face]} 본 자리가 아직 달라요. 그림 모양을 다시 만들어봐요.`;
+      break;
     case 'targetColorProjection':
-      detail = `${first.label} — 다시 확인해봐요.`;
+      detail = `거의 다 왔어요! ${FACE_LABEL[first.rule.face]} 본 모습을 그림과 똑같이 만들어봐요.`;
       break;
   }
 

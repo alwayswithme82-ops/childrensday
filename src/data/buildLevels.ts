@@ -17,8 +17,8 @@ const MISSION_1: Scene = {
   title: '무지개 문 만들기',
   characterName: '루비',
   storyText:
-    '루비가 말했어요.\n“우와! 무지개 문이 망가졌어.\n빨강 큐브와 파랑 큐브로\n문을 다시 만들어줘!”',
-  memo: '“앞에서 봤을 때\n그림과 똑같이 만들어주세요.”',
+    '루비가 말했어요.\n“무지개 문이 망가졌어!\n빨강 큐브와 파랑 큐브로\n문을 다시 만들어줘!”',
+  memo: '“앞에서 봤을 때\n그림과 같게 만들어주세요.”',
   questionType: 'building',
   mode: 'build',
   cubes: [],
@@ -73,9 +73,9 @@ const MISSION_2: Scene = {
   title: '숨바꼭질 노랑 큐브',
   characterName: '노랑 큐브',
   storyText:
-    '노랑 큐브가 말했어요.\n“나는 부끄러워서\n앞에서는 안 보이고 싶어!”\n노랑 큐브를 빨강 큐브 뒤에\n살짝 숨겨주세요.',
+    '노랑 큐브가 말했어요.\n“나는 부끄러워서\n앞에서는 안 보이고 싶어!”',
   memo:
-    '“노랑 큐브를 꼭 사용해야 해.\n하지만 앞에서 보면\n노랑 큐브가 보이면 안 돼!”',
+    '“노랑 큐브를 꼭 사용하되,\n앞에서는 보이지 않게 숨겨주세요.”',
   questionType: 'building',
   mode: 'build',
   cubes: [],
@@ -129,9 +129,9 @@ const MISSION_3: Scene = {
   title: '반짝 보물탑',
   characterName: '큐브왕',
   storyText:
-    '드디어 보물상자 앞이에요!\n보물상자는 “반짝 보물탑”이\n완성되어야 열려요.\n앞에서 본 그림과 위에서 본 자리를\n둘 다 맞춰주세요.',
+    '드디어 보물상자 앞에 도착했어요!\n보물상자는 “반짝 보물탑”이\n완성되어야 열려요.',
   memo:
-    '“앞에서 본 색깔 그림과\n위에서 본 자리 그림을\n모두 맞춰주세요.”',
+    '“앞에서 본 그림과\n위에서 본 자리를 모두 맞춰\n보물탑을 완성해주세요.”',
   questionType: 'building',
   mode: 'build',
   cubes: [],

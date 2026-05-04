@@ -155,8 +155,8 @@ function ContactExampleCards({ rules }: { rules: BuildRule[] }) {
   );
 }
 
-// 색깔 격자 한 장.
-function ColorGrid({ cells, cellSize = 22 }: { cells: ColorCell[][]; cellSize?: number }) {
+// 색깔 격자 한 장. 빈칸은 연한 회색으로 명확히 보이게 표시.
+function ColorGrid({ cells, cellSize = 26 }: { cells: ColorCell[][]; cellSize?: number }) {
   const rows = cells.length;
   const cols = cells[0]?.length ?? 0;
   return (
@@ -173,10 +173,11 @@ function ColorGrid({ cells, cellSize = 22 }: { cells: ColorCell[][]; cellSize?: 
             key={`${r}-${c}`}
             className="rounded-sm"
             style={{
-              background: cell ?? 'transparent',
+              background: cell ?? 'rgba(148,163,184,0.18)',
               border: cell
-                ? '1px solid rgba(255,255,255,0.4)'
-                : '1px dashed rgba(255,255,255,0.18)',
+                ? '1px solid rgba(255,255,255,0.45)'
+                : '1px solid rgba(255,255,255,0.10)',
+              boxShadow: cell ? 'inset 0 -3px 0 rgba(0,0,0,0.18)' : 'none',
             }}
           />
         )),
@@ -203,8 +204,8 @@ function emptyGrid(face: ViewFace): ColorCell[][] {
   return [[null], [null]];
 }
 
-// 1=칸이 있어야 함, 0=없어야 함. 색깔 없이 “자리 그림”만 보여주는 격자.
-function ShapeGrid({ cells, cellSize = 22 }: { cells: number[][]; cellSize?: number }) {
+// 1=칸이 있어야 함, 0=없어야 함. 색깔 없이 "자리 그림"만 보여주는 격자.
+function ShapeGrid({ cells, cellSize = 26 }: { cells: number[][]; cellSize?: number }) {
   const rows = cells.length;
   const cols = cells[0]?.length ?? 0;
   return (
@@ -221,10 +222,10 @@ function ShapeGrid({ cells, cellSize = 22 }: { cells: number[][]; cellSize?: num
             key={`${r}-${c}`}
             className="rounded-sm"
             style={{
-              background: cell ? 'rgba(226,232,240,0.85)' : 'transparent',
+              background: cell ? 'rgba(226,232,240,0.85)' : 'rgba(148,163,184,0.18)',
               border: cell
                 ? '1px solid rgba(255,255,255,0.6)'
-                : '1px dashed rgba(255,255,255,0.18)',
+                : '1px solid rgba(255,255,255,0.10)',
               boxShadow: cell ? 'inset 0 -3px 0 rgba(0,0,0,0.18)' : 'none',
             }}
           />
