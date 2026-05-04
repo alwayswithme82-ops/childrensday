@@ -32,8 +32,9 @@ const MISSION_1: Scene = {
       type: 'targetColorProjection',
       face: 'front',
       grid: [
-        [_, B],
-        [R, B],
+        [_, _, _],
+        [_, B, _],
+        [R, B, _],
       ],
     },
   ],
@@ -50,8 +51,9 @@ const MISSION_1: Scene = {
       grid: {
         face: 'front',
         cells: [
-          [_, B],
-          [R, B],
+          [_, _, _],
+          [_, B, _],
+          [R, B, _],
         ] as (string | null)[][],
       },
     },
@@ -90,7 +92,11 @@ const MISSION_2: Scene = {
     {
       type: 'targetColorProjection',
       face: 'front',
-      grid: [[R, B]],
+      grid: [
+        [_, _, _],
+        [_, _, _],
+        [R, B, _],
+      ],
     },
   ],
   requiredColorCount: { red: 1, blue: 1, yellow: 1 },
@@ -106,8 +112,9 @@ const MISSION_2: Scene = {
       grid: {
         face: 'top',
         cells: [
-          [R, B],
-          [Y, _],
+          [R, B, _],
+          [Y, _, _],
+          [_, _, _],
         ] as (string | null)[][],
       },
     },
@@ -146,16 +153,18 @@ const MISSION_3: Scene = {
       type: 'targetColorProjection',
       face: 'front',
       grid: [
-        [_, G],
-        [R, B],
+        [_, _, _],
+        [_, G, _],
+        [R, B, _],
       ],
     },
     {
       type: 'targetShapeProjection',
       face: 'top',
       grid: [
-        [1, 1],
-        [1, 0],
+        [1, 1, 0],
+        [1, 0, 0],
+        [0, 0, 0],
       ],
     },
   ],
@@ -172,8 +181,9 @@ const MISSION_3: Scene = {
       grid: {
         face: 'top',
         cells: [
-          [R, B],
-          [B, _],
+          [R, B, _],
+          [B, _, _],
+          [_, _, _],
         ] as (string | null)[][],
       },
     },

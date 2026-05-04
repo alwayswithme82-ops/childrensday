@@ -382,6 +382,7 @@ export function GamePage() {
           onClose={() => setShowHint(false)}
           stages={getHintStages(scene)}
           hintsRemaining={hintsRemaining}
+          missionId={scene.id}
         />
 
         {operatorMode && scene.officialSolution && (

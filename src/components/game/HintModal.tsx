@@ -1,13 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Modal } from '../shared/Modal';
 import { Button } from '../shared/Button';
 import type { HintStage } from '../../types/game';
+import {
+  isSideProjection,
+  normalizeProjectionTo3x3,
+  validateProjectionGrounded,
+} from '../../utils/projectionGrid';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   stages: HintStage[];
   hintsRemaining: number;
+  missionId?: number;
 }
 
 const FACE_LABEL: Record<NonNullable<HintStage['grid']>['face'], string> = {
@@ -15,21 +21,23 @@ const FACE_LABEL: Record<NonNullable<HintStage['grid']>['face'], string> = {
   back: '뒤에서 본 모습',
   top: '위에서 본 모습',
   left: '왼쪽에서 본 모습',
+  right: '오른쪽에서 본 모습',
 };
 
-function normalizeTo3x3(grid: (string | null)[][]): (string | null)[][] {
-  const out: (string | null)[][] = Array.from({ length: 3 }, () => Array<string | null>(3).fill(null));
-  for (let r = 0; r < Math.min(grid.length, 3); r++) {
-    const row = grid[r] ?? [];
-    for (let c = 0; c < Math.min(row.length, 3); c++) {
-      out[r][c] = row[c];
-    }
+function ColorGrid({
+  cells: rawCells,
+  face,
+  missionId,
+}: {
+  cells: (string | null)[][];
+  face: NonNullable<HintStage['grid']>['face'];
+  missionId?: number;
+}) {
+  if (import.meta.env.DEV && isSideProjection(face) && !validateProjectionGrounded(rawCells)) {
+    console.warn(`[HintValidation] Floating projection detected in mission ${missionId ?? 'unknown'}, face ${face}`);
   }
-  return out;
-}
 
-function ColorGrid({ cells: rawCells }: { cells: (string | null)[][] }) {
-  const cells = normalizeTo3x3(rawCells);
+  const cells = normalizeProjectionTo3x3(rawCells, face);
   const rows = cells.length;
   const cols = cells[0]?.length ?? 0;
   return (
@@ -59,22 +67,22 @@ function ColorGrid({ cells: rawCells }: { cells: (string | null)[][] }) {
   );
 }
 
-export function HintModal({ open, onClose, stages, hintsRemaining }: Props) {
+export function HintModal({ open, onClose, stages, hintsRemaining, missionId }: Props) {
   const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    if (open) setStep(0);
-  }, [open]);
 
   const safeStages = stages.length ? stages : [{ text: '힌트가 준비되지 않았어요.' }];
   const total = safeStages.length;
   const stage = safeStages[Math.min(step, total - 1)];
   const isLast = step >= total - 1;
+  const handleClose = () => {
+    setStep(0);
+    onClose();
+  };
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       cardClassName="rounded-2xl p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl"
       cardStyle={{ background: '#1B2A4A', border: '1px solid rgba(245,158,11,0.25)' }}
     >
@@ -94,7 +102,12 @@ export function HintModal({ open, onClose, stages, hintsRemaining }: Props) {
             <p className="text-xs font-bold text-amber-200">
               {FACE_LABEL[stage.grid.face]} (예시)
             </p>
-            <ColorGrid cells={stage.grid.cells} />
+            <ColorGrid cells={stage.grid.cells} face={stage.grid.face} missionId={missionId} />
+            {isSideProjection(stage.grid.face) && (
+              <p className="text-[11px] font-bold text-slate-300">
+                큐브는 바닥부터 차곡차곡 쌓여요.
+              </p>
+            )}
           </div>
         )}
 
@@ -110,7 +123,7 @@ export function HintModal({ open, onClose, stages, hintsRemaining }: Props) {
             </Button>
           )}
           {isLast && (
-            <Button onClick={onClose} className="flex-1">알겠어!</Button>
+            <Button onClick={handleClose} className="flex-1">알겠어!</Button>
           )}
         </div>
       </div>

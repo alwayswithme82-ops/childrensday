@@ -41,7 +41,7 @@ export interface TargetProjections {
   side?: number[][];
 }
 
-export type ViewFace = 'front' | 'back' | 'top' | 'left';
+export type ViewFace = 'front' | 'back' | 'top' | 'left' | 'right';
 
 export type ColorCell = string | null;
 

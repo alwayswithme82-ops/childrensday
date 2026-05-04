@@ -1,11 +1,17 @@
 import type { BuildRule, ColorCell, CubeColorKey, ViewFace } from '../../types/game';
 import { CUBE_COLOR_HEX, CUBE_COLOR_LABEL } from '../../utils/constants';
+import {
+  isSideProjection,
+  normalizeProjectionTo3x3,
+  validateProjectionGrounded,
+} from '../../utils/projectionGrid';
 
 const FACE_LABEL: Record<ViewFace, string> = {
   front: '앞에서 본 모습',
   back: '뒤에서 본 모습',
   top: '위에서 본 모습',
   left: '왼쪽에서 본 모습',
+  right: '오른쪽에서 본 모습',
 };
 
 // 작은 2D 정사각형 — 큐브 한 칸을 도식적으로 표현.
@@ -155,32 +161,21 @@ function ContactExampleCards({ rules }: { rules: BuildRule[] }) {
   );
 }
 
-// 어떤 격자든 3×3으로 좌상단 기준 패딩.
-function normalizeTo3x3ColorGrid(grid: ColorCell[][]): ColorCell[][] {
-  const out: ColorCell[][] = Array.from({ length: 3 }, () => Array<ColorCell>(3).fill(null));
-  for (let r = 0; r < Math.min(grid.length, 3); r++) {
-    const row = grid[r] ?? [];
-    for (let c = 0; c < Math.min(row.length, 3); c++) {
-      out[r][c] = row[c];
-    }
-  }
-  return out;
-}
-
-function normalizeTo3x3ShapeGrid(grid: number[][]): number[][] {
-  const out: number[][] = Array.from({ length: 3 }, () => Array<number>(3).fill(0));
-  for (let r = 0; r < Math.min(grid.length, 3); r++) {
-    const row = grid[r] ?? [];
-    for (let c = 0; c < Math.min(row.length, 3); c++) {
-      out[r][c] = row[c] ? 1 : 0;
-    }
-  }
-  return out;
-}
-
 // 색깔 격자 한 장. 빈칸은 연한 회색으로 명확히 보이게 표시. 항상 3×3.
-function ColorGrid({ cells: rawCells, cellSize = 26 }: { cells: ColorCell[][]; cellSize?: number }) {
-  const cells = normalizeTo3x3ColorGrid(rawCells);
+function ColorGrid({
+  cells: rawCells,
+  face,
+  cellSize = 26,
+}: {
+  cells: ColorCell[][];
+  face: ViewFace;
+  cellSize?: number;
+}) {
+  if (import.meta.env.DEV && isSideProjection(face) && !validateProjectionGrounded(rawCells)) {
+    console.warn(`[HintValidation] Floating projection detected in mission unknown, face ${face}`);
+  }
+
+  const cells = normalizeProjectionTo3x3(rawCells, face);
   const rows = cells.length;
   const cols = cells[0]?.length ?? 0;
   return (
@@ -229,8 +224,20 @@ function emptyGrid(face: ViewFace): ColorCell[][] {
 }
 
 // 1=칸이 있어야 함, 0=없어야 함. 색깔 없이 "자리 그림"만 보여주는 격자. 항상 3×3.
-function ShapeGrid({ cells: rawCells, cellSize = 26 }: { cells: number[][]; cellSize?: number }) {
-  const cells = normalizeTo3x3ShapeGrid(rawCells);
+function ShapeGrid({
+  cells: rawCells,
+  face,
+  cellSize = 26,
+}: {
+  cells: number[][];
+  face: ViewFace;
+  cellSize?: number;
+}) {
+  if (import.meta.env.DEV && isSideProjection(face) && !validateProjectionGrounded(rawCells)) {
+    console.warn(`[HintValidation] Floating projection detected in mission unknown, face ${face}`);
+  }
+
+  const cells = normalizeProjectionTo3x3(rawCells, face);
   const rows = cells.length;
   const cols = cells[0]?.length ?? 0;
   return (
@@ -313,9 +320,14 @@ function ProjectionCards({ rules }: { rules: BuildRule[] }) {
         {items.map((item, i) => (
           <div key={i} className="flex flex-col items-start gap-1.5">
             {item.kind === 'color'
-              ? <ColorGrid cells={item.cells} />
-              : <ShapeGrid cells={item.cells} />}
+              ? <ColorGrid cells={item.cells} face={item.face} />
+              : <ShapeGrid cells={item.cells} face={item.face} />}
             <p className="max-w-[200px] text-[11px] leading-snug text-slate-200">{item.caption}</p>
+            {isSideProjection(item.face) && (
+              <p className="max-w-[200px] text-[11px] font-bold leading-snug text-slate-300">
+                큐브는 바닥부터 차곡차곡 쌓여요.
+              </p>
+            )}
           </div>
         ))}
       </div>

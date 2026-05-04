@@ -7,6 +7,7 @@ import type {
   ViewFace,
 } from '../types/game';
 import { CUBE_COLOR_HEX, CUBE_COLOR_LABEL } from './constants';
+import { normalizeProjectionTo3x3 } from './projectionGrid';
 
 export function countColor(cubes: CubeData[], color: CubeColorKey): number {
   const target = CUBE_COLOR_HEX[color].toLowerCase();
@@ -45,6 +46,7 @@ export function countFaceContacts(
  * back:  largest z per (x,y)
  * top:   largest y per (x,z)
  * left:  smallest x per (z,y)
+ * right: largest x per (z,y)
  */
 function visibleCubesFrom(cubes: CubeData[], face: ViewFace): CubeData[] {
   const map = new Map<string, CubeData>();
@@ -72,6 +74,11 @@ function visibleCubesFrom(cubes: CubeData[], face: ViewFace): CubeData[] {
         key = `${c.z},${c.y}`;
         depth = c.x;
         better = (cur, next) => next.x < cur.x;
+        break;
+      case 'right':
+        key = `${c.z},${c.y}`;
+        depth = -c.x;
+        better = (cur, next) => next.x > cur.x;
         break;
     }
     void depth;
@@ -111,6 +118,8 @@ export function calculateColorProjection(cubes: CubeData[], face: ViewFace): Col
       case 'top':   return { row: (c: CubeData) => c.z, col: (c: CubeData) => c.x, flipRow: false };
       // left: rows = y(flip), cols = z
       case 'left':  return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true };
+      // right: rows = y(flip), cols = z mirrored
+      case 'right': return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true, flipCol: true } as const;
     }
   })();
 
@@ -153,6 +162,7 @@ const FACE_LABEL: Record<ViewFace, string> = {
   back: '뒤에서',
   top: '위에서',
   left: '왼쪽에서',
+  right: '오른쪽에서',
 };
 
 export function evaluateRule(cubes: CubeData[], rule: BuildRule): RuleResult {
@@ -221,7 +231,7 @@ export function evaluateRule(cubes: CubeData[], rule: BuildRule): RuleResult {
     }
     case 'targetShapeProjection': {
       const actual = calculateShapeProjection(cubes, rule.face);
-      const ok = compareGrid(actual, rule.grid);
+      const ok = compareGrid(actual, rule.grid, rule.face);
       return {
         rule,
         ok,
@@ -232,7 +242,7 @@ export function evaluateRule(cubes: CubeData[], rule: BuildRule): RuleResult {
     }
     case 'targetColorProjection': {
       const actual = calculateColorProjection(cubes, rule.face);
-      const ok = compareColorGrid(actual, rule.grid);
+      const ok = compareColorGrid(actual, rule.grid, rule.face);
       return {
         rule,
         ok,
@@ -255,22 +265,24 @@ function normalize(grid: number[][]): number[][] {
   return grid.slice(top, bot + 1).map(r => r.slice(left, right + 1));
 }
 
-function compareGrid(a: number[][], b: number[][]): boolean {
-  const na = normalize(a);
-  const nb = normalize(b);
+function compareGrid(a: number[][], b: number[][], face: ViewFace): boolean {
+  const na = normalize(normalizeProjectionTo3x3(a, face));
+  const nb = normalize(normalizeProjectionTo3x3(b, face));
   if (na.length !== nb.length) return false;
   if ((na[0]?.length ?? 0) !== (nb[0]?.length ?? 0)) return false;
   return na.every((row, r) => row.every((c, i) => c === nb[r][i]));
 }
 
-function compareColorGrid(a: ColorCell[][], b: ColorCell[][]): boolean {
-  // 색깔까지 일치하려면 정확한 위치+색이 같아야 한다 (정규화 없이 직접 비교).
-  if (a.length !== b.length) return false;
-  if ((a[0]?.length ?? 0) !== (b[0]?.length ?? 0)) return false;
-  return a.every((row, r) =>
+function compareColorGrid(a: ColorCell[][], b: ColorCell[][], face: ViewFace): boolean {
+  // 색깔까지 일치하려면 3×3 기준 위치와 색이 같아야 한다.
+  const na = normalizeProjectionTo3x3(a, face);
+  const nb = normalizeProjectionTo3x3(b, face);
+  if (na.length !== nb.length) return false;
+  if ((na[0]?.length ?? 0) !== (nb[0]?.length ?? 0)) return false;
+  return na.every((row, r) =>
     row.every((cell, i) => {
       const x = cell?.toLowerCase() ?? null;
-      const y = b[r][i]?.toLowerCase() ?? null;
+      const y = nb[r][i]?.toLowerCase() ?? null;
       return x === y;
     }),
   );
