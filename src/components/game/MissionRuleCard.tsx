@@ -1,5 +1,6 @@
 import type { Scene } from '../../types/game';
 import type { RuleResult } from '../../utils/buildValidation';
+import { VisualHints } from './VisualHints';
 
 interface Props {
   scene: Scene;
@@ -27,6 +28,8 @@ export function MissionRuleCard({ scene, results, currentCubes }: Props) {
           </p>
         </div>
       )}
+
+      <VisualHints rules={scene.rules ?? []} />
 
       <p className="mt-4 text-xs font-bold uppercase tracking-wide text-gold">조건 체크</p>
       <ul className="mt-2 space-y-1.5">
