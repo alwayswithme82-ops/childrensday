@@ -203,23 +203,68 @@ function emptyGrid(face: ViewFace): ColorCell[][] {
   return [[null], [null]];
 }
 
+// 1=칸이 있어야 함, 0=없어야 함. 색깔 없이 “자리 그림”만 보여주는 격자.
+function ShapeGrid({ cells, cellSize = 22 }: { cells: number[][]; cellSize?: number }) {
+  const rows = cells.length;
+  const cols = cells[0]?.length ?? 0;
+  return (
+    <div
+      className="inline-grid gap-1 rounded-lg border border-slate-700 bg-slate-950/70 p-2"
+      style={{
+        gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+        gridTemplateRows: `repeat(${rows}, ${cellSize}px)`,
+      }}
+    >
+      {cells.flatMap((row, r) =>
+        row.map((cell, c) => (
+          <div
+            key={`${r}-${c}`}
+            className="rounded-sm"
+            style={{
+              background: cell ? 'rgba(226,232,240,0.85)' : 'transparent',
+              border: cell
+                ? '1px solid rgba(255,255,255,0.6)'
+                : '1px dashed rgba(255,255,255,0.18)',
+              boxShadow: cell ? 'inset 0 -3px 0 rgba(0,0,0,0.18)' : 'none',
+            }}
+          />
+        )),
+      )}
+    </div>
+  );
+}
+
+type ProjectionItem =
+  | { kind: 'color'; face: ViewFace; cells: ColorCell[][]; caption: string }
+  | { kind: 'shape'; face: ViewFace; cells: number[][]; caption: string };
+
 function ProjectionCards({ rules }: { rules: BuildRule[] }) {
-  const items: { face: ViewFace; cells: ColorCell[][]; caption: string }[] = [];
+  const items: ProjectionItem[] = [];
   for (const rule of rules) {
     if (rule.type === 'targetColorProjection') {
       items.push({
+        kind: 'color',
         face: rule.face,
         cells: rule.grid,
         caption: `${FACE_LABEL[rule.face]} — 이 모양이 되어야 해요.`,
       });
+    } else if (rule.type === 'targetShapeProjection') {
+      items.push({
+        kind: 'shape',
+        face: rule.face,
+        cells: rule.grid,
+        caption: `${FACE_LABEL[rule.face]} 자리 — 이 자리만 차지해야 해요.`,
+      });
     } else if (rule.type === 'visibleColorCount') {
       items.push({
+        kind: 'color',
         face: rule.face,
         cells: singleColorGrid(rule.color, rule.count, rule.face),
         caption: `${FACE_LABEL[rule.face]} ${CUBE_COLOR_LABEL[rule.color]}이 ${rule.count}개만 보여요.`,
       });
     } else if (rule.type === 'colorMustBeHiddenFrom') {
       items.push({
+        kind: 'color',
         face: rule.face,
         cells: emptyGrid(rule.face),
         caption: `${FACE_LABEL[rule.face]} ${CUBE_COLOR_LABEL[rule.color]}은 보이지 않아요.`,
@@ -235,7 +280,9 @@ function ProjectionCards({ rules }: { rules: BuildRule[] }) {
       <div className="flex flex-wrap gap-3">
         {items.map((item, i) => (
           <div key={i} className="flex flex-col items-start gap-1.5">
-            <ColorGrid cells={item.cells} />
+            {item.kind === 'color'
+              ? <ColorGrid cells={item.cells} />
+              : <ShapeGrid cells={item.cells} />}
             <p className="max-w-[200px] text-[11px] leading-snug text-slate-200">{item.caption}</p>
           </div>
         ))}

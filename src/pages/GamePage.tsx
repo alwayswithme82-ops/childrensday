@@ -21,37 +21,32 @@ import type { CubeData } from '../types/game';
 type Phase = 'story' | 'playing' | 'result' | 'reveal';
 
 const KING_CORRECT = [
-  '메모대로 정확해. 다음 단서를 줄게.',
-  '훌륭한 솜씨야. 비밀 건물이 한 층 더 자랐어.',
+  '딱 그 모양이야! 다음으로 가볼까?',
+  '와, 정말 잘했어! 보물상자가 한 층 더 가까워졌어.',
   '큐브왕의 후계자가 될 자격이 있군!',
 ];
 
 const KING_WRONG = [
-  '음… 메모를 다시 한번 읽어볼래?',
-  '아쉬워. 색깔과 위치를 다시 살펴봐.',
-  '거의 다 왔어. 메모의 한 줄을 빼먹지 않았는지 확인해봐.',
+  '음… 그림을 다시 한번 볼까?',
+  '아쉬워. 색깔과 자리를 살짝만 바꿔봐.',
+  '거의 다 왔어. 빠진 칸이 없는지 확인해봐.',
 ];
 
 const MISSION_INTROS = [
   {
     text:
-      '색나무 마을 광장에 오래된 양피지 한 장이 떨어져 있었어요.\n‘큐브왕의 첫 번째 메모’라고 적혀 있었죠.\n어떤 색깔 큐브를 몇 개 모아야 할지\n메모를 따라 재료를 모아 보세요.',
-    button: '첫 번째 메모 펼치기 📜',
+      '색나무 마을 입구에 망가진 무지개 문이 있었어요.\n루비가 빨강과 파랑 큐브를 들고 와\n“이 그림처럼 다시 만들어줘!” 하고 부탁했어요.',
+    button: '무지개 문 만들기 🌈',
   },
   {
     text:
-      '비밀 건물의 첫 번째 벽이 모습을 드러냈어요.\n그런데 두 번째 메모에는\n‘색깔이 만나는 방법’에 대한 비밀이 적혀 있었어요.\n어떤 색이 어떻게 붙어야 할까요?',
-    button: '두 번째 메모 펼치기 📜',
+      '문을 지나자 노랑 큐브 한 개가 부끄러워하고 있었어요.\n“나는 앞에서 안 보이고 싶어!”\n노랑 큐브를 빨강 큐브 뒤에 살짝 숨겨주세요.',
+    button: '노랑 큐브 숨기기 🫣',
   },
   {
     text:
-      '벽이 한 층 더 자라났어요.\n세 번째 메모에는\n‘위에서 본 모습’에 대한 단서가 있었어요.\n파란 큐브 4개 중 단 하나만\n위에서 보여야 한대요. 어떻게 숨길까요?',
-    button: '세 번째 메모 펼치기 📜',
-  },
-  {
-    text:
-      '드디어 마지막 메모가 빛나기 시작했어요.\n노란 큐브가 하나 더해지고,\n앞에서 보이는 블록 수와 뒤에서 보이는 블록 수가\n같아야 비밀 건물이 열린대요.\n노랑은 앞에서 보이지 않게 숨겨 보세요.',
-    button: '마지막 메모 펼치기 📜',
+      '드디어 보물상자 앞이에요.\n하지만 보물상자는 “반짝 보물탑”이\n완성되어야 열려요.\n앞에서 본 그림과 위에서 본 자리,\n둘 다 맞춰보세요!',
+    button: '보물탑 쌓기 💎',
   },
 ];
 
@@ -59,35 +54,28 @@ const REVEAL_SCENES = [
   {
     icon: '🗝️',
     text:
-      '네 장의 메모가 공중으로 떠올랐어요.\n📜 📜 📜 📜\n메모들이 빙글빙글 돌더니\n하나의 황금 열쇠로 합쳐졌어요.',
-    button: '비밀 건물 열기 🗝️',
+      '세 개의 큐브 열쇠가\n공중에 떠오르더니 빙글빙글 돌아\n하나의 황금 열쇠로 합쳐졌어요.',
+    button: '보물상자 열기 🗝️',
   },
   {
-    icon: '🏛',
+    icon: '📦',
     text:
-      '쿠구궁…!\n색나무 마을 광장 한가운데에\n작은 비밀 건물이 솟아올랐어요.\n색깔 큐브로 지어진,\n세상에 단 하나뿐인 건물이에요.',
-    button: '안으로 들어가기 ✨',
+      '철컥!\n보물상자가 활짝 열렸어요.\n안에는 큐브왕이 남긴\n작은 책이 한 권 놓여 있었어요.',
+    button: '책 펼쳐 보기 ✨',
   },
   {
     icon: '✉️',
     text:
-      '건물 안에는 큐브왕의 마지막 편지가 있었어요.\n‘진짜 큐브왕은 정답을 잘 외운 사람이 아니라,\n앞·위·옆에서 모두 살펴보는 사람이란다.’',
-    button: '계속 보기 🌳',
-  },
-  {
-    icon: '🎖️',
-    text:
-      '축하해요!\n오늘부터 너는 색나무 마을의\n어린이 건축가야.\n다음 큐브왕은 너일지도 몰라.',
+      '책에는 이렇게 쓰여 있었어요.\n“수학은 비밀을 풀어가는 모험이야.\n너도 이제\n색나무 마을의 건축가다.”',
     button: '건축가 인증서 받기 🎖️',
   },
 ];
 
 function getRewardMessage(index: number, fallback?: string) {
   const rewards = [
-    '딸칵!\n첫 번째 메모의 봉인이 풀렸어요.\n비밀 건물의 “재료”가 모두 모였어요. 📜',
-    '반짝!\n두 번째 메모가 빛나며,\n비밀 건물의 벽이 한 층 자라났어요. 📜',
-    '띵—!\n세 번째 메모가 사르륵 펼쳐졌어요.\n위에서 본 모습이 메모와 정확히 일치해요. 📜',
-    '쿠구궁…!\n마지막 메모가 황금빛으로 빛나요.\n비밀 건물이 모두 완성됐어요! 📜',
+    '철컥!\n무지개 문이 활짝 열렸어요. 🌈',
+    '잘 숨었다!\n노랑 큐브가 방긋 웃었어요. 🫣',
+    '반짝반짝!\n보물탑이 완성되자 보물상자가 열렸어요. 💎',
   ];
   return rewards[Math.min(index, rewards.length - 1)] ?? fallback ?? '잘했어요!';
 }
@@ -165,7 +153,7 @@ export function GamePage() {
   const totalStars = sceneResults.reduce((s, r) => s + r.stars, 0);
   const successShowing =
     phase === 'result' && feedbackMessage === getRewardMessage(currentSceneIndex, scene.successText);
-  const keyPieces = Math.min(sceneResults.length + (successShowing ? 1 : 0), 4);
+  const keyPieces = Math.min(sceneResults.length + (successShowing ? 1 : 0), level.scenes.length);
   const mission = MISSION_INTROS[Math.min(currentSceneIndex, MISSION_INTROS.length - 1)];
 
   const handleStoryDismiss = () => {
