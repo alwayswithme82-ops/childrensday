@@ -265,6 +265,18 @@ function normalize(grid: number[][]): number[][] {
   return grid.slice(top, bot + 1).map(r => r.slice(left, right + 1));
 }
 
+function normalizeColor(grid: ColorCell[][]): ColorCell[][] {
+  if (!grid.length || !grid[0]?.length) return [];
+  let top = 0, bot = grid.length - 1, left = 0, right = grid[0].length - 1;
+  const empty = (cell: ColorCell) => !cell;
+  while (top <= bot && grid[top].every(empty)) top++;
+  while (bot >= top && grid[bot].every(empty)) bot--;
+  while (left <= right && grid.every(r => empty(r[left]))) left++;
+  while (right >= left && grid.every(r => empty(r[right]))) right--;
+  if (top > bot || left > right) return [];
+  return grid.slice(top, bot + 1).map(r => r.slice(left, right + 1));
+}
+
 function compareGrid(a: number[][], b: number[][], face: ViewFace): boolean {
   const na = normalize(normalizeProjectionTo3x3(a, face));
   const nb = normalize(normalizeProjectionTo3x3(b, face));
@@ -274,9 +286,9 @@ function compareGrid(a: number[][], b: number[][], face: ViewFace): boolean {
 }
 
 function compareColorGrid(a: ColorCell[][], b: ColorCell[][], face: ViewFace): boolean {
-  // 색깔까지 일치하려면 3×3 기준 위치와 색이 같아야 한다.
-  const na = normalizeProjectionTo3x3(a, face);
-  const nb = normalizeProjectionTo3x3(b, face);
+  // 색깔까지 일치하되, 3×3 보드 안의 빈 테두리 위치 차이는 허용한다.
+  const na = normalizeColor(normalizeProjectionTo3x3(a, face));
+  const nb = normalizeColor(normalizeProjectionTo3x3(b, face));
   if (na.length !== nb.length) return false;
   if ((na[0]?.length ?? 0) !== (nb[0]?.length ?? 0)) return false;
   return na.every((row, r) =>
