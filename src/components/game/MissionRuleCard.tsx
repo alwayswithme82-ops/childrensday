@@ -10,12 +10,9 @@ interface Props {
 }
 
 export function MissionRuleCard({ scene, results, currentCubes, strictMode = false }: Props) {
-  const requiredResults = strictMode
-    ? results
-    : results.filter(result => isRuleRequiredForSuccess(result.rule));
-  const challengeResults = strictMode
-    ? []
-    : results.filter(result => !isRuleRequiredForSuccess(result.rule));
+  void strictMode;
+  const requiredResults = results.filter(result => isRuleRequiredForSuccess(result.rule));
+  const challengeResults = results.filter(result => !isRuleRequiredForSuccess(result.rule));
 
   return (
     <div className="rounded-2xl border border-amber-300/30 bg-slate-900/85 p-4 shadow-lg">

@@ -1,4 +1,5 @@
 import type { Difficulty, Level, Scene } from '../types/game';
+import type { BuildRule } from '../types/game';
 import { CUBE_COLOR_HEX } from '../utils/constants';
 import { calculateColorProjection, validateBuildMission } from '../utils/buildValidation';
 
@@ -19,7 +20,7 @@ function isDevelopmentRuntime(): boolean {
 // 힌트 격자가 바닥부터 쌓여 있는지 검사 (side 방향 전용).
 // 채워진 칸 아래가 비어 있으면 '공중부양' 힌트로 판단하고 경고한다.
 function assertGroundedHint(
-  grid: (string | null)[][],
+  grid: (string | null | number)[][],
   missionTitle: string,
   hintText: string,
 ): void {
@@ -698,6 +699,22 @@ export function getBuildLevelByDifficulty(difficulty: Difficulty): Level {
 }
 
 export function getHintStages(scene: Scene) {
+  const targetStages = (scene.rules ?? [])
+    .filter((rule): rule is Extract<BuildRule, { type: 'targetColorProjection' | 'targetShapeProjection' }> =>
+      (rule.type === 'targetColorProjection' || rule.type === 'targetShapeProjection') &&
+      rule.displayOnly !== true &&
+      rule.requiredForSuccess !== false,
+    )
+    .map(rule => ({
+      text: `${rule.face === 'front' ? '앞에서' : rule.face === 'back' ? '뒤에서' : rule.face === 'top' ? '위에서' : rule.face === 'left' ? '왼쪽에서' : '오른쪽에서'} 본 목표 그림이에요.`,
+      grid: { face: rule.face, cells: rule.grid },
+    }));
+
+  const textStages = (scene.hintStages ?? [])
+    .filter(stage => !stage.grid)
+    .map(stage => ({ text: stage.text }));
+
+  if (targetStages.length > 0) return [...targetStages, ...textStages];
   if (scene.hintStages && scene.hintStages.length > 0) return scene.hintStages;
   return [{ text: scene.hintText }];
 }

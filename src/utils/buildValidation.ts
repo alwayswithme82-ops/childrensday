@@ -154,6 +154,47 @@ export function calculateColorProjection(cubes: CubeData[], face: ViewFace): Col
   return normalizeProjectionTo3x3(grid, face);
 }
 
+function calculateRawColorProjection(cubes: CubeData[], face: ViewFace): ColorCell[][] {
+  if (!cubes.length) return [[null]];
+  const visible = visibleCubesFrom(cubes, face);
+
+  const axes = (() => {
+    switch (face) {
+      // grid[row=maxRow-y][col=x]
+      case 'front': return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.x, flipRow: true };
+      // back: front와 같은 좌표 격자, 보이는 큐브만 z 최대 기준.
+      case 'back':  return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.x, flipRow: true };
+      // top: rows = z(front->back), cols = x(left->right)
+      case 'top':   return { row: (c: CubeData) => c.z, col: (c: CubeData) => c.x, flipRow: false };
+      // left: rows = y(bottom->top), cols = z(front->back)
+      case 'left':  return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true };
+      // right: left와 같은 좌표 격자, 보이는 큐브만 x 최대 기준.
+      case 'right': return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true };
+    }
+  })();
+
+  const rowVals = visible.map(axes.row);
+  const colVals = visible.map(axes.col);
+  const minRow = Math.min(...rowVals);
+  const maxRow = Math.max(...rowVals);
+  const minCol = Math.min(...colVals);
+  const maxCol = Math.max(...colVals);
+  const rows = maxRow - minRow + 1;
+  const cols = maxCol - minCol + 1;
+
+  const grid: ColorCell[][] = Array.from({ length: rows }, () =>
+    Array<ColorCell>(cols).fill(null),
+  );
+  for (const c of visible) {
+    const rRaw = axes.row(c);
+    const cRaw = axes.col(c);
+    const r = axes.flipRow ? maxRow - rRaw : rRaw - minRow;
+    const col = cRaw - minCol;
+    if (r >= 0 && r < rows && col >= 0 && col < cols) grid[r][col] = c.color;
+  }
+  return grid;
+}
+
 export function calculateShapeProjection(cubes: CubeData[], face: ViewFace): number[][] {
   return calculateColorProjection(cubes, face).map(row => row.map(cell => (cell ? 1 : 0)));
 }
@@ -241,7 +282,7 @@ export function evaluateRule(cubes: CubeData[], rule: BuildRule): RuleResult {
       };
     }
     case 'targetShapeProjection': {
-      const actual = calculateShapeProjection(cubes, rule.face);
+      const actual = calculateRawShapeProjection(cubes, rule.face);
       const ok = compareGrid(actual, rule.grid, rule.face);
       return {
         rule,
@@ -252,7 +293,7 @@ export function evaluateRule(cubes: CubeData[], rule: BuildRule): RuleResult {
       };
     }
     case 'targetColorProjection': {
-      const actual = calculateColorProjection(cubes, rule.face);
+      const actual = calculateRawColorProjection(cubes, rule.face);
       const ok = compareColorGrid(actual, rule.grid, rule.face);
       return {
         rule,
@@ -300,8 +341,9 @@ function trimShapeGrid(grid: number[][]): number[][] {
 }
 
 export function compareGrid(a: number[][], b: number[][], face: ViewFace): boolean {
-  const aa = trimShapeGrid(normalizeProjectionTo3x3(a, face));
-  const bb = trimShapeGrid(normalizeProjectionTo3x3(b, face));
+  void face;
+  const aa = trimShapeGrid(a);
+  const bb = trimShapeGrid(b);
 
   if (aa.length !== bb.length) return false;
   if (aa.length === 0) return bb.length === 0;
@@ -318,8 +360,9 @@ export function compareGrid(a: number[][], b: number[][], face: ViewFace): boole
 
 export function compareColorGrid(a: ColorCell[][], b: ColorCell[][], face: ViewFace): boolean {
   // 빈 테두리를 제거한 뒤 상대 모양·색 비교 → 보드 어느 위치에 놓아도 같은 패턴이면 성공.
-  const aa = trimColorGrid(normalizeProjectionTo3x3(a, face));
-  const bb = trimColorGrid(normalizeProjectionTo3x3(b, face));
+  void face;
+  const aa = trimColorGrid(a);
+  const bb = trimColorGrid(b);
 
   if (aa.length !== bb.length) return false;
   if (aa.length === 0) return bb.length === 0;
@@ -414,14 +457,12 @@ export function validateBuildMission(
 ): BuildValidationResult {
   const rules = mission.rules ?? [];
   const results = rules.map(r => evaluateRule(cubes, r));
-  const blockingResults = options.strict
-    ? results
-    : results.filter(result => isRuleRequiredForSuccess(result.rule));
+  const blockingResults = results.filter(result => isRuleRequiredForSuccess(result.rule));
 
   const failed = blockingResults.filter(r => !r.ok);
   const success = failed.length === 0;
 
-  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+  if (isBuildValidationDebugEnabled()) {
     console.log('[front]', calculateColorProjection(cubes, 'front'));
     console.log('[top]', calculateColorProjection(cubes, 'top'));
     console.log('[Validation Debug] required/blocking results', blockingResults);
@@ -441,4 +482,14 @@ export function validateBuildMission(
   const detail = options.strict ? strictFailureMessage(first) : missionFailureMessage(mission, first);
 
   return { success: false, results, message: detail };
+}
+
+function calculateRawShapeProjection(cubes: CubeData[], face: ViewFace): number[][] {
+  return calculateRawColorProjection(cubes, face).map(row => row.map(cell => (cell ? 1 : 0)));
+}
+
+function isBuildValidationDebugEnabled(): boolean {
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') return false;
+  if (typeof process !== 'undefined') return process.env?.DEV === 'true';
+  return false;
 }

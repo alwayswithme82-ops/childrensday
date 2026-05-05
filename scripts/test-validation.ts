@@ -162,12 +162,12 @@ check('x+1,z+1 이동', [
   { x:1, y:0, z:2, color:B },
 ], m[3], true);
 
-check('뒤 파랑 z=2', [
+check('FAIL: 뒤 파랑 z=2 (top 내부 빈 줄)', [
   { x:0, y:0, z:0, color:R },
   { x:1, y:0, z:0, color:B },
   { x:1, y:1, z:0, color:G },
   { x:0, y:0, z:2, color:B },
-], m[3], true);
+], m[3], false);
 
 check('FAIL: 초록→파랑 (front 색 다름)', [
   { x:0, y:0, z:0, color:R },

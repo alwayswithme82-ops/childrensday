@@ -62,7 +62,7 @@ export type BuildRule =
 
 export interface HintStage {
   text: string;
-  grid?: { face: ViewFace; cells: ColorCell[][] };
+  grid?: { face: ViewFace; cells: (ColorCell | number)[][] };
 }
 
 export interface Scene {

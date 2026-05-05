@@ -33,7 +33,7 @@ function ColorGrid({
   cellSize = 28,
   normalize = true,
 }: {
-  cells: (string | null)[][];
+  cells: (string | null | number)[][];
   face: NonNullable<HintStage['grid']>['face'];
   missionId?: number;
   cellSize?: number;
@@ -55,21 +55,27 @@ function ColorGrid({
       }}
     >
       {cells.flatMap((row, r) =>
-        row.map((cell, c) => (
-          <div
-            key={`${r}-${c}`}
-            className="rounded"
-            style={{
-              width: cellSize,
-              height: cellSize,
-              background: normalizeColorValue(cell) ?? 'rgba(148,163,184,0.18)',
-              border: cell
-                ? '1px solid rgba(255,255,255,0.45)'
-                : '1px solid rgba(255,255,255,0.10)',
-              boxShadow: cell ? 'inset 0 -3px 0 rgba(0,0,0,0.18)' : 'none',
-            }}
-          />
-        )),
+        row.map((cell, c) => {
+          const filled = typeof cell === 'number' ? cell !== 0 : !!cell;
+          const background = typeof cell === 'number'
+            ? (cell ? 'rgba(226,232,240,0.85)' : 'rgba(148,163,184,0.18)')
+            : (normalizeColorValue(cell) ?? 'rgba(148,163,184,0.18)');
+          return (
+            <div
+              key={`${r}-${c}`}
+              className="rounded"
+              style={{
+                width: cellSize,
+                height: cellSize,
+                background,
+                border: filled
+                  ? '1px solid rgba(255,255,255,0.45)'
+                  : '1px solid rgba(255,255,255,0.10)',
+                boxShadow: filled ? 'inset 0 -3px 0 rgba(0,0,0,0.18)' : 'none',
+              }}
+            />
+          );
+        }),
       )}
     </div>
   );
