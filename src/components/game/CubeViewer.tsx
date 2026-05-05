@@ -32,11 +32,11 @@ type ViewMode = 'front' | 'back' | 'left' | 'right' | 'top' | 'free';
 function CameraInit({ cx, cy, cz, viewMode }: CameraInitProps) {
   const { camera } = useThree();
   useEffect(() => {
-    const distance = viewMode === 'free' ? 6 : 38;
-    const height = cy;
+    const distance = viewMode === 'top' ? 24 : 6;
+    const height = Math.max(cy + 1.6, 2.4);
     const perspectiveCamera = camera as { fov?: number };
     if (typeof perspectiveCamera.fov === 'number') {
-      perspectiveCamera.fov = viewMode === 'free' ? 50 : 8;
+      perspectiveCamera.fov = viewMode === 'top' ? 12 : 50;
     }
     camera.up.set(0, 1, 0);
     if (viewMode === 'front') {

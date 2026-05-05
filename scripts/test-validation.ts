@@ -315,13 +315,21 @@ check('FAIL: front 빨강 2층 아님', [
 console.log('\n■ M7 세 방향 탑 (front shape + top)');
 check('공식 정답', m[7].officialSolution!, m[7], true);
 
-check('색이 달라도 앞 모양+위 자리 맞으면 성공', [
+check('색 위치가 달라도 개수+앞 모양+위 자리 맞으면 성공', [
+  { x:0, y:0, z:0, color:R },
+  { x:1, y:0, z:0, color:G },
+  { x:1, y:1, z:0, color:B },
+  { x:0, y:0, z:1, color:B },
+  { x:2, y:0, z:1, color:Y },
+], m[7], true);
+
+check('FAIL: 색 개수 다름', [
   { x:0, y:0, z:0, color:R },
   { x:1, y:0, z:0, color:G },
   { x:1, y:1, z:0, color:Y },
   { x:0, y:0, z:1, color:B },
   { x:2, y:0, z:1, color:G },
-], m[7], true);
+], m[7], false);
 
 check('FAIL: top 모양 다름 (오른쪽 뒤 없음)', [
   { x:0, y:0, z:0, color:R },
@@ -354,7 +362,7 @@ check('FAIL: front 바닥 세 칸 아님', [
 console.log('\n■ M8 숨은 보석탑 (front shape + top)');
 check('공식 정답', m[8].officialSolution!, m[8], true);
 
-check('색이 달라도 앞 모양+위 자리 맞으면 성공', [
+check('색 위치가 달라도 개수+앞 모양+위 자리 맞으면 성공', [
   { x:0, y:0, z:0, color:R },
   { x:1, y:0, z:0, color:B },
   { x:1, y:1, z:0, color:G }, // Y→G
@@ -362,6 +370,15 @@ check('색이 달라도 앞 모양+위 자리 맞으면 성공', [
   { x:2, y:0, z:1, color:B },
   { x:2, y:1, z:1, color:G },
 ], m[8], true);
+
+check('FAIL: 색 개수 다름', [
+  { x:0, y:0, z:0, color:R },
+  { x:1, y:0, z:0, color:B },
+  { x:1, y:1, z:0, color:G },
+  { x:1, y:0, z:1, color:G },
+  { x:2, y:0, z:1, color:B },
+  { x:2, y:1, z:1, color:G },
+], m[8], false);
 
 check('FAIL: top 모양 다름 (앞줄 3칸)', [
   { x:0, y:0, z:0, color:R },

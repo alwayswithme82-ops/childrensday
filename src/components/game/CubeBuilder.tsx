@@ -44,17 +44,17 @@ function CameraRig({ viewMode, target }: CameraRigProps) {
   const { camera } = useThree();
   useEffect(() => {
     const [tx, ty, tz] = target;
-    const fixedDistance = 38;
     const perspectiveCamera = camera as THREE.PerspectiveCamera;
-    perspectiveCamera.fov = viewMode === 'free' ? 48 : 8;
+    perspectiveCamera.fov = 48;
     camera.up.set(0, 1, 0);
-    if (viewMode === 'front')      camera.position.set(tx, ty, tz - fixedDistance);
-    else if (viewMode === 'back')  camera.position.set(tx, ty, tz + fixedDistance);
-    else if (viewMode === 'left')  camera.position.set(tx - fixedDistance, ty, tz);
-    else if (viewMode === 'right') camera.position.set(tx + fixedDistance, ty, tz);
+    if (viewMode === 'front')      camera.position.set(tx, ty + 1.6, tz - 5.6);
+    else if (viewMode === 'back')  camera.position.set(tx, ty + 1.6, tz + 5.6);
+    else if (viewMode === 'left')  camera.position.set(tx - 5.6, ty + 1.6, tz);
+    else if (viewMode === 'right') camera.position.set(tx + 5.6, ty + 1.6, tz);
     else if (viewMode === 'top') {
+      perspectiveCamera.fov = 12;
       camera.up.set(0, 0, 1);
-      camera.position.set(tx, ty + fixedDistance, tz);
+      camera.position.set(tx, ty + 24, tz);
     }
     else                           camera.position.set(tx + 4, ty + 4, tz + 4);
     camera.lookAt(tx, ty, tz);
