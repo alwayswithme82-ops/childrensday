@@ -33,23 +33,6 @@ const KING_WRONG = [
   '거의 다 왔어. 빠진 칸이 없는지 확인해봐.',
 ];
 
-const MISSION_INTROS = [
-  {
-    text:
-      '루비가 말했어요.\n“무지개 문이 망가졌어!\n빨강 큐브와 파랑 큐브로\n문을 다시 만들어줘!”',
-    button: '무지개 문 만들기 🌈',
-  },
-  {
-    text:
-      '노랑 큐브가 말했어요.\n“나는 부끄러워서\n앞에서는 안 보이고 싶어!”',
-    button: '노랑 큐브 숨기기 🫣',
-  },
-  {
-    text:
-      '드디어 보물상자 앞에 도착했어요!\n보물상자는 “반짝 보물탑”이\n완성되어야 열려요.',
-    button: '보물탑 쌓기 💎',
-  },
-];
 
 const REVEAL_SCENES = [
   {
@@ -156,7 +139,6 @@ export function GamePage() {
   const successShowing =
     phase === 'result' && feedbackMessage === getRewardMessage(currentSceneIndex, scene.successText);
   const keyPieces = Math.min(sceneResults.length + (successShowing ? 1 : 0), level.scenes.length);
-  const mission = MISSION_INTROS[Math.min(currentSceneIndex, MISSION_INTROS.length - 1)];
 
   const handleStoryDismiss = () => {
     if (timer.time === 0 && currentSceneIndex === 0) {
@@ -201,15 +183,16 @@ export function GamePage() {
       const stars = calcStars(newAttempts, hintsUsedThisScene);
       const sceneTime = timer.getElapsed();
       const isLast = currentSceneIndex + 1 >= level.scenes.length;
+      // 결과를 즉시 기록 → 건너뛰기로 타임아웃을 취소해도 기록이 남는다
+      recordSceneResult({
+        sceneId: scene.id,
+        correct: true,
+        attempts: newAttempts,
+        timeSeconds: sceneTime,
+        hintsUsed: hintsUsedThisScene,
+        stars,
+      });
       pendingTimeoutRef.current = setTimeout(() => {
-        recordSceneResult({
-          sceneId: scene.id,
-          correct: true,
-          attempts: newAttempts,
-          timeSeconds: sceneTime,
-          hintsUsed: hintsUsedThisScene,
-          stars,
-        });
         if (isLast) {
           timer.stop();
           setRevealIndex(0);
@@ -244,32 +227,39 @@ export function GamePage() {
 
   const handleSkipMission = () => {
     if (!scene || !level) return;
-    if (phase === 'result' || phase === 'reveal') return;
+    if (phase === 'reveal') return;
 
-    const ok = window.confirm('이번 미션은 도움을 받고 다음으로 넘어갈까요?');
-    if (!ok) return;
+    const isLast = currentSceneIndex + 1 >= level.scenes.length;
 
     if (pendingTimeoutRef.current !== null) {
       clearTimeout(pendingTimeoutRef.current);
       pendingTimeoutRef.current = null;
     }
 
+    if (phase === 'result') {
+      // 성공 후 자동 전환 중: 결과는 이미 기록됐으므로 바로 이동
+      if (isLast) {
+        timer.stop();
+        setRevealIndex(0);
+        setPhase('reveal');
+      } else {
+        nextScene();
+      }
+      return;
+    }
+
+    // story / playing 단계: 결과를 별 1개로 기록 후 이동
     play('click');
     timer.pause();
-
-    const sceneTime = timer.getElapsed();
-    const isLast = currentSceneIndex + 1 >= level.scenes.length;
 
     recordSceneResult({
       sceneId: scene.id,
       correct: true,
       attempts: Math.max(1, attempts),
-      timeSeconds: sceneTime,
+      timeSeconds: timer.getElapsed(),
       hintsUsed: hintsUsedThisScene,
       stars: 1,
     });
-
-    setFeedbackMessage('도움을 받고 다음 미션으로 이동해요. ⏭️');
 
     if (isLast) {
       timer.stop();
@@ -368,10 +358,10 @@ export function GamePage() {
               <button
                 type="button"
                 onClick={handleSkipMission}
-                disabled={phase === 'result' || phase === 'reveal'}
+                disabled={phase === 'reveal'}
                 className="rounded-2xl border border-white/15 bg-white/5 px-6 py-3 text-sm font-bold text-slate-100 shadow-sm hover:bg-white/10 disabled:opacity-40"
               >
-                도움 받고 다음으로 ⏭️
+                {phase === 'result' ? '다음으로 바로 가기 ⏭️' : '도움 받고 다음으로 ⏭️'}
               </button>
 
               {(operatorMode || strictMode) && (
@@ -408,11 +398,11 @@ export function GamePage() {
         </AnimatePresence>
 
         <StoryOverlay
-          text={mission.text}
+          text={scene.storyText}
           characterName={scene.characterName}
           visible={phase === 'story'}
           onDismiss={handleStoryDismiss}
-          buttonText={mission.button}
+          buttonText={scene.title ?? '시작하기 ▶'}
         />
 
         {phase === 'story' && (
@@ -421,7 +411,7 @@ export function GamePage() {
             onClick={handleSkipMission}
             className="fixed bottom-6 right-6 z-[80] rounded-2xl border border-white/20 bg-slate-900/90 px-5 py-3 text-sm font-bold text-white shadow-xl backdrop-blur"
           >
-            도움 받고 다음으로 ⏭️
+            건너뛰기 ⏭️
           </button>
         )}
 
