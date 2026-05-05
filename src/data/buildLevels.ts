@@ -476,14 +476,14 @@ const MISSION_H2: Scene = {
   title: '숨은 보석탑',
   characterName: '오르가',
   storyText:
-    '오르가가 말했어요.\n"보석탑은 보물을 감추고 있어!\n앞·위·오른쪽 세 방향 단서를\n모두 확인해봐."',
+    '오르가가 말했어요.\n"보석탑은 보물을 감추고 있어!\n앞에서 본 모양과\n위에서 본 자리만 맞춰봐."',
   memo:
-    '"앞·위·오른쪽에서 본 모습을\n모두 맞춰주세요."',
+    '"앞에서 본 모양과\n위에서 본 자리를 맞춰주세요."',
   questionType: 'building',
   mode: 'build',
   cubes: [],
   options: [],
-  questionText: '앞·위·오른쪽 세 방향 그림을 모두 맞춰 보석탑을 완성해봐요.',
+  questionText: '앞에서 본 보석탑 모양과 위에서 본 자리를 맞춰 보석탑을 완성해봐요.',
   rules: [
     { type: 'exactCubeCount',    count: 6,                 displayOnly: true },
     { type: 'requiredColorCount', color: 'red',    count: 1, displayOnly: true },
@@ -491,13 +491,13 @@ const MISSION_H2: Scene = {
     { type: 'requiredColorCount', color: 'yellow', count: 1, displayOnly: true },
     { type: 'requiredColorCount', color: 'green',  count: 2, displayOnly: true },
     {
-      type: 'targetColorProjection',
+      type: 'targetShapeProjection',
       face: 'front',
-      // 앞에서: 2층에 노랑·초록, 바닥에 빨강·파랑·파랑
+      // 앞에서: 2층 두 칸, 바닥 세 칸
       grid: [
-        [_, _, _],
-        [_, Y, G],
-        [R, B, B],
+        [0, 0, 0],
+        [0, 1, 1],
+        [1, 1, 1],
       ],
       requiredForSuccess: true,
     },
@@ -512,34 +512,12 @@ const MISSION_H2: Scene = {
       ],
       requiredForSuccess: true,
     },
-    {
-      type: 'targetColorProjection',
-      face: 'right',
-      // 오른쪽에서: 화면 왼쪽은 뒤쪽, 화면 오른쪽은 앞쪽
-      grid: [
-        [_, _, _],
-        [G, Y, _],
-        [B, B, _],
-      ],
-      requiredForSuccess: true,
-    },
   ],
   maxGridSize: { x: 3, y: 3, z: 3 },
-  successText: '보석탑이 빛나요!\n숨어 있던 보석이 드러났어요! 💎',
-  hintText: '오른쪽 두 칸에 초록 2층씩, 가운데에 노랑 2층, 빨강은 왼쪽 바닥에 혼자 있어요.',
+  successText: '앞 모양과 위 자리가 맞았어요!\n숨어 있던 보석이 드러났어요! 💎',
+  hintText: '앞에서 보면 2층이 두 칸, 아래 줄이 세 칸이에요. 위에서는 앞줄 두 칸과 뒷줄 두 칸이 보여야 해요.',
   hintStages: [
-    { text: '앞에서 본 그림을 먼저 맞춰봐요. 오른쪽 위에 초록, 가운데 위에 노랑이 있어야 해요.' },
-    {
-      text: '오른쪽에서 보면 이 모양이에요. 2층 왼쪽은 뒤쪽 초록, 오른쪽은 앞쪽 노랑이고, 바닥에는 파랑 두 개예요.',
-      grid: {
-        face: 'right',
-        cells: [
-          [_, _, _],
-          [G, Y, _],
-          [B, B, _],
-        ] as (string | null)[][],
-      },
-    },
+    { text: '앞에서 본 탑 모양과 위에서 본 자리를 차례대로 맞춰봐요.' },
   ],
   officialSolution: [
     { x: 0, y: 0, z: 0, color: R },

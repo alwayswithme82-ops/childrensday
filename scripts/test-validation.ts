@@ -347,22 +347,21 @@ check('FAIL: front 바닥 세 칸 아님', [
 ], m[7], false);
 
 // ═══════════════════════════════════════════════════
-// M8 — 숨은 보석탑 (front + top + right)
-// front trimmed: [[null,Y,G],[R,B,B]]
+// M8 — 숨은 보석탑 (front shape + top shape)
+// front shape trimmed: [[0,1,1],[1,1,1]]
 // top trimmed: [[1,1,0],[0,1,1]]
-// right trimmed: [[G,Y],[B,B]] (screen left is back, screen right is front)
 // ═══════════════════════════════════════════════════
-console.log('\n■ M8 숨은 보석탑 (front+top+right)');
+console.log('\n■ M8 숨은 보석탑 (front shape + top)');
 check('공식 정답', m[8].officialSolution!, m[8], true);
 
-check('FAIL: right 면 색 다름 (초록↔노랑)', [
+check('색이 달라도 앞 모양+위 자리 맞으면 성공', [
   { x:0, y:0, z:0, color:R },
   { x:1, y:0, z:0, color:B },
   { x:1, y:1, z:0, color:G }, // Y→G
   { x:1, y:0, z:1, color:Y }, // G→Y
   { x:2, y:0, z:1, color:B },
   { x:2, y:1, z:1, color:G },
-], m[8], false);
+], m[8], true);
 
 check('FAIL: top 모양 다름 (앞줄 3칸)', [
   { x:0, y:0, z:0, color:R },
@@ -373,10 +372,9 @@ check('FAIL: top 모양 다름 (앞줄 3칸)', [
   { x:1, y:0, z:1, color:G },
 ], m[8], false);
 
-check('FAIL: front 노랑 없음', [
+check('FAIL: front 2층 한 칸 부족', [
   { x:0, y:0, z:0, color:R },
   { x:1, y:0, z:0, color:B },
-  { x:1, y:1, z:0, color:G }, // Y→G
   { x:1, y:0, z:1, color:G },
   { x:2, y:0, z:1, color:B },
   { x:2, y:1, z:1, color:G },
