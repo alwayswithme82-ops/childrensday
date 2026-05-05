@@ -17,7 +17,7 @@ import { useSound } from '../hooks/useSound';
 import { calcStars } from '../utils/helpers';
 import { calculateColorProjection, evaluateRule, validateBuildMission } from '../utils/buildValidation';
 import { normalizeProjectionTo3x3 } from '../utils/projectionGrid';
-import type { CubeData } from '../types/game';
+import type { CubeData, Scene } from '../types/game';
 
 type Phase = 'story' | 'playing' | 'result' | 'reveal';
 
@@ -62,6 +62,11 @@ function getRewardMessage(index: number, fallback?: string) {
     '반짝반짝!\n보물탑이 완성되자 보물상자가 열렸어요. 💎',
   ];
   return rewards[Math.min(index, rewards.length - 1)] ?? fallback ?? '잘했어요!';
+}
+
+function getStoryText(scene: Scene) {
+  if (!scene.title) return scene.storyText;
+  return `이번 문제는 "${scene.title}"이에요!\n\n${scene.storyText}`;
 }
 
 export function GamePage() {
@@ -397,7 +402,7 @@ export function GamePage() {
         </AnimatePresence>
 
         <StoryOverlay
-          text={scene.storyText}
+          text={getStoryText(scene)}
           characterName={scene.characterName}
           visible={phase === 'story'}
           onDismiss={handleStoryDismiss}
