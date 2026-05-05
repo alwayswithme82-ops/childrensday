@@ -217,6 +217,49 @@ export function GamePage() {
     setRevealIndex(i => i + 1);
   };
 
+  const handleSkip = () => {
+    if (!scene || !level) return;
+    if (phase === 'reveal') return;
+
+    const isLast = currentSceneIndex + 1 >= level.scenes.length;
+
+    if (pendingTimeoutRef.current !== null) {
+      clearTimeout(pendingTimeoutRef.current);
+      pendingTimeoutRef.current = null;
+    }
+
+    if (phase === 'result') {
+      // 성공 결과는 이미 기록됐으므로 바로 이동
+      if (isLast) {
+        timer.stop();
+        setRevealIndex(0);
+        setPhase('reveal');
+      } else {
+        nextScene();
+      }
+      return;
+    }
+
+    // story / playing: 별 1개로 기록 후 이동
+    play('click');
+    timer.pause();
+    recordSceneResult({
+      sceneId: scene.id,
+      correct: true,
+      attempts: Math.max(1, attempts),
+      timeSeconds: timer.getElapsed(),
+      hintsUsed: hintsUsedThisScene,
+      stars: 1,
+    });
+    if (isLast) {
+      timer.stop();
+      setRevealIndex(0);
+      setPhase('reveal');
+    } else {
+      nextScene();
+    }
+  };
+
   const handleHint = () => {
     if (hintsRemaining <= 0) return;
     play('click');
@@ -308,6 +351,15 @@ export function GamePage() {
                 className="rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 px-6 py-4 text-lg font-bold text-slate-950 shadow-lg disabled:opacity-50"
               >
                 완성 확인 ✨
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSkip}
+                disabled={phase === 'reveal'}
+                className="rounded-2xl border border-white/15 bg-white/5 px-6 py-3 text-sm font-bold text-slate-300 shadow-sm hover:bg-white/10 disabled:opacity-30"
+              >
+                {phase === 'result' ? '다음으로 바로 가기 ⏭️' : '건너뛰기 ⏭️'}
               </button>
 
 
