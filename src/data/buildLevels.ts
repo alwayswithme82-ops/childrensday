@@ -419,14 +419,14 @@ const MISSION_H1: Scene = {
   title: '세 방향 탑',
   characterName: '오르가',
   storyText:
-    '오르가가 말했어요.\n"세 방향의 단서를 모두 맞춰야\n마법의 탑이 빛날 거야!\n앞·위·왼쪽을 확인해봐."',
+    '오르가가 말했어요.\n"마법의 탑은\n앞에서 본 모양과\n위에서 본 자리만 맞추면 빛날 거야!"',
   memo:
-    '"앞에서 본 모습과\n위에서 본 자리를 맞춰주세요.\n왼쪽 모습은 도전 힌트예요."',
+    '"앞에서 본 모양과\n위에서 본 자리를 맞춰주세요."',
   questionType: 'building',
   mode: 'build',
   cubes: [],
   options: [],
-  questionText: '앞에서 본 색과 위에서 본 자리를 맞춰 마법의 탑을 완성해봐요. 왼쪽 모습은 더 멋진 도전이에요.',
+  questionText: '앞에서 본 탑 모양과 위에서 본 자리를 맞춰 마법의 탑을 완성해봐요.',
   rules: [
     { type: 'exactCubeCount',    count: 5,                 displayOnly: true },
     { type: 'requiredColorCount', color: 'red',    count: 1, displayOnly: true },
@@ -434,13 +434,13 @@ const MISSION_H1: Scene = {
     { type: 'requiredColorCount', color: 'green',  count: 1, displayOnly: true },
     { type: 'requiredColorCount', color: 'yellow', count: 1, displayOnly: true },
     {
-      type: 'targetColorProjection',
+      type: 'targetShapeProjection',
       face: 'front',
-      // 앞에서: 가운데 2층에 초록, 바닥에 빨강·파랑·파랑
+      // 앞에서: 가운데 2층, 바닥 세 칸
       grid: [
-        [_, _, _],
-        [_, G, _],
-        [R, B, B],
+        [0, 0, 0],
+        [0, 1, 0],
+        [1, 1, 1],
       ],
       requiredForSuccess: true,
     },
@@ -455,35 +455,12 @@ const MISSION_H1: Scene = {
       ],
       requiredForSuccess: true,
     },
-    {
-      type: 'targetColorProjection',
-      face: 'left',
-      // 왼쪽에서: 2층에 초록, 바닥에 빨강(앞)·노랑(뒤)
-      grid: [
-        [_, _, _],
-        [G, _, _],
-        [R, Y, _],
-      ],
-      displayOnly: true,
-      requiredForSuccess: false,
-    },
   ],
   maxGridSize: { x: 3, y: 3, z: 3 },
-  successText: '세 방향이 모두 맞았어요!\n마법의 탑이 빛나요! ✨',
-  hintText: '초록은 가운데 앞에 2층, 노랑은 왼쪽 뒤에, 오른쪽 뒤에는 파랑을 놓아요.',
+  successText: '앞 모양과 위 자리가 맞았어요!\n마법의 탑이 빛나요! ✨',
+  hintText: '앞에서 보면 가운데가 2층이고, 아래 줄은 세 칸이어야 해요. 위에서는 앞줄 두 칸, 뒷줄 두 칸이 보여요.',
   hintStages: [
-    { text: '앞에서 본 그림을 먼저 맞춰봐요. 가운데 2층에 초록이 있어야 해요.' },
-    {
-      text: '왼쪽에서 보면 이 모양이에요. 왼쪽 기둥 2층에 초록, 바닥에 빨강(앞)과 노랑(뒤)이에요.',
-      grid: {
-        face: 'left',
-        cells: [
-          [_, _, _],
-          [G, _, _],
-          [R, Y, _],
-        ] as (string | null)[][],
-      },
-    },
+    { text: '앞에서 본 탑 모양과 위에서 본 자리를 차례대로 맞춰봐요.' },
   ],
   officialSolution: [
     { x: 0, y: 0, z: 0, color: R },
