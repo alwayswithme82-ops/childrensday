@@ -308,22 +308,22 @@ check('FAIL: front 빨강 2층 아님', [
 ], m[6], false);
 
 // ═══════════════════════════════════════════════════
-// M7 — 세 방향 탑 (front + top + left)
+// M7 — 세 방향 탑 (front + top, left is display-only challenge)
 // front trimmed: [[null,G,null],[R,B,B]] → [[_,G,_],[R,B,B]]...
 //   실제: G는 col=1(가운데)에만 → [[null,G],[R,B,B]]? 확인필요
 // top trimmed: [[1,1,0],[1,0,1]]
-// left trimmed: [[G,_],[R,Y]]
+// left trimmed: [[G,_],[R,Y]] (display-only)
 // ═══════════════════════════════════════════════════
-console.log('\n■ M7 세 방향 탑 (front+top+left)');
+console.log('\n■ M7 세 방향 탑 (front+top, left display-only)');
 check('공식 정답', m[7].officialSolution!, m[7], true);
 
-check('FAIL: 노랑→초록 (left 면 다름)', [
+check('left 면만 달라도 성공', [
   { x:0, y:0, z:0, color:R },
   { x:1, y:0, z:0, color:B },
   { x:1, y:1, z:0, color:G },
   { x:0, y:0, z:1, color:G }, // Y→G
   { x:2, y:0, z:1, color:B },
-], m[7], false);
+], m[7], true);
 
 check('FAIL: top 모양 다름 (오른쪽 뒤 없음)', [
   { x:0, y:0, z:0, color:R },
@@ -353,7 +353,7 @@ check('FAIL: front 파랑 하나만 (B,B 아님)', [
 // M8 — 숨은 보석탑 (front + top + right)
 // front trimmed: [[null,Y,G],[R,B,B]]
 // top trimmed: [[1,1,0],[0,1,1]]
-// right trimmed: [[Y,G],[B,B]]
+// right trimmed: [[G,Y],[B,B]] (screen left is back, screen right is front)
 // ═══════════════════════════════════════════════════
 console.log('\n■ M8 숨은 보석탑 (front+top+right)');
 check('공식 정답', m[8].officialSolution!, m[8], true);

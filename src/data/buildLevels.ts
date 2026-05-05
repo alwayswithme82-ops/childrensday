@@ -421,12 +421,12 @@ const MISSION_H1: Scene = {
   storyText:
     '오르가가 말했어요.\n"세 방향의 단서를 모두 맞춰야\n마법의 탑이 빛날 거야!\n앞·위·왼쪽을 확인해봐."',
   memo:
-    '"앞·위·왼쪽에서 본 모습을\n모두 맞춰주세요."',
+    '"앞에서 본 모습과\n위에서 본 자리를 맞춰주세요.\n왼쪽 모습은 도전 힌트예요."',
   questionType: 'building',
   mode: 'build',
   cubes: [],
   options: [],
-  questionText: '앞·위·왼쪽 세 방향 그림을 모두 맞춰 마법의 탑을 완성해봐요.',
+  questionText: '앞에서 본 색과 위에서 본 자리를 맞춰 마법의 탑을 완성해봐요. 왼쪽 모습은 더 멋진 도전이에요.',
   rules: [
     { type: 'exactCubeCount',    count: 5,                 displayOnly: true },
     { type: 'requiredColorCount', color: 'red',    count: 1, displayOnly: true },
@@ -464,7 +464,8 @@ const MISSION_H1: Scene = {
         [G, _, _],
         [R, Y, _],
       ],
-      requiredForSuccess: true,
+      displayOnly: true,
+      requiredForSuccess: false,
     },
   ],
   maxGridSize: { x: 3, y: 3, z: 3 },
@@ -537,10 +538,10 @@ const MISSION_H2: Scene = {
     {
       type: 'targetColorProjection',
       face: 'right',
-      // 오른쪽에서: 2층에 노랑·초록, 바닥에 파랑·파랑
+      // 오른쪽에서: 화면 왼쪽은 뒤쪽, 화면 오른쪽은 앞쪽
       grid: [
         [_, _, _],
-        [Y, G, _],
+        [G, Y, _],
         [B, B, _],
       ],
       requiredForSuccess: true,
@@ -552,12 +553,12 @@ const MISSION_H2: Scene = {
   hintStages: [
     { text: '앞에서 본 그림을 먼저 맞춰봐요. 오른쪽 위에 초록, 가운데 위에 노랑이 있어야 해요.' },
     {
-      text: '오른쪽에서 보면 이 모양이에요. 2층에 노랑(앞)·초록(뒤), 바닥에 파랑 두 개예요.',
+      text: '오른쪽에서 보면 이 모양이에요. 2층 왼쪽은 뒤쪽 초록, 오른쪽은 앞쪽 노랑이고, 바닥에는 파랑 두 개예요.',
       grid: {
         face: 'right',
         cells: [
           [_, _, _],
-          [Y, G, _],
+          [G, Y, _],
           [B, B, _],
         ] as (string | null)[][],
       },

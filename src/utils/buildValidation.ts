@@ -129,7 +129,7 @@ export function calculateColorProjection(cubes: CubeData[], face: ViewFace): Col
       case 'top':   return { row: (c: CubeData) => c.z, col: (c: CubeData) => c.x, flipRow: false };
       // left: rows = y(bottom->top), cols = z(front->back)
       case 'left':  return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true };
-      // right: left와 같은 좌표 격자, 보이는 큐브만 x 최대 기준.
+      // right: camera view reads z(back->front), so mirror z columns for screen-matching grids.
       case 'right': return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true };
     }
   })();
@@ -148,7 +148,7 @@ export function calculateColorProjection(cubes: CubeData[], face: ViewFace): Col
     const rRaw = axes.row(c);
     const cRaw = axes.col(c);
     const r = axes.flipRow ? maxRow - rRaw : rRaw;
-    const col = cRaw;
+    const col = face === 'right' ? maxCol - cRaw : cRaw;
     if (r >= 0 && r < rows && col >= 0 && col < cols) grid[r][col] = c.color;
   }
   return normalizeProjectionTo3x3(grid, face);
@@ -168,7 +168,7 @@ function calculateRawColorProjection(cubes: CubeData[], face: ViewFace): ColorCe
       case 'top':   return { row: (c: CubeData) => c.z, col: (c: CubeData) => c.x, flipRow: false };
       // left: rows = y(bottom->top), cols = z(front->back)
       case 'left':  return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true };
-      // right: left와 같은 좌표 격자, 보이는 큐브만 x 최대 기준.
+      // right: camera view reads z(back->front), so mirror z columns for screen-matching grids.
       case 'right': return { row: (c: CubeData) => c.y, col: (c: CubeData) => c.z, flipRow: true };
     }
   })();
@@ -189,7 +189,7 @@ function calculateRawColorProjection(cubes: CubeData[], face: ViewFace): ColorCe
     const rRaw = axes.row(c);
     const cRaw = axes.col(c);
     const r = axes.flipRow ? maxRow - rRaw : rRaw - minRow;
-    const col = cRaw - minCol;
+    const col = face === 'right' ? maxCol - cRaw : cRaw - minCol;
     if (r >= 0 && r < rows && col >= 0 && col < cols) grid[r][col] = c.color;
   }
   return grid;
