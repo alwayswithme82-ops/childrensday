@@ -225,51 +225,6 @@ export function GamePage() {
     setShowHint(true);
   };
 
-  const handleSkipMission = () => {
-    if (!scene || !level) return;
-    if (phase === 'reveal') return;
-
-    const isLast = currentSceneIndex + 1 >= level.scenes.length;
-
-    if (pendingTimeoutRef.current !== null) {
-      clearTimeout(pendingTimeoutRef.current);
-      pendingTimeoutRef.current = null;
-    }
-
-    if (phase === 'result') {
-      // 성공 후 자동 전환 중: 결과는 이미 기록됐으므로 바로 이동
-      if (isLast) {
-        timer.stop();
-        setRevealIndex(0);
-        setPhase('reveal');
-      } else {
-        nextScene();
-      }
-      return;
-    }
-
-    // story / playing 단계: 결과를 별 1개로 기록 후 이동
-    play('click');
-    timer.pause();
-
-    recordSceneResult({
-      sceneId: scene.id,
-      correct: true,
-      attempts: Math.max(1, attempts),
-      timeSeconds: timer.getElapsed(),
-      hintsUsed: hintsUsedThisScene,
-      stars: 1,
-    });
-
-    if (isLast) {
-      timer.stop();
-      setRevealIndex(0);
-      setPhase('reveal');
-    } else {
-      nextScene();
-    }
-  };
-
   return (
     <PageTransition>
       <div className="h-svh min-h-svh flex flex-col overflow-hidden bg-slate-950">
@@ -299,7 +254,7 @@ export function GamePage() {
                   setBuiltCubes(next);
                   if (feedbackMessage && phase === 'playing') setFeedbackMessage(null);
                 }}
-                maxCubes={scene.maxCubes ?? scene.exactCubes ?? 10}
+                maxCubes={scene.boardMaxCubes ?? scene.maxCubes ?? 12}
                 maxGridSize={scene.maxGridSize}
                 requiredColorCount={scene.requiredColorCount}
                 disabled={phase !== 'playing'}
@@ -355,14 +310,6 @@ export function GamePage() {
                 완성 확인 ✨
               </button>
 
-              <button
-                type="button"
-                onClick={handleSkipMission}
-                disabled={phase === 'reveal'}
-                className="rounded-2xl border border-white/15 bg-white/5 px-6 py-3 text-sm font-bold text-slate-100 shadow-sm hover:bg-white/10 disabled:opacity-40"
-              >
-                {phase === 'result' ? '다음으로 바로 가기 ⏭️' : '도움 받고 다음으로 ⏭️'}
-              </button>
 
               {(operatorMode || strictMode) && (
                 <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/5 p-4">
@@ -404,16 +351,6 @@ export function GamePage() {
           onDismiss={handleStoryDismiss}
           buttonText={scene.title ?? '시작하기 ▶'}
         />
-
-        {phase === 'story' && (
-          <button
-            type="button"
-            onClick={handleSkipMission}
-            className="fixed bottom-6 right-6 z-[80] rounded-2xl border border-white/20 bg-slate-900/90 px-5 py-3 text-sm font-bold text-white shadow-xl backdrop-blur"
-          >
-            건너뛰기 ⏭️
-          </button>
-        )}
 
         <AnimatePresence>
           {phase === 'reveal' && (

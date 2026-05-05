@@ -387,7 +387,17 @@ export function validateBuildMission(
     : results.filter(result => isRuleRequiredForSuccess(result.rule));
 
   const failed = blockingResults.filter(r => !r.ok);
-  if (failed.length === 0) {
+  const success = failed.length === 0;
+
+  if (import.meta.env.DEV) {
+    console.log('[front]', calculateColorProjection(cubes, 'front'));
+    console.log('[top]', calculateColorProjection(cubes, 'top'));
+    console.log('[Validation Debug] required/blocking results', blockingResults);
+    console.log('[Validation Debug] displayOnly results', results.filter(r => r.rule.displayOnly));
+    console.log('[Validation Debug] success', success);
+  }
+
+  if (success) {
     return {
       success: true,
       results,

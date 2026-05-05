@@ -77,6 +77,7 @@ export interface Scene {
   maxCubes?: number;
   minCubes?: number;
   exactCubes?: number;
+  boardMaxCubes?: number;
   allowedColors?: string[];
   requiredColorCount?: Partial<Record<CubeColorKey, number>>;
   maxGridSize?: GridSize;

@@ -116,14 +116,7 @@ export function CubeBuilder({
     [maxGridSize],
   );
 
-  const paletteColors = useMemo<CubeColorKey[]>(() => {
-    if (requiredColorCount) {
-      return CUBE_COLOR_ORDER.filter(
-        c => requiredColorCount[c] !== undefined && (requiredColorCount[c] ?? 0) > 0,
-      );
-    }
-    return CUBE_COLOR_ORDER;
-  }, [requiredColorCount]);
+  const paletteColors = CUBE_COLOR_ORDER;
 
   // ----- Pure helpers -----
   const topYAt = (cs: CubeData[], x: number, z: number) =>
