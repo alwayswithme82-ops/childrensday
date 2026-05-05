@@ -44,11 +44,15 @@ function CameraRig({ viewMode, target }: CameraRigProps) {
   const { camera } = useThree();
   useEffect(() => {
     const [tx, ty, tz] = target;
+    camera.up.set(0, 1, 0);
     if (viewMode === 'front')      camera.position.set(tx, ty + 1.6, tz - 5.6);
     else if (viewMode === 'back')  camera.position.set(tx, ty + 1.6, tz + 5.6);
     else if (viewMode === 'left')  camera.position.set(tx - 5.6, ty + 1.6, tz);
     else if (viewMode === 'right') camera.position.set(tx + 5.6, ty + 1.6, tz);
-    else if (viewMode === 'top')   camera.position.set(tx, ty + 7, tz + 0.001);
+    else if (viewMode === 'top') {
+      camera.up.set(0, 0, 1);
+      camera.position.set(tx, ty + 7, tz);
+    }
     else                           camera.position.set(tx + 4, ty + 4, tz + 4);
     camera.lookAt(tx, ty, tz);
     camera.updateProjectionMatrix();
@@ -452,6 +456,7 @@ export function CubeBuilder({
             )}
 
             <OrbitControls
+              key={viewMode}
               target={target}
               enablePan={false}
               enableZoom={false}

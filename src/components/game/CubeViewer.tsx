@@ -34,6 +34,7 @@ function CameraInit({ cx, cy, cz, viewMode }: CameraInitProps) {
   useEffect(() => {
     const distance = 6;
     const height = Math.max(cy + 1.6, 2.4);
+    camera.up.set(0, 1, 0);
     if (viewMode === 'front') {
       camera.position.set(cx, height, cz - distance);
     } else if (viewMode === 'back') {
@@ -43,7 +44,8 @@ function CameraInit({ cx, cy, cz, viewMode }: CameraInitProps) {
     } else if (viewMode === 'right') {
       camera.position.set(cx + distance, height, cz);
     } else if (viewMode === 'top') {
-      camera.position.set(cx, cy + distance + 2, cz + 0.01);
+      camera.up.set(0, 0, 1);
+      camera.position.set(cx, cy + distance + 2, cz);
     } else {
       camera.position.set(cx + 4.5, cy + 4, cz + 4.5);
     }
@@ -129,9 +131,11 @@ export function CubeViewer({ cubes }: Props) {
             <gridHelper args={[10, 10, '#334155', '#1E293B']} position={[cx, -0.5, cz]} />
 
             <OrbitControls
+              key={viewMode}
               target={[cx, cy, cz]}
               enablePan={false}
               enableZoom={false}
+              enableRotate={viewMode === 'free'}
               autoRotate={viewMode === 'free'}
               autoRotateSpeed={1.4}
             />
