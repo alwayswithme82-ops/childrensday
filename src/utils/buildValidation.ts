@@ -265,16 +265,50 @@ export function evaluateRule(cubes: CubeData[], rule: BuildRule): RuleResult {
   }
 }
 
+// 빈 테두리 행/열 제거 — 내부 빈칸은 유지. 보드 어디에 놓든 상대 모양만 비교.
+function trimColorGrid(grid: ColorCell[][]): ColorCell[][] {
+  let minR = grid.length, maxR = -1, minC = grid[0]?.length ?? 0, maxC = -1;
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < (grid[r]?.length ?? 0); c++) {
+      const v = grid[r][c];
+      if (v !== null && v !== '') {
+        if (r < minR) minR = r;
+        if (r > maxR) maxR = r;
+        if (c < minC) minC = c;
+        if (c > maxC) maxC = c;
+      }
+    }
+  }
+  if (maxR < 0) return [];
+  return grid.slice(minR, maxR + 1).map(row => row.slice(minC, maxC + 1));
+}
+
+function trimShapeGrid(grid: number[][]): number[][] {
+  let minR = grid.length, maxR = -1, minC = grid[0]?.length ?? 0, maxC = -1;
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < (grid[r]?.length ?? 0); c++) {
+      if (grid[r][c]) {
+        if (r < minR) minR = r;
+        if (r > maxR) maxR = r;
+        if (c < minC) minC = c;
+        if (c > maxC) maxC = c;
+      }
+    }
+  }
+  if (maxR < 0) return [];
+  return grid.slice(minR, maxR + 1).map(row => row.slice(minC, maxC + 1));
+}
+
 export function compareGrid(a: number[][], b: number[][], face: ViewFace): boolean {
-  const aa = normalizeProjectionTo3x3(a, face);
-  const bb = normalizeProjectionTo3x3(b, face);
+  const aa = trimShapeGrid(normalizeProjectionTo3x3(a, face));
+  const bb = trimShapeGrid(normalizeProjectionTo3x3(b, face));
 
-  if (aa.length !== 3 || bb.length !== 3) return false;
+  if (aa.length !== bb.length) return false;
+  if (aa.length === 0) return bb.length === 0;
 
-  for (let r = 0; r < 3; r++) {
-    if ((aa[r]?.length ?? 0) !== 3 || (bb[r]?.length ?? 0) !== 3) return false;
-
-    for (let c = 0; c < 3; c++) {
+  for (let r = 0; r < aa.length; r++) {
+    if ((aa[r]?.length ?? 0) !== (bb[r]?.length ?? 0)) return false;
+    for (let c = 0; c < (aa[r]?.length ?? 0); c++) {
       if ((aa[r][c] ? 1 : 0) !== (bb[r][c] ? 1 : 0)) return false;
     }
   }
@@ -283,19 +317,17 @@ export function compareGrid(a: number[][], b: number[][], face: ViewFace): boole
 }
 
 export function compareColorGrid(a: ColorCell[][], b: ColorCell[][], face: ViewFace): boolean {
-  // 좌표 기준이 고정되어 있으므로 3×3 안의 빈칸 위치까지 정확히 비교한다.
-  const aa = normalizeProjectionTo3x3(a, face);
-  const bb = normalizeProjectionTo3x3(b, face);
+  // 빈 테두리를 제거한 뒤 상대 모양·색 비교 → 보드 어느 위치에 놓아도 같은 패턴이면 성공.
+  const aa = trimColorGrid(normalizeProjectionTo3x3(a, face));
+  const bb = trimColorGrid(normalizeProjectionTo3x3(b, face));
 
-  if (aa.length !== 3 || bb.length !== 3) return false;
+  if (aa.length !== bb.length) return false;
+  if (aa.length === 0) return bb.length === 0;
 
-  for (let r = 0; r < 3; r++) {
-    if ((aa[r]?.length ?? 0) !== 3 || (bb[r]?.length ?? 0) !== 3) return false;
-
-    for (let c = 0; c < 3; c++) {
-      const actual = normalizeColorValue(aa[r][c]);
-      const target = normalizeColorValue(bb[r][c]);
-      if (actual !== target) return false;
+  for (let r = 0; r < aa.length; r++) {
+    if ((aa[r]?.length ?? 0) !== (bb[r]?.length ?? 0)) return false;
+    for (let c = 0; c < (aa[r]?.length ?? 0); c++) {
+      if (normalizeColorValue(aa[r][c]) !== normalizeColorValue(bb[r][c])) return false;
     }
   }
 
