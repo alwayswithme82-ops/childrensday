@@ -421,7 +421,7 @@ export function validateBuildMission(
   const failed = blockingResults.filter(r => !r.ok);
   const success = failed.length === 0;
 
-  if (import.meta.env.DEV) {
+  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
     console.log('[front]', calculateColorProjection(cubes, 'front'));
     console.log('[top]', calculateColorProjection(cubes, 'top'));
     console.log('[Validation Debug] required/blocking results', blockingResults);
